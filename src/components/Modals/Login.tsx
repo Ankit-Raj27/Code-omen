@@ -3,6 +3,7 @@ import { authModalState } from "@/atoms/authModalAtom";
 import { useRouter } from "next/router";
 import React, { ChangeEvent, useEffect, useState } from "react";
 import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
+import { toast } from "react-toastify";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 
 type LoginProps = {};
@@ -36,13 +37,15 @@ const Login: React.FC<LoginProps> = () => {
         if (!newUser) return;
         router.push("/");
       } catch (error: any) {
-        alert("Login error! Check details");
+        toast.error("Login error, check details!", {position : "top-center", autoClose:2000, theme:"dark"})
       }
   };
   console.log(user,"user");
 
   useEffect(()=>{
-    alert("Wrong password or email!")
+    if(error){
+      toast.error("Wrong username or password", {position : "top-center", autoClose:2000, theme:"dark"})
+    }
   },[error]);
 
   return (
