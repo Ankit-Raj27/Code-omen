@@ -1,5 +1,5 @@
 import ProblemsTable from "@/components/ProblemsTable/ProblemsTable";
-import Topbar from "../components/TopBar/TopBar";
+import Topbar from "../components/topBar/TopBar";
 import Image from "next/image";
 
 export default function Home() {

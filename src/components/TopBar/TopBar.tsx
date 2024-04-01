@@ -5,21 +5,56 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import Logout from "../buttons/Logout";
 import { useSetRecoilState } from "recoil";
 import { authModalState } from "@/atoms/authModalAtom";
+import Image from "next/image";
+import {
+  FaChevronCircleLeft,
+  FaChevronCircleRight,
+  FaList,
+} from "react-icons/fa";
+import Timer from "../timer/Timer";
 
-type topbarProps = {};
+type topbarProps = {
+  problemPage?: boolean;
+};
 
-const topbar: React.FC<topbarProps> = () => {
+const topbar: React.FC<topbarProps> = ({ problemPage }) => {
   const [user] = useAuthState(auth);
   const setAuthModalState = useSetRecoilState(authModalState);
 
   return (
     <nav className="relative flex h-[50px] w-full shrink-0 items-center px-5 bg-dark-layer-1 text-dark-gray-7">
       <div
-        className={`flex w-full items-center justify-between max-w-[1200px] mx-auto`}
+        className={`flex w-full items-center justify-between ${!problemPage ? "max-w-[1200px] mx-auto" : ""}`}
       >
         <Link href="/" className="h-[22px] flex-1">
-          <img src="/logo-full.png" alt="Logo" className="h-full" />
+          <Image
+            src="/logo-full.png"
+            alt="Logo"
+            className="h-full"
+            width={100}
+            height={100}
+          />
         </Link>
+
+        {problemPage && (
+          <div className="flex items-center gap-4 flex-1 justify-center">
+            <div className="flex items-center justify-center rounded bg-dark-fill-3  hover:bg-dark-fill-2 h-8 w-8 cursor-pointer">
+              <FaChevronCircleLeft />
+            </div>
+            <Link
+              href="/"
+              className="flex items-center gap-2 font-medium max-w-[170px] text-dark-gray-8 cursor-pointer"
+            >
+              <div>
+                <FaList />
+              </div>
+              <p>Problem List</p>
+            </Link>
+            <div className="flex items-center justify-center rounded bg-dark-fill-3  hover:bg-dark-fill-2 h-8 w-8 cursor-pointer">
+              <FaChevronCircleRight />
+            </div>
+          </div>
+        )}
 
         <div className="flex items-center space-x-4 flex-1 justify-end">
           <div>
@@ -48,12 +83,15 @@ const topbar: React.FC<topbarProps> = () => {
               </button>
             </Link>
           )}
+          {problemPage && <Timer />}
           {user && (
             <div className="cursor-pointer group relative ">
-              <img
+              <Image
                 src="/avatar.png"
                 alt="user-profile"
                 className="h-8 w-8 rounded-full"
+                width={100}
+                height={100}
               />
               <div
                 className="absolute top-10 left-2/4 -translate-x-2/4  mx-auto bg-dark-layer-1 text-brand-orange p-2
