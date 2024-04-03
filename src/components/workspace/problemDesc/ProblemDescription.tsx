@@ -1,13 +1,37 @@
-import { Problem } from "@/utils/types/problems";
+import { auth, firestore } from "@/Firebase/firebase";
+import CircleSkeleton from "@/components/skeletons/CircleSkeleton";
+import RectangleSkeleton from "@/components/skeletons/RectangleSkeleton";
+import { DBProblem, Problem } from "@/utils/types/problems";
+import { Rectangle } from "@tsparticles/engine";
+import { doc, getDoc } from "firebase/firestore";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { useAuthState } from "react-firebase-hooks/auth";
 import { AiFillLike, AiFillDislike } from "react-icons/ai";
 import { BsCheck2Circle } from "react-icons/bs";
 import { TiStarOutline } from "react-icons/ti";
+import { toast } from "react-toastify";
 
 type ProblemDescriptionProps = {
   problem: Problem;
 };
 
 const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ problem }) => {
+  const { currentProblem, loading, problemDifficultyClass } =
+    useGetCurrentProblem(problem.id);
+  const { liked, disliked, solved, setData, starred } = useGetUserDataOnProblem(
+    problem.id
+  );
+  const [user] = useAuthState(auth);
+  const handleLike = async () => {
+    if (!user) {
+      toast.error("You must be logged in!", {
+        position: "top-left",
+        theme: "dark",
+      });
+    }
+  };
+
   return (
     <div className="bg-dark-layer-1">
       {/* TAB */}
@@ -30,27 +54,39 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ problem }) => {
                 {problem.title}
               </div>
             </div>
-            <div className="flex items-center mt-3">
-              <div
-                className={`text-olive bg-olive inline-block rounded-[21px] bg-opacity-[.15] px-2.5 py-1 text-xs font-medium capitalize `}
-              >
-                Easy
+            {!loading && currentProblem && (
+              <div className="flex items-center mt-3">
+                <div
+                  className={`${problemDifficultyClass} inline-block rounded-[21px] bg-opacity-[.15] px-2.5 py-1 text-xs font-medium capitalize `}
+                >
+                  {currentProblem.difficulty}
+                </div>
+                <div className="rounded p-[3px] ml-4 text-lg transition-colors duration-200 text-green-s text-dark-green-s">
+                  <BsCheck2Circle />
+                </div>
+                <div className="flex items-center cursor-pointer hover:bg-dark-fill-3 space-x-1 rounded p-[3px]  ml-4 text-lg transition-colors duration-200 text-dark-gray-6" onClick={handleLike}>
+                  {liked && <AiFillLike className="text-dark-blue-s" />}
+                  {!liked && <AiFillLike />}
+                  <span className="text-xs">{currentProblem.likes}</span>
+                </div>
+                <div className="flex items-center cursor-pointer hover:bg-dark-fill-3 space-x-1 rounded p-[3px]  ml-4 text-lg transition-colors duration-200 text-green-s text-dark-gray-6">
+                  <AiFillDislike />
+                  <span className="text-xs">{currentProblem.dislikes}</span>
+                </div>
+                <div className="cursor-pointer hover:bg-dark-fill-3  rounded p-[3px]  ml-4 text-xl transition-colors duration-200 text-green-s text-dark-gray-6 ">
+                  <TiStarOutline />
+                </div>
               </div>
-              <div className="rounded p-[3px] ml-4 text-lg transition-colors duration-200 text-green-s text-dark-green-s">
-                <BsCheck2Circle />
+            )}
+            {loading && (
+              <div className="mt-3 flex space-x-2">
+                <RectangleSkeleton />
+                <CircleSkeleton />
+                <RectangleSkeleton />
+                <RectangleSkeleton />
+                <CircleSkeleton />
               </div>
-              <div className="flex items-center cursor-pointer hover:bg-dark-fill-3 space-x-1 rounded p-[3px]  ml-4 text-lg transition-colors duration-200 text-dark-gray-6">
-                <AiFillLike />
-                <span className="text-xs">120</span>
-              </div>
-              <div className="flex items-center cursor-pointer hover:bg-dark-fill-3 space-x-1 rounded p-[3px]  ml-4 text-lg transition-colors duration-200 text-green-s text-dark-gray-6">
-                <AiFillDislike />
-                <span className="text-xs">2</span>
-              </div>
-              <div className="cursor-pointer hover:bg-dark-fill-3  rounded p-[3px]  ml-4 text-xl transition-colors duration-200 text-green-s text-dark-gray-6 ">
-                <TiStarOutline />
-              </div>
-            </div>
+            )}
 
             {/* Problem Statement(paragraphs) */}
             <div className="text-white text-sm">
@@ -66,7 +102,13 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ problem }) => {
                     Example {index + 1}:{" "}
                   </p>
                   {example.img && (
-                    <img src={example.img} alt="" className="mt-3"/>
+                    <Image
+                      src={example.img}
+                      alt=""
+                      className="mt-3"
+                      width={100}
+                      height={100}
+                    />
                   )}
                   <div className="example-card">
                     <pre>
@@ -89,7 +131,9 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ problem }) => {
             <div className="my-8 pb-4">
               <div className="text-white text-sm font-medium">Constraints:</div>
               <ul className="text-white ml-5 list-disc">
-                <div dangerouslySetInnerHTML={{__html:problem.constraints}} />
+                <div
+                  dangerouslySetInnerHTML={{ __html: problem.constraints }}
+                />
               </ul>
             </div>
           </div>
@@ -99,3 +143,69 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ problem }) => {
   );
 };
 export default ProblemDescription;
+function useGetCurrentProblem(problemId: string) {
+  const [currentProblem, setCurrentProblem] = useState<DBProblem | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [problemDifficultyClass, setProblemDifficultyClass] =
+    useState<string>("");
+
+  useEffect(() => {
+    const getCurrentProblem = async () => {
+      setLoading(true);
+      const docRef = doc(firestore, "problems", problemId);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const { id, ...problem } = docSnap.data() as DBProblem; // Destructuring
+        setCurrentProblem({ id, ...problem });
+        setProblemDifficultyClass(
+          problem.difficulty === "Easy"
+            ? "bg-olive text-olive"
+            : problem.difficulty === "Medium"
+            ? "bg-dark-yellow text-dark-yellow"
+            : "bg-dark-pink text-dark-pink"
+        ); // Ternary operator
+      }
+      setLoading(false);
+    };
+
+    getCurrentProblem();
+  }, [problemId]);
+
+  return { currentProblem, loading, problemDifficultyClass };
+}
+
+function useGetUserDataOnProblem(problemId: string) {
+  const [data, setData] = useState({
+    liked: false,
+    disliked: false,
+    starred: false,
+    solved: false,
+  });
+  const [user] = useAuthState(auth);
+
+  useEffect(() => {
+    const getUserDataOnProblem = async () => {
+      const userRef = doc(firestore, "users", user!.uid);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        const data = userSnap.data();
+        const {
+          solvedProblems,
+          likedProblems,
+          dislikedProblems,
+          starredProblems,
+        } = data;
+        setData({
+          liked: likedProblems.includes(problemId),
+          disliked: dislikedProblems.includes(problemId),
+          starred: starredProblems.includes(problemId),
+          solved: solvedProblems.includes(problemId),
+        });
+      }
+    };
+    if (user) getUserDataOnProblem();
+    return () =>
+      setData({ liked: false, disliked: false, starred: false, solved: false });
+  }, [problemId, user]);
+  return { ...data, setData };
+}

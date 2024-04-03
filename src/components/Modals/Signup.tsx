@@ -1,4 +1,4 @@
-import { auth } from "@/Firebase/firebase";
+import { auth, firestore } from "@/Firebase/firebase";
 import { authModalState } from "@/atoms/authModalAtom";
 import React, { useEffect, useState } from "react";
 import { useSetRecoilState } from "recoil";
@@ -7,6 +7,8 @@ import {
   useSignInWithEmailAndPassword,
 } from "react-firebase-hooks/auth";
 import { useRouter } from "next/router";
+import { doc, setDoc } from "firebase/firestore";
+import { toast } from "react-toastify";
 
 type SignupProps = {};
 
@@ -22,7 +24,7 @@ const Signup: React.FC<SignupProps> = () => {
     password: "",
   });
   const router = useRouter();
-  
+
   const [createUserWithEmailAndPassword, user, loading, error] =
     useCreateUserWithEmailAndPassword(auth);
 
@@ -34,6 +36,10 @@ const Signup: React.FC<SignupProps> = () => {
     if (!input.email || !input.username || !input.password)
       return alert("Please fill all the forms!");
     try {
+      toast.loading("Creating your account", {
+        position: "top-center",
+        toastId: "loadingToast",
+      });
       const newUser = await createUserWithEmailAndPassword(
         input.email,
         input.password
@@ -41,9 +47,23 @@ const Signup: React.FC<SignupProps> = () => {
       if (!newUser) {
         return;
       }
+      const userData = {
+        uid: newUser.user.uid,
+        email: newUser.user.email,
+        displayName: input.username, // Change 'inputs' to 'input'
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        likedProblems: [],
+        dislikedProblems: [],
+        solvedProblems: [],
+        starredProblems: [],
+      };
+      await setDoc(doc(firestore, "users", newUser.user.uid), userData);
       router.push("/");
     } catch (error: any) {
-      alert(error.message);
+      toast.error(error.message, { position: "top-center" });
+    } finally {
+      toast.dismiss("loadingToast");
     }
   };
   useEffect(() => {
@@ -69,19 +89,19 @@ const Signup: React.FC<SignupProps> = () => {
           id="email"
           className="border-2 outline-none sm:text-sm rounded-lg focus:ring-blue-500 
           block w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white"
-          placeholder="name@comapny.com"
+          placeholder="name@company.com"
         />
       </div>
       <div>
         <label
-          htmlFor="email"
+          htmlFor="username"
           className="text-sm font-medium block mb-2 text-gray-300"
         >
           Username
         </label>
         <input
           onChange={handleChangeInput}
-          type="username"
+          type="text"
           name="username"
           id="username"
           className="border-2 outline-none sm:text-sm rounded-lg focus:ring-blue-500 

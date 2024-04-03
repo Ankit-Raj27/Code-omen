@@ -1,18 +1,26 @@
-import { problems } from "@/mockProblems/problems";
-import { doc } from "firebase/firestore";
+import { firestore } from "@/Firebase/firebase";
+import { DBProblem } from "@/utils/types/problems";
+// import { problems } from "@/mockProblems/problems";
+import { collection, doc, getDocs, orderBy, query } from "firebase/firestore";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { FaRegCheckCircle, FaYoutube } from "react-icons/fa";
 import { IoClose, IoLogoYoutube, IoPlayBackCircle } from "react-icons/io5";
 import YouTube from "react-youtube";
 
-type ProblemsTableProps = {};
+type ProblemsTableProps = {
+  setLoadingProblems: React.Dispatch<React.SetStateAction<boolean>>;
+};
 
-const ProblemsTable: React.FC<ProblemsTableProps> = () => {
+const ProblemsTable: React.FC<ProblemsTableProps> = ({
+  setLoadingProblems,
+}) => {
   const [youtubePlayer, setYoutubePlayer] = useState({
     isOpen: false,
     videoId: "",
   });
+
+  const problems = useGetProblems(setLoadingProblems);
 
   const closeModal = () => {
     setYoutubePlayer({ isOpen: false, videoId: "" });
@@ -20,7 +28,9 @@ const ProblemsTable: React.FC<ProblemsTableProps> = () => {
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {closeModal()};
+      if (e.key === "Escape") {
+        closeModal();
+      }
     };
     window.addEventListener("keydown", handleEsc);
     return () => {
@@ -31,43 +41,51 @@ const ProblemsTable: React.FC<ProblemsTableProps> = () => {
   return (
     <>
       <tbody className="text-white">
-        {problems.map((doc, idx) => {
+        {problems.map((problems, idx) => {
           const difficultyColor =
-            doc.difficulty === "Easy"
+            problems.difficulty === "Easy"
               ? "text-ark-green-s"
-              : doc.difficulty === "Medium"
+              : problems.difficulty === "Medium"
               ? "text-dark-yellow"
               : "text-dark-pink";
           return (
             <tr
               className={`${idx % 2 == 1 ? "bg-dark-layer-1" : ""}`}
-              key={doc.id}
+              key={problems.id}
             >
               <th className="px-2 py-4 font-medium whitespace-nowrap text-dark-green-s">
                 <FaRegCheckCircle fontSize={"18"} width={"18"} />
               </th>
               <td className="px-6 py-4">
-                <Link
-                  className="hover:text-blue-600 cursor-pointer"
-                  href={`/problems/${doc.id}`}
-                >
-                  {" "}
-                  {doc.title}
-                </Link>
+                {problems.link ? (
+                  <Link
+                    href={problems.link}
+                    className="hover:text-blue-600 cursor-pointer"
+                    target="_blank"
+                  ></Link>
+                ) : (
+                  <Link
+                    className="hover:text-blue-600 cursor-pointer"
+                    href={`/problems/${problems.id}`}
+                  >
+                    {" "}
+                    {problems.title}
+                  </Link>
+                )}
               </td>
               <td className={`px-6 py-4 ${difficultyColor}`}>
-                {doc.difficulty}
+                {problems.difficulty}
               </td>
-              <td className={`px-6 py-4`}>{doc.category}</td>
+              <td className={`px-6 py-4`}>{problems.category}</td>
               <td className={`px-6 py-4`}>
-                {doc.videoId ? (
+                {problems.videoId ? (
                   <IoLogoYoutube
                     fontSize={"28"}
                     className="cursor-pointer hover:text-red-600"
                     onClick={() => {
                       setYoutubePlayer({
                         isOpen: true,
-                        videoId: doc.videoId as string,
+                        videoId: problems.videoId as string,
                       });
                     }}
                   />
@@ -107,3 +125,28 @@ const ProblemsTable: React.FC<ProblemsTableProps> = () => {
   );
 };
 export default ProblemsTable;
+
+function useGetProblems(
+  setLoadingProblems: React.Dispatch<React.SetStateAction<boolean>>
+) {
+  const [problems, setProblems] = useState<DBProblem[]>([]);
+  useEffect(() => {
+    const getProblems = async () => {
+      //fetching data logic
+      setLoadingProblems(true);
+      const q = query(
+        collection(firestore, "problems"),
+        orderBy("order", "asc")
+      );
+      const querySnapshot = await getDocs(q);
+      const tmp: DBProblem[] = [];
+      querySnapshot.forEach((doc) => {
+        tmp.push({ id: doc.id, ...doc.data() } as DBProblem);
+      });
+      setProblems(tmp);
+      setLoadingProblems(false);
+    };
+    getProblems();
+  }, [setLoadingProblems]);
+  return problems;
+}
