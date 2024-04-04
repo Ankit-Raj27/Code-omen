@@ -13,11 +13,11 @@ import {
 } from "react-icons/fa";
 import Timer from "../timer/Timer";
 
-type topbarProps = {
+type TopbarProps = {
   problemPage?: boolean;
 };
 
-const topbar: React.FC<topbarProps> = ({ problemPage }) => {
+const Topbar: React.FC<TopbarProps> = ({ problemPage }) => {
   const [user] = useAuthState(auth);
   const setAuthModalState = useSetRecoilState(authModalState);
 
@@ -107,4 +107,4 @@ const topbar: React.FC<topbarProps> = ({ problemPage }) => {
     </nav>
   );
 };
-export default topbar;
+export default Topbar;

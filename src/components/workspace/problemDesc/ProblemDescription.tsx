@@ -31,7 +31,6 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ problem }) => {
       });
     }
   };
-
   return (
     <div className="bg-dark-layer-1">
       {/* TAB */}
@@ -64,7 +63,10 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ problem }) => {
                 <div className="rounded p-[3px] ml-4 text-lg transition-colors duration-200 text-green-s text-dark-green-s">
                   <BsCheck2Circle />
                 </div>
-                <div className="flex items-center cursor-pointer hover:bg-dark-fill-3 space-x-1 rounded p-[3px]  ml-4 text-lg transition-colors duration-200 text-dark-gray-6" onClick={handleLike}>
+                <div
+                  className="flex items-center cursor-pointer hover:bg-dark-fill-3 space-x-1 rounded p-[3px]  ml-4 text-lg transition-colors duration-200 text-dark-gray-6"
+                  onClick={handleLike}
+                >
                   {liked && <AiFillLike className="text-dark-blue-s" />}
                   {!liked && <AiFillLike />}
                   <span className="text-xs">{currentProblem.likes}</span>
@@ -87,7 +89,6 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ problem }) => {
                 <CircleSkeleton />
               </div>
             )}
-
             {/* Problem Statement(paragraphs) */}
             <div className="text-white text-sm">
               <div
@@ -126,7 +127,6 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ problem }) => {
                 </div>
               ))}
             </div>
-
             {/* Constraints */}
             <div className="my-8 pb-4">
               <div className="text-white text-sm font-medium">Constraints:</div>
