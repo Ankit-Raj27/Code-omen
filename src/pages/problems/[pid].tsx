@@ -1,5 +1,5 @@
 import React from "react";
-import TopBar from "../../components/topBar/TopBar";
+import TopBar from "../../components/topBar/Topbar";
 import Workspace from "@/components/workspace/Workspace";
 import { problems } from "@/utils/problems";
 import { Problem } from "@/utils/types/problems";

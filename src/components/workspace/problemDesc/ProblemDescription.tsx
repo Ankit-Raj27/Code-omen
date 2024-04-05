@@ -2,8 +2,6 @@ import { auth, firestore } from "@/Firebase/firebase";
 import CircleSkeleton from "@/components/skeletons/CircleSkeleton";
 import RectangleSkeleton from "@/components/skeletons/RectangleSkeleton";
 import { DBProblem, Problem } from "@/utils/types/problems";
-import { Rectangle } from "@tsparticles/engine";
-import { doc, getDoc } from "firebase/firestore";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -11,35 +9,83 @@ import { AiFillLike, AiFillDislike } from "react-icons/ai";
 import { BsCheck2Circle } from "react-icons/bs";
 import { TiStarOutline } from "react-icons/ti";
 import { toast } from "react-toastify";
+import { doc, getDoc, runTransaction, updateDoc } from "firebase/firestore";
 
 type ProblemDescriptionProps = {
   problem: Problem;
 };
 
 const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ problem }) => {
-  const { currentProblem, loading, problemDifficultyClass } =
+  const { currentProblem, loading, problemDifficultyClass, setCurrentProblem } =
     useGetCurrentProblem(problem.id);
-  const { liked, disliked, solved, setData, starred } = useGetUserDataOnProblem(
-    problem.id
-  );
+  const { liked, disliked, setData } = useGetUserDataOnProblem(problem.id);
   const [user] = useAuthState(auth);
+
   const handleLike = async () => {
     if (!user) {
       toast.error("You must be logged in!", {
         position: "top-left",
         theme: "dark",
       });
+      return;
+    }
+
+    const userRef = doc(firestore, "users", user.uid);
+    const problemRef = doc(firestore, "problems", problem.id);
+
+    try {
+      const userDoc = await getDoc(userRef);
+      const problemDoc = await getDoc(problemRef);
+
+      if (userDoc.exists() && problemDoc.exists()) {
+        const userLikedProblems = userDoc.data().likedProblems || [];
+        const problemLikes = problemDoc.data().likes || 0;
+
+        if (liked) {
+          await Promise.all([
+            updateDoc(userRef, {
+              likedProblems: userLikedProblems.filter(
+                (id: string) => id !== problem.id
+              ),
+            }),
+            updateDoc(problemRef, { likes: problemLikes - 1 }),
+          ]);
+        } else if (disliked) {
+          const userDislikedProblems = userDoc.data().dislikedProblems || [];
+          const problemDislikes = problemDoc.data().dislikes || 0;
+
+          await Promise.all([
+            updateDoc(userRef, {
+              likedProblems: [...userLikedProblems, problem.id],
+              dislikedProblems: userDislikedProblems.filter(
+                (id: string) => id !== problem.id
+              ),
+            }),
+            updateDoc(problemRef, {
+              likes: problemLikes + 1,
+              dislikes: problemDislikes - 1,
+            }),
+          ]);
+        } else {
+          await Promise.all([
+            updateDoc(userRef, {
+              likedProblems: [...userLikedProblems, problem.id],
+            }),
+            updateDoc(problemRef, { likes: problemLikes + 1 }),
+          ]);
+        }
+        setData((prev) => ({ ...prev, liked: !liked }));
+      }
+    } catch (error) {
+      console.error("Error handling like:", error);
     }
   };
+
   return (
     <div className="bg-dark-layer-1">
       {/* TAB */}
       <div className="flex h-11 w-full items-center pt-2 bg-dark-layer-2 text-white overflow-x-hidden">
-        <div
-          className={
-            "bg-dark-layer-1 rounded-t-[5px] px-5 py-[10px] text-xs cursor-pointer"
-          }
-        >
+        <div className="bg-dark-layer-1 rounded-t-[5px] px-5 py-[10px] text-xs cursor-pointer">
           Description
         </div>
       </div>
@@ -56,7 +102,7 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ problem }) => {
             {!loading && currentProblem && (
               <div className="flex items-center mt-3">
                 <div
-                  className={`${problemDifficultyClass} inline-block rounded-[21px] bg-opacity-[.15] px-2.5 py-1 text-xs font-medium capitalize `}
+                  className={`${problemDifficultyClass} inline-block rounded-[21px] bg-opacity-[.15] px-2.5 py-1 text-xs font-medium capitalize`}
                 >
                   {currentProblem.difficulty}
                 </div>
@@ -64,18 +110,21 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ problem }) => {
                   <BsCheck2Circle />
                 </div>
                 <div
-                  className="flex items-center cursor-pointer hover:bg-dark-fill-3 space-x-1 rounded p-[3px]  ml-4 text-lg transition-colors duration-200 text-dark-gray-6"
+                  className="flex items-center cursor-pointer hover:bg-dark-fill-3 space-x-1 rounded p-[3px] ml-4 text-lg transition-colors duration-200 text-dark-gray-6"
                   onClick={handleLike}
                 >
-                  {liked && <AiFillLike className="text-dark-blue-s" />}
-                  {!liked && <AiFillLike />}
+                  {liked ? (
+                    <AiFillLike className="text-dark-blue-s" />
+                  ) : (
+                    <AiFillLike />
+                  )}
                   <span className="text-xs">{currentProblem.likes}</span>
                 </div>
-                <div className="flex items-center cursor-pointer hover:bg-dark-fill-3 space-x-1 rounded p-[3px]  ml-4 text-lg transition-colors duration-200 text-green-s text-dark-gray-6">
+                <div className="flex items-center cursor-pointer hover:bg-dark-fill-3 space-x-1 rounded p-[3px] ml-4 text-lg transition-colors duration-200 text-green-s text-dark-gray-6">
                   <AiFillDislike />
                   <span className="text-xs">{currentProblem.dislikes}</span>
                 </div>
-                <div className="cursor-pointer hover:bg-dark-fill-3  rounded p-[3px]  ml-4 text-xl transition-colors duration-200 text-green-s text-dark-gray-6 ">
+                <div className="cursor-pointer hover:bg-dark-fill-3 rounded p-[3px] ml-4 text-xl transition-colors duration-200 text-green-s text-dark-gray-6">
                   <TiStarOutline />
                 </div>
               </div>
@@ -90,11 +139,10 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ problem }) => {
               </div>
             )}
             {/* Problem Statement(paragraphs) */}
-            <div className="text-white text-sm">
-              <div
-                dangerouslySetInnerHTML={{ __html: problem.problemStatement }}
-              />
-            </div>
+            <div
+              className="text-white text-sm"
+              dangerouslySetInnerHTML={{ __html: problem.problemStatement }}
+            />
 
             <div className="mt-4">
               {problem.examples.map((example, index) => (
@@ -130,11 +178,10 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ problem }) => {
             {/* Constraints */}
             <div className="my-8 pb-4">
               <div className="text-white text-sm font-medium">Constraints:</div>
-              <ul className="text-white ml-5 list-disc">
-                <div
-                  dangerouslySetInnerHTML={{ __html: problem.constraints }}
-                />
-              </ul>
+              <ul
+                className="text-white ml-5 list-disc"
+                dangerouslySetInnerHTML={{ __html: problem.constraints }}
+              />
             </div>
           </div>
         </div>
@@ -143,6 +190,7 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ problem }) => {
   );
 };
 export default ProblemDescription;
+
 function useGetCurrentProblem(problemId: string) {
   const [currentProblem, setCurrentProblem] = useState<DBProblem | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -155,7 +203,7 @@ function useGetCurrentProblem(problemId: string) {
       const docRef = doc(firestore, "problems", problemId);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        const { id, ...problem } = docSnap.data() as DBProblem; // Destructuring
+        const { id, ...problem } = docSnap.data() as DBProblem;
         setCurrentProblem({ id, ...problem });
         setProblemDifficultyClass(
           problem.difficulty === "Easy"
@@ -163,7 +211,7 @@ function useGetCurrentProblem(problemId: string) {
             : problem.difficulty === "Medium"
             ? "bg-dark-yellow text-dark-yellow"
             : "bg-dark-pink text-dark-pink"
-        ); // Ternary operator
+        );
       }
       setLoading(false);
     };
@@ -171,7 +219,7 @@ function useGetCurrentProblem(problemId: string) {
     getCurrentProblem();
   }, [problemId]);
 
-  return { currentProblem, loading, problemDifficultyClass };
+  return { currentProblem, loading, problemDifficultyClass, setCurrentProblem };
 }
 
 function useGetUserDataOnProblem(problemId: string) {
@@ -185,27 +233,35 @@ function useGetUserDataOnProblem(problemId: string) {
 
   useEffect(() => {
     const getUserDataOnProblem = async () => {
-      const userRef = doc(firestore, "users", user!.uid);
+      if (!user) return;
+
+      const userRef = doc(firestore, "users", user.uid);
       const userSnap = await getDoc(userRef);
+
       if (userSnap.exists()) {
-        const data = userSnap.data();
+        const userData = userSnap.data();
         const {
-          solvedProblems,
-          likedProblems,
-          dislikedProblems,
-          starredProblems,
-        } = data;
-        setData({
-          liked: likedProblems.includes(problemId),
-          disliked: dislikedProblems.includes(problemId),
-          starred: starredProblems.includes(problemId),
-          solved: solvedProblems.includes(problemId),
-        });
+          likedProblems = [],
+          dislikedProblems = [],
+          starredProblems = [],
+          solvedProblems = [],
+        } = userData || {};
+
+        const liked = likedProblems.includes(problemId);
+        const disliked = dislikedProblems.includes(problemId);
+        const starred = starredProblems.includes(problemId);
+        const solved = solvedProblems.includes(problemId);
+
+        setData({ liked, disliked, starred, solved });
       }
     };
-    if (user) getUserDataOnProblem();
-    return () =>
-      setData({ liked: false, disliked: false, starred: false, solved: false });
+
+    getUserDataOnProblem();
+
+    return () => {
+      // Cleanup function
+    };
   }, [problemId, user]);
+
   return { ...data, setData };
 }
