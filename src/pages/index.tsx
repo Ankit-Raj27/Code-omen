@@ -4,9 +4,12 @@ import Image from "next/image";
 import { useState } from "react";
 import { doc, setDoc } from "firebase/firestore";
 import { firestore } from "@/Firebase/firebase";
+import useHasMounted from "@/components/hooks/useHasMounted";
 
 export default function Home() {
   const [loadingProblems, setLoadingProblems] = useState(true);
+  const hasMounted = useHasMounted()
+  if(!hasMounted) {return null};
   const LoadingSkeleton = () => {
     return (
       <div className='flex items-center space-x-12 mt-4 px-6'>

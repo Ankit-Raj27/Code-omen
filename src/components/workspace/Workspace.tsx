@@ -1,18 +1,33 @@
-import React from "react";
+import React, { useState } from "react";
 import Split from "react-split";
 import ProblemDescription from "./problemDesc/ProblemDescription";
 import Playground from "./playground/Playground";
 import { Problem } from "@/utils/types/problems";
-
+import Confetti from "react-confetti";
+import useWindowSize from "../hooks/useWindowSize";
 type WorkspaceProps = {
-  problem: Problem
+  problem: Problem;
 };
 
-const Workspace: React.FC<WorkspaceProps> = ({problem}) => {
+const Workspace: React.FC<WorkspaceProps> = ({ problem }) => {
+  const { width, height } = useWindowSize();
+  const [success, setSuccess] = useState(false);
+  const [solved,setSolved] = useState(false);
+
   return (
     <Split className="split" minSize={0}>
-      <ProblemDescription problem={problem}/>
-      <Playground problem={problem}/>
+      <ProblemDescription problem={problem} _solved={solved}/>
+      <div>
+        <Playground problem={problem} setSuccess={setSuccess} setSolved = {setSolved} />
+        {success && (
+          <Confetti
+            gravity={0.3}
+            tweenDuration={2000}
+            width={width - 1}
+            height={height - 1}
+          />
+        )}
+      </div>
     </Split>
   );
 };
