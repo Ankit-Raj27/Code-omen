@@ -12,8 +12,7 @@ import { problems } from "@/utils/problems";
 import { auth, firestore } from "@/Firebase/firebase";
 import { useRouter } from "next/router";
 import { arrayUnion, doc, updateDoc } from "firebase/firestore";
-import { Interface } from "readline";
-import { settings } from "firebase/analytics";
+import useLocalStorage from "@/components/hooks/useLocalStorage";
 
 type PlaygroundProps = {
   problem: Problem;
@@ -33,8 +32,10 @@ const Playground: React.FC<PlaygroundProps> = ({
 }) => {
   const [activeTestCaseId, setActiveTestCaseId] = useState<number>(0);
   let [userCode, setUserCode] = useState<string>(problem.starterCode);
+  const [fontSize,setFontSize] = useLocalStorage("cd-fontSize", "16px");
+
   const [setting,setSetting] = useState<ISettings>({
-    fontSize:"16px",
+    fontSize:fontSize,
     settingModalIsOpen : false,
     dropDownIsOpen: false
   })

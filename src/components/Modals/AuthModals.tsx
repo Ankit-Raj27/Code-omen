@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { IoCloseSharp } from "react-icons/io5";
 import Login from "./Login";
 import Signup from "./Signup";
@@ -9,10 +9,6 @@ import { authModalState } from "@/atoms/authModalAtom";
 type AuthModalsProps = {};
 
 const AuthModals: React.FC<AuthModalsProps> = () => {
-  const setModalState = useSetRecoilState(authModalState);
-  const handleClick = () => {
-    setModalState((prev) => ({ ...prev, isOpen: false }));
-  };
   const authModal = useRecoilValue(authModalState);
   const closeModal = useCloseModal();
   return (

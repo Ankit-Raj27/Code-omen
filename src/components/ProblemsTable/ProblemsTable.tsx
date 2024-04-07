@@ -1,9 +1,17 @@
-import { firestore } from "@/Firebase/firebase";
+import { auth, firestore } from "@/Firebase/firebase";
 import { DBProblem } from "@/utils/types/problems";
 // import { problems } from "@/mockProblems/problems";
-import { collection, doc, getDocs, orderBy, query } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+} from "firebase/firestore";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
+import { useAuthState } from "react-firebase-hooks/auth";
 import { FaRegCheckCircle, FaYoutube } from "react-icons/fa";
 import { IoClose, IoLogoYoutube, IoPlayBackCircle } from "react-icons/io5";
 import YouTube from "react-youtube";
@@ -21,6 +29,7 @@ const ProblemsTable: React.FC<ProblemsTableProps> = ({
   });
 
   const problems = useGetProblems(setLoadingProblems);
+  const solvedProblems = useGetSolvedProblems();
 
   const closeModal = () => {
     setYoutubePlayer({ isOpen: false, videoId: "" });
@@ -54,7 +63,7 @@ const ProblemsTable: React.FC<ProblemsTableProps> = ({
               key={problems.id}
             >
               <th className="px-2 py-4 font-medium whitespace-nowrap text-dark-green-s">
-                <FaRegCheckCircle fontSize={"18"} width={"18"} />
+                {solvedProblems.includes(problems.id) && <FaRegCheckCircle fontSize={"18"} width={"18"} />}
               </th>
               <td className="px-6 py-4">
                 {problems.link ? (
@@ -149,4 +158,23 @@ function useGetProblems(
     getProblems();
   }, [setLoadingProblems]);
   return problems;
+}
+
+function useGetSolvedProblems() {
+  const [solvedProblems, setSolvedProblems] = useState<string[]>([]);
+  const [user] = useAuthState(auth);
+  useEffect(() => {
+    const getSolvedProblems = async () => {
+      const userRef = doc(firestore, "users", user!.uid);
+      const userDoc = await getDoc(userRef);
+
+      if (userDoc.exists()) {
+        setSolvedProblems(userDoc.data().solvedProblems);
+      }
+    };
+    if (user) {
+      getSolvedProblems();
+    }
+  }, [user]);
+  return solvedProblems;
 }

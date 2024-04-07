@@ -1,10 +1,10 @@
 import ProblemsTable from "@/components/ProblemsTable/ProblemsTable";
-import Topbar from "../components/topBar/Topbar";
 import Image from "next/image";
 import { useState } from "react";
-import { doc, setDoc } from "firebase/firestore";
-import { firestore } from "@/Firebase/firebase";
+// import { doc, setDoc } from "firebase/firestore";
+// import { firestore } from "@/Firebase/firebase";
 import useHasMounted from "@/components/hooks/useHasMounted";
+import Topbar from "@/components/topBar/Topbar";  
 
 export default function Home() {
   const [loadingProblems, setLoadingProblems] = useState(true);
