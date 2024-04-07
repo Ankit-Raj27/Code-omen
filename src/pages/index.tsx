@@ -4,7 +4,7 @@ import { useState } from "react";
 // import { doc, setDoc } from "firebase/firestore";
 // import { firestore } from "@/Firebase/firebase";
 import useHasMounted from "@/components/hooks/useHasMounted";
-import Topbar from "../components/topBar/Topbar";
+import TopBar from "@/components/TopBar/TopBar";
 
 export default function Home() {
   const [loadingProblems, setLoadingProblems] = useState(true);
@@ -53,7 +53,7 @@ export default function Home() {
   return (
     <>
       <main className="bg-dark-layer-2 min-h-screen">
-        <Topbar />
+        <TopBar />
         <h1 className="text-2xl text-center text-gray-700 dark:text-gray-400 font-medium uppercase mt-10 mb-5">
           CodeOmen
         </h1>

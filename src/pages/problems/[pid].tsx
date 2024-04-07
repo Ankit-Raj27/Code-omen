@@ -1,9 +1,9 @@
 import React from "react";
-import TopBar from "../../components/topBar/Topbar";
 import Workspace from "@/components/workspace/Workspace";
 import { problems } from "@/utils/problems";
 import { Problem } from "@/utils/types/problems";
 import useHasMounted from "@/components/hooks/useHasMounted";
+import TopBar from "@/components/TopBar/TopBar";
 type ProblemPageProps = {
   problem: Problem;
 };
