@@ -47,17 +47,20 @@ export default AuthModals;
 
 function useCloseModal() {
   const setAuthModal = useSetRecoilState(authModalState);
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setAuthModal((prev) => ({ ...prev, isOpen: false, type: "login" }));
-  };
+  }, [setAuthModal]);
+
+  const handleEsc = useCallback((e: KeyboardEvent) => {
+    if (e.key === "Escape") {
+      closeModal();
+    }
+  }, [closeModal]);
+
   useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        closeModal();
-      }
-    };
     window.addEventListener("keydown", handleEsc);
     return () => window.removeEventListener("keydown", handleEsc);
-  }, [closeModal]);
+  }, [handleEsc]);
+
   return closeModal;
 }
