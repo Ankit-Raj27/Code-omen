@@ -49,11 +49,11 @@ const TopBar: React.FC<TopBarProps> = ({ problemPage }) => {
       >
         <Link href="/" className="h-[22px] flex-1">
           <Image
-            src="/logo-full.png"
+            src="/logo-f.png"
             alt="Logo"
             className="h-full"
             width={100}
-            height={100}
+            height={200}
           />
         </Link>
 

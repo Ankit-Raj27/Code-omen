@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { AiOutlineFullscreen, AiOutlineFullscreenExit, AiOutlineSetting } from "react-icons/ai";
 import { ISettings } from "./Playground";
 import SettingsModal from "@/components/Modals/SettingsModal";
+import EditorFooter from "./EditorFooter";
 type PreferenceNavProps = {
   setting : ISettings,
   setSetting : React.Dispatch<React.SetStateAction<ISettings>>
@@ -60,8 +61,10 @@ const PreferenceNav: React.FC<PreferenceNavProps> = ({setSetting,setting}) => {
           </div>
           <div className="preferenceBtn-tooltip">Full Screen</div>
         </button>
+      
       </div>
       {setting.settingModalIsOpen && <SettingsModal setting={setting} setSetting ={setSetting}/>}
+      
     </div>
   );
 };

@@ -12,14 +12,15 @@ const Navbar: React.FC<NavbarProps> = () => {
     setModalState((prev) => ({ ...prev, isOpen: true }));
   };
   return (
-    <div className="flex items-center justify-between sm:px-12 px-2 md:px-24">
+    <div className="flex items-center justify-between sm:px-12 px-2 md:px-24 hover:select-none" >
       <Link href="/" className="flex items-center justify-center h-20">
         <Image
           src="/logo.png"
           width={200}
-          height={100}
-          alt="LeetCode"
+          height={90}
+          alt="CodeOmen"
           className="h-full"
+          
         />
       </Link>
       <div className="flex items-center">

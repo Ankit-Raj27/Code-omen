@@ -39,8 +39,8 @@ const Playground: React.FC<PlaygroundProps> = ({
     settingModalIsOpen : false,
     dropDownIsOpen: false
   })
-
   const [user] = useAuthState(auth);
+
   const {
     query: { pid },
   } = useRouter();
