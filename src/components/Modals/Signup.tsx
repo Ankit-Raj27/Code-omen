@@ -33,8 +33,8 @@ const Signup: React.FC<SignupProps> = () => {
   };
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!input.email || !input.username || !input.password)
-      return alert("Please fill all the forms!");
+    if (!input.email || !input.username || !input.password){
+      return alert("Please fill all the forms!");}
     try {
       toast.loading("Creating your account", {
         position: "top-center",
