@@ -28,13 +28,13 @@ const Login: React.FC<LoginProps> = () => {
 
   const handleLogin = async (e: React.ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!input.email || !input.password) return alert("Please fill all fields!");
+    if (!input.email || !input.password) {return alert("Please fill all fields!")};
       try {
         const newUser = await signInWithEmailAndPassword(   
           input.email,
           input.password
           );
-        if (!newUser) return;
+        if (!newUser) {return};
         router.push("/");
       } catch (error: any) {
         toast.error("Login error, check details!", {position : "top-center", autoClose:2000, theme:"dark"})
@@ -87,7 +87,7 @@ const Login: React.FC<LoginProps> = () => {
       </div>
       <button
         type="submit"
-        className="w-full text-white focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center 
+        className="w-full text-black focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center 
         bg-brand-orange hover:bg-brand-orange-s"
       >
         {loading ? "Loading..." : "Login"}

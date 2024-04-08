@@ -19,7 +19,7 @@ const AuthModals: React.FC<AuthModalsProps> = () => {
         items-center"
       >
         <div className="relative w-full h-full mx-auto flex items-center justify-center">
-          <div className="bg-white rounded-lg shadow relative w-full bg-gradient-to-b from-brand-orange to-slate-900 mx-6">
+          <div className="bg-white rounded-lg shadow relative w-full bg-gradient-to-b from-card-upper to-slate-900 mx-6">
             <div className="flex justify-end p-2">
               <button
                 type="button"

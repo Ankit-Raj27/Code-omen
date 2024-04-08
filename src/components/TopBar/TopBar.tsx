@@ -49,10 +49,10 @@ const TopBar: React.FC<TopBarProps> = ({ problemPage }) => {
       >
         <Link href="/" className="h-[22px] flex-1">
           <Image
-            src="/logo-f.png"
+            src="/21.png"
             alt="Logo"
             className="h-full"
-            width={100}
+            width={150}
             height={200}
           />
         </Link>
@@ -82,16 +82,16 @@ const TopBar: React.FC<TopBarProps> = ({ problemPage }) => {
         )}
 
         <div className="flex items-center space-x-4 flex-1 justify-end">
-          <div>
+          {/* <div>
             <a
-              href="https://www.buymeacoffee.com/burakorkmezz"
+              href=""
               target="_blank"
               rel="noreferrer"
               className="bg-dark-fill-3 py-1.5 px-3 cursor-pointer rounded text-brand-orange hover:bg-dark-fill-2"
             >
               Premium
             </a>
-          </div>
+          </div> */}
           {!user && (
             <Link
               href="/auth"

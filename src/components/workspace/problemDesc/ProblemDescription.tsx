@@ -25,9 +25,12 @@ import {
 
 type ProblemDescriptionProps = {
   problem: Problem;
-  _solved:boolean
+  _solved: boolean;
 };
-const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ problem,_solved}) => {
+const ProblemDescription: React.FC<ProblemDescriptionProps> = ({
+  problem,
+  _solved,
+}) => {
   const { currentProblem, loading, problemDifficultyClass, setCurrentProblem } =
     useGetCurrentProblem(problem.id);
   const { liked, disliked, setData, starred, solved } =
@@ -51,7 +54,9 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({ problem,_solved
       });
       return;
     }
-    if (updating) return;
+    if (updating) {
+      return;
+    }
     setUpdating(true);
     await runTransaction(firestore, async (transaction) => {
       const { problemDoc, userDoc, problemRef, userRef } =
