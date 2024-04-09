@@ -38,6 +38,7 @@ const Signup: React.FC<SignupProps> = () => {
     try {
       toast.loading("Creating your account", {
         position: "top-center",
+
         toastId: "loadingToast",
       });
       const newUser = await createUserWithEmailAndPassword(
@@ -74,7 +75,7 @@ const Signup: React.FC<SignupProps> = () => {
 
   return (
     <form className="space-y-6 px-6 py-4" onSubmit={handleRegister}>
-      <h3 className="text-xl font-medium text-white"> Register now!</h3>
+      <h3 className="text-xl font-medium text-black"> Register now!</h3>
       <div>
         <label
           htmlFor="email"
