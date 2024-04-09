@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { FiRefreshCcw } from "react-icons/fi";
 
-type TimerProps = {};
-
-const Timer: React.FC<TimerProps> = () => {
+const Timer: React.FC = () => {
   const [showTimer, setShowTimer] = useState<boolean>(false);
   const [time, setTime] = useState<number>(0);
+  const [isRunning, setIsRunning] = useState<boolean>(false);
 
   const formatTime = (time: number): string => {
     const hours = Math.floor(time / 3600);
@@ -18,16 +17,17 @@ const Timer: React.FC<TimerProps> = () => {
   };
 
   useEffect(() => {
-    let intervalId: NodeJS.Timeout;
+    let intervalId: number;
 
-    if (showTimer) {
-      intervalId = setInterval(() => {
+    if (isRunning) {
+      intervalId = window.setInterval(() => {
         setTime((time) => time + 1);
       }, 1000);
     }
 
     return () => clearInterval(intervalId);
-  }, [showTimer]);
+  }, [isRunning]);
+
   return (
     <div>
       {showTimer ? (
@@ -35,16 +35,19 @@ const Timer: React.FC<TimerProps> = () => {
           <div className=""> {formatTime(time)}</div>
           <FiRefreshCcw
             onClick={() => {
-              setShowTimer(false)
+              setIsRunning(false);
               setTime(0);
+              setShowTimer(false);
             }}
           />
         </div>
       ) : (
         <div
           className="flex items-center p-1 h-8 hover:bg-dark-fill-3 rounded cursor-pointer"
-          onClick={() => setShowTimer(!!time)}
-
+          onClick={() => {
+            setShowTimer(true);
+            setIsRunning(true);
+          }}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -65,4 +68,5 @@ const Timer: React.FC<TimerProps> = () => {
     </div>
   );
 };
+
 export default Timer;
