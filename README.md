@@ -1,40 +1,40 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+ Introduction
+Are you falling behind in DSA and struggling with Binary Search Trees? Don’t worry, we’ve got you covered.
 
-## Getting Started
+While DSA is important for coding, not everyone can master it easily, it takes time, effort, and a lot of practice. That’s why Codeportal might be a great source for you to learn and follow as a self-paced course. You can practice questions from it whenever you want, wherever you want.
 
-First, run the development server:
+This platform is tailored in such a way that it’ll be easy for everyone to follow along and practice DSA.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Things we’ve to offer to you:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+• Master DSA from basic to advanced level
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+• Solve the problems asked in product-based companies
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+• Solve problems in contests similar to coding round for SDE role
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+• Become a strong and efficient developer
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+The only website you’ll ever require to master DSA.
 
-## Learn More
+Why did we build it ?
+Two major problems that students face who want to improve and sharpen their skills, practice questions are a good place to keep everything in an organized manner and keep track of their progress.
 
-To learn more about Next.js, take a look at the following resources:
+That is where Codeportal comes in. Complete with its own online compiler, user registration, interactive UI, and a platform to get all resources compiled by experts in their field, it solves the faced issues and also aims to get students to submit their code during home-brewed hackathons. 📋💯
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Sounds interesting? Well, it is 🔥
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+👨‍💻 Dependencies
+NextJS
+TypeScript
+Tailwind CSS
+Firebase & Firestore
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+
+🚀 Installation
+Open gitbash.
+Clone the project by running the command in gitbash given below : git clone [repo-url] Copy the link from github repo for repo-url.
+Run : npm install
+After installation. Run : npm run dev
