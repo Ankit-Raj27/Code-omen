@@ -1,8 +1,7 @@
 "use client";
-import React from "react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Particles, { initParticlesEngine } from "@tsparticles/react";
-import type { Container, SingleOrMultiple } from "@tsparticles/engine";
+import { Container, SingleOrMultiple } from "@tsparticles/engine";
 import { loadSlim } from "@tsparticles/slim";
 import { cn } from "@/utils/cn";
 import { motion, useAnimation } from "framer-motion";
@@ -18,6 +17,7 @@ type ParticlesProps = {
   particleColor?: string;
   particleDensity?: number;
 };
+
 export const SparklesCore = (props: ParticlesProps) => {
   const {
     id,
@@ -29,7 +29,11 @@ export const SparklesCore = (props: ParticlesProps) => {
     particleColor,
     particleDensity,
   } = props;
+
   const [init, setInit] = useState(false);
+  const controls = useAnimation();
+  const containerRef = useRef<Container | null>(null);
+
   useEffect(() => {
     initParticlesEngine(async (engine) => {
       await loadSlim(engine);
@@ -37,17 +41,22 @@ export const SparklesCore = (props: ParticlesProps) => {
       setInit(true);
     });
   }, []);
-  const controls = useAnimation();
 
-  const particlesLoaded = async (container?: Container) => {
-    if (container) {
-      console.log(container);
+  useEffect(() => {
+    if (containerRef.current) {
       controls.start({
         opacity: 1,
         transition: {
           duration: 1,
         },
       });
+    }
+  }, [controls]);
+
+  const particlesLoaded = async (container?: Container) => {
+    if (container) {
+      console.log(container);
+      containerRef.current = container;
     }
   };
 
@@ -68,7 +77,6 @@ export const SparklesCore = (props: ParticlesProps) => {
               enable: false,
               zIndex: 1,
             },
-
             fpsLimit: 120,
             interactivity: {
               events: {
