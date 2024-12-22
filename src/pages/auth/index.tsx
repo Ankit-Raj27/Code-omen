@@ -10,16 +10,28 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { useRecoilValue } from "recoil";
 
 type AuthPageProps = {};
+
 const AuthPage: React.FC<AuthPageProps> = () => {
   const authModal = useRecoilValue(authModalState);
   const [user, loading, error] = useAuthState(auth);
   const [pageLoading, setPageLoading] = useState(true);
   const router = useRouter();
+
   useEffect(() => {
-    if (user) {router.push("/")};
-    if (!loading && !user) {setPageLoading(false)};
+    if (user) {
+      setPageLoading(true); 
+      router.push("/"); 
+    }
+    if (!loading && !user) {
+      setPageLoading(false); 
+    }
   }, [user, router, loading]);
+
   if (pageLoading) return <SparklesCore />;
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
 
   return (
     <div className="bg-gradient-to-b from-gray-600 to-black h-screen relative">
@@ -33,4 +45,5 @@ const AuthPage: React.FC<AuthPageProps> = () => {
     </div>
   );
 };
+
 export default AuthPage;

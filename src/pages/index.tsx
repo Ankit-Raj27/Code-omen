@@ -1,17 +1,32 @@
+import { useRouter } from "next/router";
+import { useState, useEffect } from "react";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "@/Firebase/firebase"; // Firebase auth import
 import ProblemsTable from "@/components/ProblemsTable/ProblemsTable";
 import Image from "next/image";
-import { useState } from "react";
-// import { doc, setDoc } from "firebase/firestore";
-// import { firestore } from "@/Firebase/firebase";
 import useHasMounted from "@/components/hooks/useHasMounted";
 import TopBar from "@/components/TopBar/TopBar";
+import { SparklesCore } from "@/components/features/loading"; // Optional loading spinner
 
 export default function Home() {
   const [loadingProblems, setLoadingProblems] = useState(true);
   const hasMounted = useHasMounted();
-  if (!hasMounted) {
-    return null;
+  const router = useRouter();
+  
+  // Use Firebase hook to check authentication status
+  const [user, loading, error] = useAuthState(auth); 
+
+  // Redirect to the authentication page if user is not logged in
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/auth"); // Redirect if not authenticated
+    }
+  }, [user, loading, router]);
+
+  if (!hasMounted || loading) {
+    return <SparklesCore />; // Show a loading spinner while checking authentication
   }
+
   const LoadingSkeleton = () => {
     return (
       <div className="flex items-center space-x-12 mt-4 px-6">
@@ -23,33 +38,7 @@ export default function Home() {
       </div>
     );
   };
-  // const [inputs, setInputs] = useState({
-  //   id: "",
-  //   title: "",
-  //   difficulty: "",
-  //   category: "",
-  //   videoId: "",
-  //   link: "",
-  //   order: "",
-  //   likes: "",
-  //   dislikes: "",
-  // });
-  // const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   setInputs({
-  //     ...inputs,
-  //     [e.target.name]: e.target.value,
-  //   });
-  // };
-  // const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  //   e.preventDefault(); // prevent page refresh
-  //   //convert inputs.order to integer
-  //   const newProblem = {
-  //     ...inputs,
-  //     order:Number(inputs.order)
-  //   }
-  //   await setDoc(doc(firestore, "problems", inputs.id), newProblem);
-  //   alert("Saved to db")
-  // };
+
   return (
     <>
       <main className="bg-dark-layer-2 min-h-screen">
@@ -92,56 +81,6 @@ export default function Home() {
             <ProblemsTable setLoadingProblems={setLoadingProblems} />
           </table>
         </div>
-
-        {/* TEMPORARY FORM
-        <form
-          className="p-6 flex flex-col max-w-sm gap-3"
-          onSubmit={handleSubmit}
-        >
-          <input
-            onChange={handleInputChange}
-            type="text"
-            placeholder="problem id"
-            name="id"
-          />
-          <input
-            onChange={handleInputChange}
-            type="text"
-            placeholder="title"
-            name="title"
-          />
-          <input
-            onChange={handleInputChange}
-            type="text"
-            placeholder="difficulty"
-            name="difficulty"
-          />
-          <input
-            onChange={handleInputChange}
-            type="text"
-            placeholder="category"
-            name="category"
-          />
-          <input
-            onChange={handleInputChange}
-            type="text"
-            placeholder="order"
-            name="order"
-          />
-          <input
-            onChange={handleInputChange}
-            type="text"
-            placeholder="videoId?"
-            name="videoId"
-          />
-          <input
-            onChange={handleInputChange}
-            type="text"
-            placeholder="link?"
-            name="link"
-          />
-          <button className="bg-white">Save to database!</button>
-        </form> */}
       </main>
     </>
   );

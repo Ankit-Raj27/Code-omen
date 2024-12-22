@@ -3,6 +3,7 @@ import PreferenceNav from "./PreferenceNav";
 import Split from "react-split";
 import CodeMirror from "@uiw/react-codemirror";
 import { javascript } from "@codemirror/lang-javascript";
+import {java} from "@codemirror/lang-java";
 import { vscodeDark } from "@uiw/codemirror-theme-vscode";
 import EditorFooter from "./EditorFooter";
 import { Problem } from "@/utils/types/problems";
@@ -121,7 +122,7 @@ const Playground: React.FC<PlaygroundProps> = ({
           <CodeMirror
             value={userCode}
             theme={vscodeDark}
-            extensions={[javascript()]}
+            extensions={[javascript(),java()]}
             style={{ fontSize: setting.fontSize }}
             onChange={onChange}
           />
