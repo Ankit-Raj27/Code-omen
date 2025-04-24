@@ -11,12 +11,11 @@ export const metadata: Metadata = {
 
 export default function ProfilePage() {
   const [userId, setUserId] = useState<string | null>(null)
-  const [loading, setLoading] = useState<boolean>(true) // Loading state to handle async fetch
+  const [loading, setLoading] = useState<boolean>(true) 
 
   useEffect(() => {
     const auth = getAuth()
-
-    // Subscribe to the auth state change
+    
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUserId(user.uid) // Set the user ID when authenticated
