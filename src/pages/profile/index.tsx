@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
 import { getAuth, onAuthStateChanged } from "firebase/auth"
 import ClientProfile from "./ClientProfile"
-import { Metadata } from "next"
 import TopBar from "@/components/TopBar/TopBar"
 
 export default function ProfilePage() {

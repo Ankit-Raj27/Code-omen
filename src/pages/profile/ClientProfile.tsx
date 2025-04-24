@@ -11,8 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { UserStats } from "./UserStats"
-import { ProblemList } from "./ProblemList"
+import { UserStats } from "@/components/features/UserStats"
+import { ProblemList } from "@/components/features/ProblemList"
 
 interface ClientProfileProps {
     userId: string
