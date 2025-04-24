@@ -1,4 +1,4 @@
-import FlickeringGrid from "@/components/ui/flickering-grid";
+
 import LandingContent from "./LandingContent";
 
 export function LandingPage() {
