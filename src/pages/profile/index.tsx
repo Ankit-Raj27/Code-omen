@@ -4,18 +4,13 @@ import ClientProfile from "./ClientProfile"
 import { Metadata } from "next"
 import TopBar from "@/components/TopBar/TopBar"
 
-export const metadata: Metadata = {
-  title: "Profile Dashboard",
-  description: "View your coding progress and solved problems",
-}
-
 export default function ProfilePage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [loading, setLoading] = useState<boolean>(true) 
 
   useEffect(() => {
     const auth = getAuth()
-    
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUserId(user.uid) // Set the user ID when authenticated
