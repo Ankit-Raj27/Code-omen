@@ -12,15 +12,15 @@ const Navbar: React.FC<NavbarProps> = () => {
     setModalState((prev) => ({ ...prev, isOpen: true }));
   };
   return (
-    <div className="flex items-center justify-between sm:px-12 px-2 md:px-24 hover:select-none" >
-      <Link href="/" className="flex items-center justify-center h-20">
+    <div className="bg-black flex items-center justify-between sm:px-12 px-2 md:px-24 hover:select-none" >
+      <Link href="/" className="flex items-center h-20 justify-center">
         <Image
-          src="/logo.png"
+          src="/logo1.png"
           width={200}
-          height={90}
+          height={30}
           alt="CodeOmen"
           className="h-full"
-          
+
         />
       </Link>
       <div className="flex items-center">

@@ -24,28 +24,27 @@ const TopBar: React.FC<TopBarProps> = ({ problemPage }) => {
   const [user] = useAuthState(auth);
   const setAuthModalState = useSetRecoilState(authModalState);
   const router = useRouter()
-  const handleProblemChange = (isForward:boolean)=>{
-    const {order} = problems[router.query.pid as string] as Problem;
+  const handleProblemChange = (isForward: boolean) => {
+    const { order } = problems[router.query.pid as string] as Problem;
     const direction = isForward ? 1 : -1;
     const nextProblemOrder = order + direction
     const nextProblemKey = Object.keys(problems).find((key) => problems[key].order === nextProblemOrder)
-    if (isForward && !nextProblemKey){
-      const firstProblemKey = Object.keys(problems).find((key) => problems[key].order === 1 )
+    if (isForward && !nextProblemKey) {
+      const firstProblemKey = Object.keys(problems).find((key) => problems[key].order === 1)
       router.push(`/problems/${firstProblemKey}`)
     }
-    else if(!isForward && !nextProblemKey){
-      const lastProblemKey = Object.keys(problems).find((key)=> problems[key].order === Object.keys(problems).length)
+    else if (!isForward && !nextProblemKey) {
+      const lastProblemKey = Object.keys(problems).find((key) => problems[key].order === Object.keys(problems).length)
       router.push(`/problems/${lastProblemKey}`)
-    }else{
+    } else {
       router.push(`/problems/${nextProblemKey}`)
     }
   }
   return (
     <nav className="relative flex h-[50px] w-full shrink-0 items-center px-5 bg-dark-layer-1 text-dark-gray-7">
       <div
-        className={`flex w-full items-center justify-between ${
-          !problemPage ? "max-w-[1200px] mx-auto" : ""
-        }`}
+        className={`flex w-full items-center justify-between ${!problemPage ? "max-w-[1200px] mx-auto" : ""
+          }`}
       >
         <Link href="/" className="h-[22px] flex-1">
           <Image
@@ -60,9 +59,9 @@ const TopBar: React.FC<TopBarProps> = ({ problemPage }) => {
         {problemPage && (
           <div className="flex items-center gap-4 flex-1 justify-center">
             <div className="flex items-center justify-center rounded bg-dark-fill-3  hover:bg-dark-fill-2 h-8 w-8 cursor-pointer"
-            onClick={()=>handleProblemChange(false)}
+              onClick={() => handleProblemChange(false)}
             >
-              <FaChevronCircleLeft  />
+              <FaChevronCircleLeft />
             </div>
             <Link
               href="/"
@@ -74,7 +73,7 @@ const TopBar: React.FC<TopBarProps> = ({ problemPage }) => {
               <p>Problem List</p>
             </Link>
             <div className="flex items-center justify-center rounded bg-dark-fill-3  hover:bg-dark-fill-2 h-8 w-8 cursor-pointer"
-            onClick={()=>handleProblemChange(true)}
+              onClick={() => handleProblemChange(true)}
             >
               <FaChevronCircleRight />
             </div>
@@ -111,13 +110,16 @@ const TopBar: React.FC<TopBarProps> = ({ problemPage }) => {
           {user && problemPage && <Timer />}
           {user && (
             <div className="cursor-pointer group relative ">
-              <Image
-                src="/avatar.png"
-                alt="user-profile"
-                className="h-8 w-8 rounded-full"
-                width={100}
-                height={100}
-              />
+              <Link href="/profile">
+                <Image
+
+                  src="/avatar.png"
+                  alt="user-profile"
+                  className="h-8 w-8 rounded-full"
+                  width={100}
+                  height={100}
+                />
+              </Link>
               <div
                 className="absolute top-10 left-2/4 -translate-x-2/4  mx-auto bg-dark-layer-1 text-brand-orange p-2
                 rounded shadow-lg z-40 group-hover:scale-100 scale-0 transition-all duration-300 ease-in-out"

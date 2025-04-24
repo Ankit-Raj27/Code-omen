@@ -178,7 +178,7 @@ const Signup: React.FC<SignupProps> = () => {
         type="button"
         onClick={handleGoogleSignup}
         className="w-full text-black focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center 
-        bg-red-600 hover:bg-red-500 mt-2"
+        bg-white hover:bg-gray-400 mt-2"
       >
         {googleLoading ? "Loading..." : "Sign up with Google"}
       </button>

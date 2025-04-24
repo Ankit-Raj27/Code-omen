@@ -36,7 +36,7 @@ const Login: React.FC<LoginProps> = () => {
     }
     try {
       const newUser = await signInWithEmailAndPassword(input.email, input.password);
-      if (!newUser) return;
+      if (!newUser) {return};
       router.push("/");
     } catch (error: any) {
       toast.error("Login error, check details!", {
@@ -94,7 +94,7 @@ const Login: React.FC<LoginProps> = () => {
           type="email"
           name="email"
           id="email"
-          className="border-2 outline-none sm:text-sm rounded-lg focus:ring-blue-500 
+          className="border-2 outline-none sm:text-sm rounded-lg focus:ring-blue-600 
             block w-full p-2.5 bg-gray-600 border-gray-500 placeholder-gray-400 text-white"
           placeholder="name@comapny.com"
         />
@@ -119,7 +119,7 @@ const Login: React.FC<LoginProps> = () => {
       <button
         type="submit"
         className="w-full text-black focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center 
-        bg-brand-orange hover:bg-brand-orange-s"
+        bg-brand-orange hover:bg-gray-600"
       >
         {loading ? "Loading..." : "Login"}
       </button>
@@ -127,7 +127,7 @@ const Login: React.FC<LoginProps> = () => {
         type="button"
         onClick={handleGoogleLogin}
         className="w-full text-black focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center 
-        bg-blue-400 hover:bg-blue-600 mt-2"
+        bg-gray-200 hover:bg-gray-600 mt-2"
       >
         {googleLoading ? "Loading..." : "Sign in with Google"}
       </button>
