@@ -7,11 +7,14 @@ import Navbar from "@/components/navbar/Navbar";
 import BlurFade from "@/components/ui/blur-fade";
 import { Carousel } from "@/components/ui/carousel";
 import { NeonGradientCard } from "@/components/ui/neon-gradient-card";
+import { ArrowRight, Code, Database, Sparkles, Trophy, Users } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useRecoilValue } from "recoil";
+import { motion } from 'framer-motion'
+import TrophySection from "@/components/home/TrophySection";
 
 type AuthPageProps = {};
 
@@ -39,48 +42,74 @@ const AuthPage: React.FC<AuthPageProps> = () => {
 
   const slideData = [
     {
-      title: "Mystic Mountains",
-      button: "Explore Component",
+      title: "NeetCode 150",
+      button: "Explore more",
       src: "/dashboard.png",
+      redirectPath: "problems/neetcode150",
     },
     {
-      title: "Urban Dreams",
-      button: "Explore Component",
+      title: "Striver 150",
+      button: "Explore more",
       src: "/dashboard.png",
+      redirectPath: "problems/striver150",
     },
     {
-      title: "Neon Nights",
-      button: "Explore Component",
+      title: "GFG 100",
+      button: "Explore more",
       src: "/dashboard.png",
+      redirectPath: "problems/gfg150",
     },
 
   ];
+
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6 }
+    }
+  }
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2
+      }
+    }
+  }
+
   return (
     <>
       <Navbar />
-      <main className="bg-black">
-        <LandingPage />
+      <main className="bg-black min-h-screen text-white overflow-hidden">
+        <section className="relative pt-20 pb-32 px-4 md:px-8">
+          <div className="max-w-7xl mx-auto relative z-10">
+            <LandingPage />
 
-        <div className="bg-black relative bottom-16">
-          <BlurFade delay={0.25 * 5}>
-            <NeonGradientCard
-              className="max-w-fit h-fit mx-auto"
-              borderSize={1}
-              neonColors={{
-                firstColor: "yellow , orange",
-                secondColor: "blue, green",
-              }}
-            >
-              <Carousel slides={slideData} />
-            </NeonGradientCard>
-          </BlurFade>
-        </div>
+            <div className="bg-black relative bottom-16">
+              <BlurFade delay={0.25 * 5}>
+                <NeonGradientCard
+                  className="max-w-fit h-fit mx-auto"
+                  borderSize={1}
+                  neonColors={{
+                    firstColor: "yellow , orange",
+                    secondColor: "blue, green",
+                  }}
+                >
+                  <Carousel slides={slideData} />
+                </NeonGradientCard>
+              </BlurFade>
+            </div>
+          </div>
+        </section>
 
-        <div>
-          <p>sd,mds,m,sdm</p>
-        </div>
-        {authModal.isOpen && <AuthModals />}
+        <TrophySection />
+
       </main>
+      {authModal.isOpen && <AuthModals />}
     </>
   );
 };

@@ -46,12 +46,12 @@ const TopBar: React.FC<TopBarProps> = ({ problemPage }) => {
         className={`flex w-full items-center justify-between ${!problemPage ? "max-w-[1200px] mx-auto" : ""
           }`}
       >
-        <Link href="/" className="h-[22px] flex-1">
+        <Link href="/" className="object-cover  flex-1">
           <Image
-            src="/21.png"
+            src="/logo.png"
             alt="Logo"
             className="h-full"
-            width={150}
+            width={200}
             height={200}
           />
         </Link>

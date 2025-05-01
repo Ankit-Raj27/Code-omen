@@ -121,13 +121,13 @@
         return;
       }
 
-      if (updating) return;
+      if (updating) {return};
       setUpdating(true);
       await runTransaction(firestore, async (transaction) => {
         const { problemDoc, userDoc, userRef, problemRef } =
           await returnUserAndProblemData(transaction);
         if (userDoc.exists() && problemDoc.exists()) {
-          // already disliked
+          
           if (disliked) {
             transaction.update(userRef, {
               dislikedProblems: userDoc
@@ -181,7 +181,7 @@
         });
         return;
       }
-      if (updating) return;
+      if (updating) {return};
       setUpdating(true);
 
       if (!starred) {
@@ -389,16 +389,17 @@
         if (userSnap.exists()) {
           const data = userSnap.data();
           const {
-            solvedProblems,
-            likedProblems,
-            dislikedProblems,
-            starredProblems,
+            likedProblems = [],
+            dislikedProblems = [],
+            starredProblems = [],
+            solvedProblems = [],
           } = data;
+          
           setData({
-            liked: likedProblems.includes(problemId), // likedProblems["two-sum","jump-game"]
-            disliked: dislikedProblems.includes(problemId),
-            starred: starredProblems.includes(problemId),
-            solved: solvedProblems.includes(problemId),
+            liked: likedProblems.includes(problemId)  ,
+            disliked: dislikedProblems.includes(problemId) ,
+            starred: starredProblems.includes(problemId) ,
+            solved: solvedProblems.includes(problemId) ,
           });
         }
       };

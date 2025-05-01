@@ -12,7 +12,7 @@ import { toast } from "react-toastify";
 import { problems } from "@/utils/problems";
 import { auth, firestore } from "@/Firebase/firebase";
 import { useRouter } from "next/router";
-import { arrayUnion, doc, updateDoc } from "firebase/firestore";
+import { arrayUnion, doc, setDoc, updateDoc } from "firebase/firestore";
 import useLocalStorage from "@/components/hooks/useLocalStorage";
 
 type PlaygroundProps = {
@@ -70,10 +70,12 @@ const Playground: React.FC<PlaygroundProps> = ({
           setTimeout(() => {
             setSuccess(false);
           }, 4000);
+  
           const userRef = doc(firestore, "users", user.uid);
-          await updateDoc(userRef, {
+          await setDoc(userRef, {
             solvedProblems: arrayUnion(pid),
-          });
+          }, { merge: true });
+  
           setSolved(true);
         }
       }
@@ -94,6 +96,7 @@ const Playground: React.FC<PlaygroundProps> = ({
       }
     }
   };
+  
 
   useEffect(() => {
     const code = localStorage.getItem(`code-${pid}`);

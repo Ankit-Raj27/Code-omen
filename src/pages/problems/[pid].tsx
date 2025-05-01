@@ -22,10 +22,6 @@ const ProblemPage: React.FC<ProblemPageProps> = ({ problem }) => {
 };
 export default ProblemPage;
 
-//fetch the local data
-//Static site generation
-// getStaticPath =? creates dynamic routes
-
 export async function getStaticPaths() {
   const paths = Object.keys(problems).map((key) => ({
     params: { pid: key },

@@ -2,7 +2,6 @@ import React from "react";
 import { RainbowButton } from "../ui/rainbow-button";
 import WordFadeIn from "../ui/word-fade-in"
 import { Roboto } from "next/font/google";
-import Link from "next/link";
 import { RoughNotation } from "react-rough-notation";
 import { useSetRecoilState } from "recoil";
 import { authModalState } from "@/atoms/authModalAtom";
