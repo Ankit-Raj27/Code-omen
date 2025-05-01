@@ -7,13 +7,10 @@ import Navbar from "@/components/navbar/Navbar";
 import BlurFade from "@/components/ui/blur-fade";
 import { Carousel } from "@/components/ui/carousel";
 import { NeonGradientCard } from "@/components/ui/neon-gradient-card";
-import { ArrowRight, Code, Database, Sparkles, Trophy, Users } from "lucide-react";
-import Image from "next/image";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useRecoilValue } from "recoil";
-import { motion } from 'framer-motion'
 import TrophySection from "@/components/home/TrophySection";
 
 type AuthPageProps = {};

@@ -41,7 +41,7 @@ const TopBar: React.FC<TopBarProps> = ({ problemPage }) => {
     }
   }
   return (
-    <nav className="relative flex h-[50px] w-full shrink-0 items-center px-5 bg-dark-layer-1 text-dark-gray-7">
+    <nav className="relative flex h-[50px] w-full pt-4 shrink-0 items-center px-5 bg-black text-dark-gray-7">
       <div
         className={`flex w-full items-center justify-between ${!problemPage ? "max-w-[1200px] mx-auto" : ""
           }`}

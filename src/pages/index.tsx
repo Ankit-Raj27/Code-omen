@@ -1,6 +1,4 @@
 "use client"
-
-import Navbar from "@/components/navbar/Navbar"
 import BlurFade from "@/components/ui/blur-fade"
 import { Carousel } from "@/components/ui/miniCarousel"
 import { NeonGradientCard } from "@/components/ui/neon-gradient-card"
@@ -21,11 +19,27 @@ import {
   Trophy,
   User,
 } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import TopBar from "@/components/TopBar/TopBar"
+import { auth } from "@/Firebase/firebase";
+import { useAuthState } from "react-firebase-hooks/auth"
+import { useRouter } from "next/navigation"
 
 const Dashboard = () => {
-  const [progress, setProgress] = useState({
+  const [user, loading, error] = useAuthState(auth);
+  const [pageLoading, setPageLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!user) {
+      setPageLoading(true);
+      router.push("/auth");
+    }
+    if (!loading && !user) {
+      setPageLoading(false);
+    }
+  }, [user, router, loading]);
+  const [progress] = useState({
     neetcode: 35,
     striver: 22,
     gfg: 15,
@@ -116,7 +130,7 @@ const Dashboard = () => {
                   <Fire className="text-amber-500" size={20} />
                   <span className="text-amber-400 font-medium">{userStats.streak} day streak</span>
                 </div>
-                <Button variant="outline" className="border-gray-700 hover:border-gray-500">
+                <Button variant="outline" className="border-gray-700 text-black hover:bg-gray-300 hover:border-gray-500">
                   <User size={18} className="mr-2" /> Profile
                 </Button>
               </div>
@@ -156,7 +170,7 @@ const Dashboard = () => {
 
               {/* Progress Tracking */}
               <motion.div variants={fadeInUp}>
-                <h2 className="text-2xl font-bold mb-4 flex items-center">
+                <h2 className="text-2xl  font-bold mb-4 flex items-center">
                   <LineChart className="mr-2 text-blue-400" size={24} />
                   Your Progress
                 </h2>
@@ -164,7 +178,7 @@ const Dashboard = () => {
                   <div className="space-y-6">
                     <div>
                       <div className="flex justify-between mb-2">
-                        <span className="font-medium">NeetCode 150</span>
+                        <span className="font-medium text-white ">NeetCode 150</span>
                         <span className="text-gray-400">{progress.neetcode}/150 completed</span>
                       </div>
                       <Progress value={progress.neetcode} max={150} className="h-2 bg-gray-800">
@@ -174,7 +188,7 @@ const Dashboard = () => {
 
                     <div>
                       <div className="flex justify-between mb-2">
-                        <span className="font-medium">Striver 150</span>
+                        <span className="font-medium text-white">Striver 150</span>
                         <span className="text-gray-400">{progress.striver}/150 completed</span>
                       </div>
                       <Progress value={progress.striver} max={150} className="h-2 bg-gray-800">
@@ -184,7 +198,7 @@ const Dashboard = () => {
 
                     <div>
                       <div className="flex justify-between mb-2">
-                        <span className="font-medium">GFG 100</span>
+                        <span className="font-medium text-white">GFG 100</span>
                         <span className="text-gray-400">{progress.gfg}/100 completed</span>
                       </div>
                       <Progress value={progress.gfg} max={100} className="h-2 bg-gray-800">
@@ -207,7 +221,7 @@ const Dashboard = () => {
                   <Clock className="mr-2 text-green-400" size={24} />
                   Recent Activity
                 </h2>
-                <Card className="bg-gray-900/50 border-gray-800 overflow-hidden">
+                <Card className="bg-gray-900/50 text-white border-gray-800 overflow-hidden">
                   <div className="divide-y divide-gray-800">
                     {recentActivity.map((activity, index) => (
                       <motion.div
@@ -228,13 +242,12 @@ const Dashboard = () => {
                         </div>
                         <div>
                           <span
-                            className={`px-2 py-1 rounded-full text-xs ${
-                              activity.difficulty === "Easy"
-                                ? "bg-green-500/20 text-green-400"
-                                : activity.difficulty === "Medium"
-                                  ? "bg-yellow-500/20 text-yellow-400"
-                                  : "bg-red-500/20 text-red-400"
-                            }`}
+                            className={`px-2 py-1 rounded-full text-xs ${activity.difficulty === "Easy"
+                              ? "bg-green-500/20 text-green-400"
+                              : activity.difficulty === "Medium"
+                                ? "bg-yellow-500/20 text-yellow-400"
+                                : "bg-red-500/20 text-red-400"
+                              }`}
                           >
                             {activity.difficulty}
                           </span>
@@ -263,7 +276,7 @@ const Dashboard = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-gray-800/50 p-4 rounded-lg text-center">
                       <p className="text-gray-400 text-sm">Problems Solved</p>
-                      <p className="text-2xl font-bold mt-1">{userStats.totalSolved}</p>
+                      <p className="text-2xl text-white font-bold mt-1">{userStats.totalSolved}</p>
                     </div>
                     <div className="bg-gray-800/50 p-4 rounded-lg text-center">
                       <p className="text-gray-400 text-sm">Current Streak</p>
@@ -271,7 +284,7 @@ const Dashboard = () => {
                     </div>
                     <div className="bg-gray-800/50 p-4 rounded-lg text-center">
                       <p className="text-gray-400 text-sm">Global Rank</p>
-                      <p className="text-2xl font-bold mt-1">#{userStats.ranking}</p>
+                      <p className="text-2xl text-white font-bold mt-1">#{userStats.ranking}</p>
                     </div>
                     <div className="bg-gray-800/50 p-4 rounded-lg text-center">
                       <p className="text-gray-400 text-sm">Badges Earned</p>
@@ -295,15 +308,14 @@ const Dashboard = () => {
                       return (
                         <div
                           key={i}
-                          className={`aspect-square rounded-sm ${
-                            activityLevel === 0
-                              ? "bg-gray-800"
-                              : activityLevel === 1
-                                ? "bg-green-900"
-                                : activityLevel === 2
-                                  ? "bg-green-700"
-                                  : "bg-green-500"
-                          }`}
+                          className={`aspect-square rounded-sm ${activityLevel === 0
+                            ? "bg-gray-800"
+                            : activityLevel === 1
+                              ? "bg-green-900"
+                              : activityLevel === 2
+                                ? "bg-green-700"
+                                : "bg-green-500"
+                            }`}
                           title={`${activityLevel} problems solved`}
                         />
                       )
@@ -315,11 +327,11 @@ const Dashboard = () => {
 
               {/* Recommended Problems */}
               <motion.div variants={fadeInUp}>
-                <h2 className="text-2xl font-bold mb-4 flex items-center">
+                <h2 className="text-2xl text-white font-bold mb-4 flex items-center">
                   <Star className="mr-2 text-yellow-400" size={24} />
                   Recommended For You
                 </h2>
-                <Card className="bg-gray-900/50 border-gray-800 overflow-hidden">
+                <Card className="bg-gray-900/50 text-white border-gray-800 overflow-hidden">
                   <div className="divide-y divide-gray-800">
                     {recommendedProblems.map((problem, index) => (
                       <motion.div
@@ -330,13 +342,12 @@ const Dashboard = () => {
                         <div className="flex justify-between items-start mb-2">
                           <p className="font-medium">{problem.name}</p>
                           <span
-                            className={`px-2 py-1 rounded-full text-xs ${
-                              problem.difficulty === "Easy"
-                                ? "bg-green-500/20 text-green-400"
-                                : problem.difficulty === "Medium"
-                                  ? "bg-yellow-500/20 text-yellow-400"
-                                  : "bg-red-500/20 text-red-400"
-                            }`}
+                            className={`px-2 py-1 rounded-full text-xs ${problem.difficulty === "Easy"
+                              ? "bg-green-500/20 text-green-400"
+                              : problem.difficulty === "Medium"
+                                ? "bg-yellow-500/20 text-yellow-400"
+                                : "bg-red-500/20 text-red-400"
+                              }`}
                           >
                             {problem.difficulty}
                           </span>
