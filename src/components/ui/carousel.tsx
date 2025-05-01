@@ -5,6 +5,10 @@ import Image from "next/image";
 import BlurFade from "./blur-fade";
 import { NeonGradientCard } from "./neon-gradient-card";
 import { useRouter } from "next/router";
+import { useSetRecoilState } from "recoil";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "@/Firebase/firebase";
+import { authModalState } from "@/atoms/authModalAtom";
 
 interface SlideData {
     title: string;
@@ -21,6 +25,7 @@ interface SlideProps {
 }
 
 const Slide = ({ slide, index, current, handleSlideClick }: SlideProps) => {
+    
     const router = useRouter();
     const slideRef = useRef<HTMLLIElement>(null);
 
@@ -69,6 +74,21 @@ const Slide = ({ slide, index, current, handleSlideClick }: SlideProps) => {
     };
 
     const { src, button, title, } = slide;
+
+    const setAuthModalState = useSetRecoilState(authModalState);
+const [user] = useAuthState(auth);
+
+const handleButtonClick = () => {
+  if (user) {
+    router.push(slide.redirectPath);
+  } else {
+    setAuthModalState((prev) => ({
+      ...prev,
+      isOpen: true,
+      redirectPath: slide.redirectPath, // store for redirect post-login
+    }));
+  }
+};
 
     return (
         <div className="[perspective:1200px] [transform-style:preserve-3d]">
@@ -123,7 +143,7 @@ const Slide = ({ slide, index, current, handleSlideClick }: SlideProps) => {
                     </h2>
                     <div className="flex justify-center">
                         <button className="mt-6  px-4 py-2 w-fit mx-auto sm:text-sm text-black bg-white h-12 border border-transparent text-xs flex justify-center items-center rounded-2xl hover:shadow-lg transition duration-200 shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)]"
-                            onClick={() => router.push(slide.redirectPath)}
+                            onClick={handleButtonClick}
                         >
                             {button}
                         </button>

@@ -13,6 +13,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { useRecoilValue } from "recoil";
 import TrophySection from "@/components/home/TrophySection";
 
+
 type AuthPageProps = {};
 
 const AuthPage: React.FC<AuthPageProps> = () => {
@@ -20,6 +21,7 @@ const AuthPage: React.FC<AuthPageProps> = () => {
   const [user, loading, error] = useAuthState(auth);
   const [pageLoading, setPageLoading] = useState(true);
   const router = useRouter();
+  
 
   useEffect(() => {
     if (user) {

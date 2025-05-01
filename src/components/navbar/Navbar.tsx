@@ -2,20 +2,20 @@ import { authModalState } from "@/atoms/authModalAtom";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import { useSetRecoilState, useRecoilValue } from "recoil"; // <-- Added useRecoilValue
+import { useSetRecoilState, useRecoilValue } from "recoil"; //
 
 type NavbarProps = {};
 
 const Navbar: React.FC<NavbarProps> = () => {
   const setModalState = useSetRecoilState(authModalState);
-  const modalState = useRecoilValue(authModalState); // <-- read modal state
+  const modalState = useRecoilValue(authModalState); 
 
   const handleClick = () => {
     setModalState((prev) => ({ ...prev, isOpen: true }));
   };
 
   return (
-    <div className={`bg-black object-fit flex items-center justify-between sm:px-12 px-2 md:px-24 hover:select-none ${modalState.isOpen ? "blur-sm" : ""} transition-all duration-300`}>
+    <div className={`bg-black object-fit flex items-center justify-between sm:px-12 px-2 md:px-24 hover:select-none ${modalState.isOpen ? "backdrop-blur-md" : ""} transition-all duration-300`}>
       <Link href="/" className="flex items-center justify-center">
         <Image
           src="/logo1.png"

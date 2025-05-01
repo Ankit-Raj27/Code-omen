@@ -87,7 +87,7 @@ export function Carousel({ slides, isLoading = false }: CarouselProps) {
       {/* Slide Content */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={currentIndex}
+          key={slides[currentIndex].id} // More stable key
           initial={{ opacity: 0, x: 100 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -100 }}
@@ -100,21 +100,22 @@ export function Carousel({ slides, isLoading = false }: CarouselProps) {
               alt={slides[currentIndex].title}
               fill
               className="object-cover"
-              priority
+              priority={currentIndex === 0} // Only prioritize the first image
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-6">
-              <h4 className="text-2xl md:text-3xl font-bold text-white mb-4">{slides[currentIndex].title}</h4>
+            <div className="absolute inset-0  bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-6">
+              <h4 className="text-2xl md:text-3xl font-bold text-white mb-4">
+                {slides[currentIndex].title}
+              </h4>
               <button
-                className="inline-flex items-center justify-center px-6 py-2 bg-white text-black font-medium rounded-md hover:bg-gray-200 transition-colors w-fit"
+                className="inline-flex z-10 items-center justify-center px-6 py-2 bg-white text-black font-medium rounded-md hover:bg-gray-200 transition-colors w-fit"
                 onClick={() => router.push(slides[currentIndex].redirectPath)}
               >
-                
-                  {slides[currentIndex].button}
-                
+                {slides[currentIndex].button}
               </button>
             </div>
           </div>
         </motion.div>
+
       </AnimatePresence>
 
       {/* Slide Indicators */}
