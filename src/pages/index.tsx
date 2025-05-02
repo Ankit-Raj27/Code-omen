@@ -130,9 +130,6 @@ const Dashboard = () => {
                   <Fire className="text-amber-500" size={20} />
                   <span className="text-amber-400 font-medium">{userStats.streak} day streak</span>
                 </div>
-                <Button variant="outline" className="border-gray-700 text-black hover:bg-gray-300 hover:border-gray-500">
-                  <User size={18} className="mr-2" /> Profile
-                </Button>
               </div>
             </motion.div>
           </div>
@@ -266,34 +263,6 @@ const Dashboard = () => {
 
             {/* Right Column - Stats & Recommendations */}
             <motion.div className="space-y-8" initial="hidden" animate="visible" variants={staggerContainer}>
-              {/* User Stats */}
-              <motion.div variants={fadeInUp}>
-                <h2 className="text-2xl font-bold mb-4 flex items-center">
-                  <Trophy className="mr-2 text-amber-400" size={24} />
-                  Your Stats
-                </h2>
-                <Card className="bg-gray-900/50 border-gray-800 p-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-gray-800/50 p-4 rounded-lg text-center">
-                      <p className="text-gray-400 text-sm">Problems Solved</p>
-                      <p className="text-2xl text-white font-bold mt-1">{userStats.totalSolved}</p>
-                    </div>
-                    <div className="bg-gray-800/50 p-4 rounded-lg text-center">
-                      <p className="text-gray-400 text-sm">Current Streak</p>
-                      <p className="text-2xl font-bold mt-1 text-amber-400">{userStats.streak} days</p>
-                    </div>
-                    <div className="bg-gray-800/50 p-4 rounded-lg text-center">
-                      <p className="text-gray-400 text-sm">Global Rank</p>
-                      <p className="text-2xl text-white font-bold mt-1">#{userStats.ranking}</p>
-                    </div>
-                    <div className="bg-gray-800/50 p-4 rounded-lg text-center">
-                      <p className="text-gray-400 text-sm">Badges Earned</p>
-                      <p className="text-2xl font-bold mt-1 text-purple-400">{userStats.badges}</p>
-                    </div>
-                  </div>
-                </Card>
-              </motion.div>
-
               {/* Calendar */}
               <motion.div variants={fadeInUp}>
                 <h2 className="text-2xl font-bold mb-4 flex items-center">

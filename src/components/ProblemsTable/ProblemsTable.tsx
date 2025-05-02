@@ -12,8 +12,8 @@ import {
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { FaRegCheckCircle, FaYoutube } from "react-icons/fa";
-import { IoClose, IoLogoYoutube, IoPlayBackCircle } from "react-icons/io5";
+import { FaRegCheckCircle } from "react-icons/fa";
+import { IoClose, IoLogoYoutube } from "react-icons/io5";
 import YouTube from "react-youtube";
 
 type ProblemsTableProps = {
