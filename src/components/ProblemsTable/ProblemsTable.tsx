@@ -49,7 +49,7 @@ const ProblemsTable: React.FC<ProblemsTableProps> = ({
 
   return (
     <>
-      <tbody className="text-white">
+      <tbody className="text-white ">
         {problems.map((problems, idx) => {
           const difficultyColor =
             problems.difficulty === "Easy"

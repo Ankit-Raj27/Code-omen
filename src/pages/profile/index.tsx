@@ -12,23 +12,23 @@ export default function ProfilePage() {
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        setUserId(user.uid) // Set the user ID when authenticated
+        setUserId(user.uid) 
       } else {
-        setUserId(null) // If not authenticated, reset userId
+        setUserId(null) 
       }
-      setLoading(false) // Set loading to false once the auth state is determined
+      setLoading(false) 
     })
 
-    // Clean up the subscription on component unmount
+
     return () => unsubscribe()
   }, [])
 
   if (loading) {
-    return <div>Loading...</div> // Display loading state until the user is authenticated
+    return <div>Loading...</div> 
   }
 
   if (!userId) {
-    return <div>Please log in to view your profile.</div> // Show a message if the user is not authenticated
+    return <div>Please log in to view your profile.</div> 
   }
 
   return <>

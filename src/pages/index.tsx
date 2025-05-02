@@ -49,22 +49,22 @@ const Dashboard = () => {
     {
       id: "1",
       title: "NeetCode 150",
-      button: "Explore more",
-      src: "/dashboard.png",
+      button: "Code here!",
+      src: "/neetcode150.jpg",
       redirectPath: "problems/neetcode150",
     },
     {
       id: "2",
       title: "Striver 150",
-      button: "Explore more",
-      src: "/dashboard.png",
+      button: "Code here!",
+      src: "/striver150.png",
       redirectPath: "problems/striver150",
     },
     {
       id: "3",
       title: "GFG 100",
-      button: "Explore more",
-      src: "/dashboard.png",
+      button: "Code here!",
+      src: "/gfg150.png",
       redirectPath: "problems/gfg150",
     },
   ]

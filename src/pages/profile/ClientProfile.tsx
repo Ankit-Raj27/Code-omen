@@ -17,6 +17,7 @@ import { ProblemList } from "@/components/features/ProblemList"
 interface ClientProfileProps {
     userId: string
 }
+
 interface StatsData {
     totalSolved: number;
     totalEasy: number;
@@ -78,13 +79,13 @@ export default function ClientProfile({ userId }: ClientProfileProps) {
     if (error) return <div className="text-red-500">{error}</div>
 
     // Calculate progress percentages for each difficulty level
-    const easyProgress = statsData.totalEasy > 0 ?
+    const easyProgress = statsData.totalEasy > 0 ? 
         (statsData.totalEasy / (statsData.totalProblems || 100)) * 100 : 0
 
-    const mediumProgress = statsData.totalMedium > 0 ?
+    const mediumProgress = statsData.totalMedium > 0 ? 
         (statsData.totalMedium / (statsData.totalProblems || 100)) * 100 : 0
 
-    const hardProgress = statsData.totalHard > 0 ?
+    const hardProgress = statsData.totalHard > 0 ? 
         (statsData.totalHard / (statsData.totalProblems || 100)) * 100 : 0
 
     return (
@@ -155,7 +156,6 @@ export default function ClientProfile({ userId }: ClientProfileProps) {
                             <CardDescription>Track your progress across all difficulty levels</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {/* Pass the callback to receive stats data */}
                             <UserStats onStatsCalculated={handleStatsCalculated} />
                         </CardContent>
                     </Card>
@@ -223,16 +223,16 @@ export default function ClientProfile({ userId }: ClientProfileProps) {
                                 <TabsTrigger value="hard">Hard</TabsTrigger>
                             </TabsList>
                             <TabsContent value="all" className="mt-4">
-                                <ProblemList filter="all" searchQuery={searchQuery} />
+                                <ProblemList filter="all" searchQuery={searchQuery} collection="all" />
                             </TabsContent>
                             <TabsContent value="easy" className="mt-4">
-                                <ProblemList filter="easy" searchQuery={searchQuery} />
+                                <ProblemList filter="easy" searchQuery={searchQuery} collection="striver150" />
                             </TabsContent>
                             <TabsContent value="medium" className="mt-4">
-                                <ProblemList filter="medium" searchQuery={searchQuery} />
+                                <ProblemList filter="medium" searchQuery={searchQuery} collection="neetcode150" />
                             </TabsContent>
                             <TabsContent value="hard" className="mt-4">
-                                <ProblemList filter="hard" searchQuery={searchQuery} />
+                                <ProblemList filter="hard" searchQuery={searchQuery} collection="gfg150" />
                             </TabsContent>
                         </Tabs>
                     </CardContent>

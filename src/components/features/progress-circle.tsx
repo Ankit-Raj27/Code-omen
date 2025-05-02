@@ -12,11 +12,11 @@ export default function ProgressCircle({ value, maxValue, size = 150 }: Progress
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
-    if (!canvasRef.current) return
+    if (!canvasRef.current) {return}
 
     const canvas = canvasRef.current
     const ctx = canvas.getContext("2d")
-    if (!ctx) return
+    if (!ctx) {return}
 
     // Set canvas dimensions
     canvas.width = size

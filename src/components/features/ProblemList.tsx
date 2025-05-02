@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore"
+import { collection as firestoreCollection, doc, getDoc, getDocs, query, where } from "firebase/firestore"
 import { firestore, auth } from "@/Firebase/firebase"
 import { useAuthState } from "react-firebase-hooks/auth"
 import { Badge } from "@/components/ui/badge"
@@ -12,6 +12,7 @@ import { CheckCircle } from "lucide-react"
 interface ProblemListProps {
   filter: 'all' | 'easy' | 'medium' | 'hard'
   searchQuery?: string
+  collection?: string  // Added collection prop
 }
 
 interface Problem {
@@ -22,7 +23,7 @@ interface Problem {
   isSolved?: boolean
 }
 
-export function ProblemList({ filter, searchQuery = "" }: ProblemListProps) {
+export function ProblemList({ filter, searchQuery = "", collection = "problems" }: ProblemListProps) {
   const [problems, setProblems] = useState<Problem[]>([])
   const [loading, setLoading] = useState(true)
   const [user] = useAuthState(auth)
@@ -43,36 +44,38 @@ export function ProblemList({ filter, searchQuery = "" }: ProblemListProps) {
             setSolvedProblems(userSolvedProblems)
           }
         }
-        
-        // Query problems based on filter
-        let problemsQuery = collection(firestore, "problems")
-        
+
+        // Create query for problems based on the filter and collection
+        const problemsCollectionRef = firestoreCollection(firestore, collection)
+        let problemsQuery: any = problemsCollectionRef
+
         if (filter !== "all") {
-          // Convert filter to proper case for Firestore query
           const formattedFilter = filter.charAt(0).toUpperCase() + filter.slice(1).toLowerCase()
-          const filteredQuery = query(problemsQuery, where("difficulty", "==", formattedFilter))
-          const problemsSnapshot = await getDocs(filteredQuery) 
+          problemsQuery = query(problemsCollectionRef, where("difficulty", "==", formattedFilter))
         }
-        
+
         const problemsSnapshot = await getDocs(problemsQuery)
-        
-        let problemsList = problemsSnapshot.docs.map(doc => ({
-          id: doc.id,
-          title: doc.data().title || `Problem ${doc.id}`,
-          difficulty: doc.data().difficulty || "Unknown",
-          tags: doc.data().tags || [],
-          isSolved: userSolvedProblems.includes(doc.id)
-        }))
-        
+
+        let problemsList = problemsSnapshot.docs.map(doc => {
+          const data = doc.data() as { title?: string; difficulty?: string; tags?: string[] }
+          return {
+            id: doc.id,
+            title: data.title || `Problem ${doc.id}`,
+            difficulty: data.difficulty || "Unknown",
+            tags: data.tags || [],
+            isSolved: userSolvedProblems.includes(doc.id)
+          }
+        })
+
         // Apply search filter if provided
         if (searchQuery.trim() !== "") {
-          const query = searchQuery.toLowerCase()
-            problemsList = problemsList.filter((problem: Problem) => 
-            problem.title.toLowerCase().includes(query) || 
-            problem.tags?.some((tag: string) => tag.toLowerCase().includes(query))
-            )
+          const queryLower = searchQuery.toLowerCase()
+          problemsList = problemsList.filter((problem: Problem) => 
+            problem.title.toLowerCase().includes(queryLower) || 
+            problem.tags?.some((tag: string) => tag.toLowerCase().includes(queryLower))
+          )
         }
-        
+
         setProblems(problemsList)
       } catch (error) {
         console.error("Error fetching problems:", error)
@@ -80,9 +83,9 @@ export function ProblemList({ filter, searchQuery = "" }: ProblemListProps) {
         setLoading(false)
       }
     }
-    
+
     fetchProblems()
-  }, [filter, searchQuery, user])
+  }, [filter, searchQuery, user, collection])
 
   if (loading) {
     return <div className="flex justify-center p-4">Loading problems...</div>

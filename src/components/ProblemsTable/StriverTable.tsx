@@ -46,7 +46,7 @@ const Striver150Table: React.FC<ProblemsTableProps> = ({ setLoadingProblems }) =
 
   return (
     <>
-      <tbody className="text-white">
+      <tbody className="text-white ">
         {problems.map((problem, idx) => {
           const difficultyColor =
             problem.difficulty === "Easy"

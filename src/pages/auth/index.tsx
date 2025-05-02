@@ -42,43 +42,24 @@ const AuthPage: React.FC<AuthPageProps> = () => {
   const slideData = [
     {
       title: "NeetCode 150",
-      button: "Explore more",
-      src: "/dashboard.png",
+      button: "Code here!",
+      src: "/neetcode150.jpg",
       redirectPath: "problems/neetcode150",
     },
     {
       title: "Striver 150",
-      button: "Explore more",
-      src: "/dashboard.png",
+      button: "Code here!",
+      src: "/striver150.png",
       redirectPath: "problems/striver150",
     },
     {
       title: "GFG 100",
-      button: "Explore more",
-      src: "/dashboard.png",
+      button: "Code here!",
+      src: "/gfg150.png",
       redirectPath: "problems/gfg150",
     },
 
   ];
-
-  const fadeInUp = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6 }
-    }
-  }
-
-  const staggerContainer = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2
-      }
-    }
-  }
 
   return (
     <>
