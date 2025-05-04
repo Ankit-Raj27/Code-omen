@@ -30,7 +30,7 @@ const LandingContent = (props: Props) => {
 
 
             <p className="text-center font-semibold text-xs md:text-sm lg:text-base">
-                Solve <RoughNotation type="box" show={true} color="yellow"> 1,000+ Problems  </RoughNotation> with video solutions asked in various companies here and crack coding interviews at your dream companies<RoughNotation type="underline" show={true} color="yellow"> completely FREE.</RoughNotation>
+                Solve <RoughNotation type="box" show={true} color="purple"> 500+ Problems  </RoughNotation> with video solutions asked in various companies here and crack coding interviews at your dream companies<RoughNotation type="highlight" show={true} color="green"> completely FREE.</RoughNotation>
             </p>
 
             <button onClick={handleClick} >

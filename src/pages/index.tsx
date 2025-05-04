@@ -101,13 +101,6 @@ const Dashboard = () => {
     { name: "Merge Intervals", difficulty: "Medium", category: "Array" },
   ]
 
-  const userStats = {
-    streak: 7,
-    totalSolved: 87,
-    ranking: 1250,
-    badges: 12,
-  }
-
   return (
     <>
       <TopBar />
@@ -125,12 +118,7 @@ const Dashboard = () => {
                 <h1 className="text-3xl md:text-4xl font-bold mb-2">Welcome back, Coder!</h1>
                 <p className="text-gray-400">Continue your coding journey where you left off</p>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 bg-gradient-to-r from-amber-500/20 to-amber-500/10 px-4 py-2 rounded-lg border border-amber-500/30">
-                  <Fire className="text-amber-500" size={20} />
-                  <span className="text-amber-400 font-medium">{userStats.streak} day streak</span>
-                </div>
-              </div>
+             
             </motion.div>
           </div>
         </section>

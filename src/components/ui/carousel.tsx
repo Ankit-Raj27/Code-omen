@@ -108,7 +108,7 @@ const handleButtonClick = () => {
                 }}
             >
                 <div
-                    className="absolute top-0 left-0 w-full h-full bg-[#1D1F2F] rounded-[1%] overflow-hidden transition-all duration-150 ease-out"
+                    className="absolute top-0 left-0 w-full h-full bg-transparent  overflow-hidden transition-all duration-150 ease-out"
                     style={{
                         transform:
                             current === index
@@ -117,7 +117,7 @@ const handleButtonClick = () => {
                     }}
                 >
                     <Image
-                        className="absolute  inset-0 w-[100%] h-[100%] object-none opacity-100 transition-opacity duration-600 ease-in-out"
+                        className="absolute rounded-full bg-transparent inset-0 w-[100%] h-[100%] object-none opacity-100 transition-opacity duration-600 ease-in-out"
                         style={{
                             opacity: current === index ? 1 : 0.5,
                         }}
@@ -130,7 +130,7 @@ const handleButtonClick = () => {
                         decoding="sync"
                     />
                     {current === index && (
-                        <div className="absolute inset-0 bg-black/30 transition-all duration-1000" />
+                        <div className="absolute inset-0 bg-transparent transition-all duration-1000" />
                     )}
                 </div>
 
