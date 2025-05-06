@@ -129,9 +129,6 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({
     setUpdating(false);
   };
   
-
-
-
   const handleDislike = async () => {
     if (!user) {
       toast.error("You must be logged in to dislike a problem", {
@@ -197,7 +194,6 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({
           }
         }
       } catch (error) {
-        console.error("Error in handleDislike:", error);
         toast.error("Something went wrong, please try again later.", {
           position: "top-left",
           theme: "dark",
@@ -242,7 +238,6 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({
           }
         }
       } catch (error) {
-        console.error("Error in handleStar:", error);
         toast.error("Something went wrong, please try again later.", {
           position: "top-left",
           theme: "dark",
@@ -405,11 +400,11 @@ function useGetCurrentProblem(problemId: string) {
     const getCurrentProblem = async () => {
       setLoading(true);
       
-      // First try to get the problem from "problems" collection (for backward compatibility)
+      //  to get the problem from "problems" collection
       const problemsDocRef = doc(firestore, "problems", problemId);
       let problemDoc = await getDoc(problemsDocRef);
       
-      // If problem not found in "problems" collection, search in the three collections
+      // If problem not found in "problems" collection
       if (!problemDoc.exists()) {
         const collections = ["striver150", "neetcode150", "gfg150"];
         for (const collection of collections) {
@@ -428,7 +423,7 @@ function useGetCurrentProblem(problemId: string) {
         // easy, medium, hard
         setProblemDifficultyClass(
           problem.difficulty === "Easy"
-            ? "bg-olive text-olive"
+            ? "bg-olive text-green"
             : problem.difficulty === "Medium"
             ? "bg-dark-yellow text-dark-yellow"
             : " bg-dark-pink text-dark-pink"

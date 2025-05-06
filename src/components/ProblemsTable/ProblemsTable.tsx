@@ -27,9 +27,22 @@ const ProblemsTable: React.FC<ProblemsTableProps> = ({
     isOpen: false,
     videoId: "",
   });
-
+  const [selectedDifficulty, setSelectedDifficulty] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  
   const problems = useGetProblems(setLoadingProblems);
   const solvedProblems = useGetSolvedProblems();
+  const [categories, setCategories] = useState<string[]>([]);
+
+  
+  const filteredProblems = problems.filter((problem) => {
+    const matchesDifficulty =
+      selectedDifficulty === "All" || problem.difficulty === selectedDifficulty;
+    const matchesCategory =
+      selectedCategory === "All" || problem.category === selectedCategory;
+    return matchesDifficulty && matchesCategory;
+  });
+  
 
   const closeModal = () => {
     setYoutubePlayer({ isOpen: false, videoId: "" });
@@ -49,6 +62,39 @@ const ProblemsTable: React.FC<ProblemsTableProps> = ({
 
   return (
     <>
+    <div className="flex gap-4 mb-4 text-white">
+  <div>
+    <label className="mr-2">Difficulty:</label>
+    <select
+      value={selectedDifficulty}
+      onChange={(e) => setSelectedDifficulty(e.target.value)}
+      className="bg-dark-layer-1 p-2 rounded"
+    >
+      <option>All</option>
+      <option>Easy</option>
+      <option>Medium</option>
+      <option>Hard</option>
+    </select>
+  </div>
+  <div>
+    <label className="mr-2">Category:</label>
+    <select
+      value={selectedCategory}
+      onChange={(e) => setSelectedCategory(e.target.value)}
+      className="bg-dark-layer-1 p-2 rounded"
+    >
+      <option>All</option>
+      {/* Optionally generate categories dynamically from problem list */}
+      <option>Array</option>
+      <option>String</option>
+      <option>Binary Tree</option>
+      <option>Dynamic Programming</option>
+      <option>Graph</option>
+      {/* Add more if needed */}
+    </select>
+  </div>
+</div>
+
       <tbody className="text-white ">
         {problems.map((problems, idx) => {
           const difficultyColor =

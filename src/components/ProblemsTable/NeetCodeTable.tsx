@@ -17,9 +17,11 @@ import YouTube from "react-youtube";
 
 type ProblemsTableProps = {
   setLoadingProblems: React.Dispatch<React.SetStateAction<boolean>>;
+  filter: "all" | "solved" | "unsolved";
 };
 
-const Neetcode150Table: React.FC<ProblemsTableProps> = ({ setLoadingProblems }) => {
+const Neetcode150Table: React.FC<ProblemsTableProps> = ({ setLoadingProblems,filter }) => {
+
   const [youtubePlayer, setYoutubePlayer] = useState({
     isOpen: false,
     videoId: "",
@@ -44,16 +46,25 @@ const Neetcode150Table: React.FC<ProblemsTableProps> = ({ setLoadingProblems }) 
     };
   }, []);
 
+  const filteredProblems = problems.filter((problem) => {
+    if (filter === "solved") {return solvedProblems.includes(problem.id)};
+    if (filter === "unsolved") {return !solvedProblems.includes(problem.id)};
+    return true; // 'all'
+  });
+
+
+
   return (
     <>
+    
       <tbody className="text-white">
-        {problems.map((problem, idx) => {
+        {filteredProblems.map((problem, idx) => {
           const difficultyColor =
             problem.difficulty === "Easy"
-              ? "text-ark-green-s"
+              ? "text-dark-green-s"
               : problem.difficulty === "Medium"
-              ? "text-dark-yellow"
-              : "text-dark-pink";
+                ? "text-dark-yellow"
+                : "text-dark-pink";
           return (
             <tr
               className={`${idx % 2 === 1 ? "bg-dark-layer-1" : ""}`}

@@ -1,7 +1,11 @@
 import { Problem } from "../types/problems";
+import { threeSum } from "./3sum";
+import { containerWithMostWater } from "./container-with-most-water";
 import { containsDuplicate } from "./contains-duplicate";
+import { wordDictionary } from "./design-add-adn-search-words-data-structure";
 import { encodeDecodeStrings } from "./encode-and-decode-strings";
 import { groupAnagrams } from "./group-anagram";
+import { implementTrie } from "./implementing-trie-prefix-tree";
 import { jumpGame } from "./jump-game";
 import { kadaneAlgorithm } from "./kadane's algorithm";
 import { longestConsecutive } from "./longest-consecutive-sequence";
@@ -13,11 +17,14 @@ import { setMatrixZeroes } from "./set-matrix-zero";
 import { spiralMatrix } from "./spiral-traversal-on-a-matrix";
 import { stockBuyAndSell } from "./stock-buy-and-sell";
 import { topKFrequent } from "./top-k-frequent-elements";
+import { trappingRainWater } from "./trapping-rain-water";
 import { twoSum } from "./two-sum";
+import { twoSumSorted } from "./two-sum-two-input-array-is-sorted";
 import { validAnagram } from "./valid-anagrams";
 import { validPalindrome } from "./valid-palindrome";
 import { validParentheses } from "./valid-parentheses";
 import { validSudoku } from "./valid-sudoku";
+import { wordSearchII } from "./words-search-II";
 
 interface ProblemMap{
     [key:string]:Problem;
@@ -41,7 +48,16 @@ export const problems:ProblemMap = {
     "stock-buy-and-sell": stockBuyAndSell,
     "set-matrix-zeroes": setMatrixZeroes,
     "pascal's-triangle": pascalsTriangle,
-    "spiral-on-a-matrix": spiralMatrix
+    "spiral-on-a-matrix": spiralMatrix,
+    "two-sum-two-input-array-is-sorted": twoSumSorted,
+    "3sum" : threeSum,
+    "container-with-most-water": containerWithMostWater,
+    "trapping-rain-water": trappingRainWater,
+    "implementing-trie-prefix-tree":implementTrie,
+    "design-add-adn-search-words-data-structure":wordDictionary,
+    "words-search-II":wordSearchII
+
+
 
 
     

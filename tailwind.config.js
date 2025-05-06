@@ -27,7 +27,7 @@ module.exports = {
   			'dark-yellow': 'rgb(255 192 30)',
   			'card-upper': 'rgb(180, 180, 184)',
   			'dark-pink': 'rgb(255 55 95)',
-  			olive: 'rgb(0, 184, 163)',
+  			'olive': 'rgb(0, 184, 163)',
   			'dark-green-s': 'rgb(44 187 93)',
   			'dark-blue-s': 'rgb(10 132 255)',
   			background: 'hsl(var(--background))',
