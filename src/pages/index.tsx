@@ -9,41 +9,162 @@ import { motion } from "framer-motion"
 import {
   ArrowRight,
   BookOpen,
-  Calendar,
   CheckCircle2,
   Clock,
   Code,
-  FlameIcon as Fire,
   LineChart,
   Star,
-  Trophy,
-  User,
 } from "lucide-react"
 import { useEffect, useState } from "react"
 import TopBar from "@/components/TopBar/TopBar"
-import { auth } from "@/Firebase/firebase";
+import { auth, firestore } from "@/Firebase/firebase"
+import { getUserData } from "@/Firebase/firebase"
 import { useAuthState } from "react-firebase-hooks/auth"
 import { useRouter } from "next/navigation"
+import { collection, getDocs, query, orderBy, limit, where } from "firebase/firestore"
+import UserActivityComponent from "@/components/features/UserActivityComponent"
+import Loading from "@/components/features/loading"
+
 
 const Dashboard = () => {
   const [user, loading, error] = useAuthState(auth);
   const [pageLoading, setPageLoading] = useState(true);
+
+  interface Problem {
+    id: string;
+    name: string;
+    difficulty: string;
+    category: string;
+    source: string;
+  }
+  
+  interface UserData {
+    totalSolved: number;
+    totalProblems: number;
+    easySolved: number;
+    totalEasy: number;
+    mediumSolved: number;
+    totalMedium: number;
+    hardSolved: number;
+    totalHard: number;
+    collections: {
+      neetcode150: { solved: number; total: number };
+      striver150: { solved: number; total: number };
+      gfg150: { solved: number; total: number };
+      problems: { solved: number; total: number };
+    };
+
+  }
+
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [recommendedProblems, setRecommendedProblems] = useState<Problem[]>([]);
   const router = useRouter();
+
 
   useEffect(() => {
     if (!user) {
       setPageLoading(true);
       router.push("/auth");
+      return;
     }
-    if (!loading && !user) {
+    
+    if (!loading && user) {
       setPageLoading(false);
+      fetchUserData();
     }
   }, [user, router, loading]);
-  const [progress] = useState({
-    neetcode: 35,
-    striver: 22,
-    gfg: 15,
-  })
+
+  const fetchUserData = async () => {
+    try {
+      if (!user) {
+        console.error("User is not available.");
+        return;
+      }
+      const data = await getUserData(user.uid);
+      setUserData(data);
+      
+      // Fetch recent activity from user's solved problems
+      const recentActivityData = data.recentActivity.map(item => ({
+        problem: item.problemName,
+        problemId: item.problemId,
+        difficulty: "Easy", // Default value, will be updated below
+        time: item.timestamp,
+        completed: true,
+        source: item.source
+      }));
+      
+      // For each problem in recent activity, fetch its difficulty
+      for (let i = 0; i < recentActivityData.length; i++) {
+        try {
+          // Try to get problem details from its source collection
+          const source = recentActivityData[i].source || "problems";
+          const problemsRef = collection(firestore, source);
+          const q = query(problemsRef, where("id", "==", recentActivityData[i].problemId));
+          const querySnapshot = await getDocs(q);
+          
+          if (!querySnapshot.empty) {
+            const problemData = querySnapshot.docs[0].data();
+            recentActivityData[i].difficulty = problemData.difficulty || "Easy";
+          }
+        } catch (err) {
+          console.warn("Error fetching problem details:", err);
+        }
+      }
+
+      await fetchRecommendedProblems();
+      
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
+  const fetchRecommendedProblems = async () => {
+    try {
+      const collections = ["neetcode150", "striver150", "gfg150"];
+      interface Problem {
+        id: string;
+        name: string;
+        difficulty: string;
+        category: string;
+        source: string;
+      }
+
+      let allProblems: Problem[] = [];
+      const solvedIds = new Set();
+      
+      if (user) {
+        const solvedProblemsRef = collection(firestore, "users", user.uid, "solvedProblems");
+        const solvedProblemsSnap = await getDocs(solvedProblemsRef);
+        solvedProblemsSnap.docs.forEach(doc => solvedIds.add(doc.id));
+      }
+      
+      // Get problems from all collections
+      for (const collectionName of collections) {
+        const problemsRef = collection(firestore, collectionName);
+        const problemsSnap = await getDocs(query(problemsRef, limit(20)));
+        
+        problemsSnap.docs.forEach(doc => {
+          const problem = doc.data();
+          // Only add if not already solved
+          if (!solvedIds.has(doc.id)) {
+            allProblems.push({
+              id: doc.id,
+              name: problem.title,
+              difficulty: problem.difficulty || "Medium",
+              category: problem.category || "Algorithm",
+              source: collectionName
+            });
+          }
+        });
+      }
+      
+      // Shuffle and select a few problems
+      allProblems.sort(() => 0.5 - Math.random());
+      setRecommendedProblems(allProblems.slice(0, 3));
+    } catch (error) {
+      console.error("Error fetching recommended problems:", error);
+    }
+  };
 
   const slideData = [
     {
@@ -88,18 +209,11 @@ const Dashboard = () => {
     },
   }
 
-  const recentActivity = [
-    { problem: "Two Sum", difficulty: "Easy", time: "2 hours ago", completed: true },
-    { problem: "Valid Parentheses", difficulty: "Medium", time: "Yesterday", completed: true },
-    { problem: "Merge K Sorted Lists", difficulty: "Hard", time: "2 days ago", completed: false },
-    { problem: "LRU Cache", difficulty: "Medium", time: "3 days ago", completed: true },
-  ]
-
-  const recommendedProblems = [
-    { name: "Longest Substring Without Repeating Characters", difficulty: "Medium", category: "String" },
-    { name: "Maximum Subarray", difficulty: "Easy", category: "Array" },
-    { name: "Merge Intervals", difficulty: "Medium", category: "Array" },
-  ]
+  if (pageLoading || loading) {
+    return (
+      <Loading />
+    );
+  }
 
   return (
     <>
@@ -115,10 +229,11 @@ const Dashboard = () => {
               variants={fadeInUp}
             >
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold mb-2">Welcome back, Coder!</h1>
+                <h1 className="text-3xl md:text-4xl font-bold mb-2">
+                  Welcome back, {user?.displayName || 'Coder'}!
+                </h1>
                 <p className="text-gray-400">Continue your coding journey where you left off</p>
               </div>
-             
             </motion.div>
           </div>
         </section>
@@ -155,7 +270,7 @@ const Dashboard = () => {
 
               {/* Progress Tracking */}
               <motion.div variants={fadeInUp}>
-                <h2 className="text-2xl  font-bold mb-4 flex items-center">
+                <h2 className="text-2xl font-bold mb-4 flex items-center">
                   <LineChart className="mr-2 text-blue-400" size={24} />
                   Your Progress
                 </h2>
@@ -163,10 +278,17 @@ const Dashboard = () => {
                   <div className="space-y-6">
                     <div>
                       <div className="flex justify-between mb-2">
-                        <span className="font-medium text-white ">NeetCode 150</span>
-                        <span className="text-gray-400">{progress.neetcode}/150 completed</span>
+                        <span className="font-medium text-white">NeetCode 150</span>
+                        <span className="text-gray-400">
+                          {userData?.collections?.neetcode150?.solved || 0}/
+                          {userData?.collections?.neetcode150?.total || 150} completed
+                        </span>
                       </div>
-                      <Progress value={progress.neetcode} max={150} className="h-2 bg-gray-800">
+                      <Progress 
+                        value={userData?.collections?.neetcode150?.solved || 0} 
+                        max={userData?.collections?.neetcode150?.total || 150} 
+                        className="h-2 bg-gray-800"
+                      >
                         <div className="h-full bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"></div>
                       </Progress>
                     </div>
@@ -174,9 +296,16 @@ const Dashboard = () => {
                     <div>
                       <div className="flex justify-between mb-2">
                         <span className="font-medium text-white">Striver 150</span>
-                        <span className="text-gray-400">{progress.striver}/150 completed</span>
+                        <span className="text-gray-400">
+                          {userData?.collections?.striver150?.solved || 0}/
+                          {userData?.collections?.striver150?.total || 150} completed
+                        </span>
                       </div>
-                      <Progress value={progress.striver} max={150} className="h-2 bg-gray-800">
+                      <Progress 
+                        value={userData?.collections?.striver150?.solved || 0} 
+                        max={userData?.collections?.striver150?.total || 150} 
+                        className="h-2 bg-gray-800"
+                      >
                         <div className="h-full bg-gradient-to-r from-green-500 to-teal-500 rounded-full"></div>
                       </Progress>
                     </div>
@@ -184,16 +313,33 @@ const Dashboard = () => {
                     <div>
                       <div className="flex justify-between mb-2">
                         <span className="font-medium text-white">GFG 100</span>
-                        <span className="text-gray-400">{progress.gfg}/100 completed</span>
+                        <span className="text-gray-400">
+                          {userData?.collections?.gfg150?.solved || 0}/
+                          {userData?.collections?.gfg150?.total || 100} completed
+                        </span>
                       </div>
-                      <Progress value={progress.gfg} max={100} className="h-2 bg-gray-800">
+                      <Progress 
+                        value={userData?.collections?.gfg150?.solved || 0} 
+                        max={userData?.collections?.gfg150?.total || 100} 
+                        className="h-2 bg-gray-800"
+                      >
                         <div className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full"></div>
                       </Progress>
                     </div>
                   </div>
 
-                  <div className="mt-6 flex justify-end">
-                    <Button variant="outline" className="border-gray-700 hover:border-gray-500">
+                  <div className="mt-6 flex justify-between items-center">
+                    <div className="text-sm text-gray-400">
+                      <span className="text-lg font-semibold text-white">{userData?.totalSolved || 0}</span>
+                      out of
+                      <span className="text-lg font-semibold text-white">{userData?.totalProblems || 0}</span>
+                      total problems solved
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      className="border-gray-700 hover:border-gray-500"
+                      onClick={() => router.push('/progress')}
+                    >
                       View Detailed Progress <ArrowRight size={16} className="ml-2" />
                     </Button>
                   </div>
@@ -206,82 +352,12 @@ const Dashboard = () => {
                   <Clock className="mr-2 text-green-400" size={24} />
                   Recent Activity
                 </h2>
-                <Card className="bg-gray-900/50 text-white border-gray-800 overflow-hidden">
-                  <div className="divide-y divide-gray-800">
-                    {recentActivity.map((activity, index) => (
-                      <motion.div
-                        key={index}
-                        className="p-4 flex items-center justify-between hover:bg-gray-800/30 transition-colors"
-                        whileHover={{ x: 5 }}
-                      >
-                        <div className="flex items-center gap-3">
-                          {activity.completed ? (
-                            <CheckCircle2 className="text-green-500" size={20} />
-                          ) : (
-                            <Code className="text-blue-400" size={20} />
-                          )}
-                          <div>
-                            <p className="font-medium">{activity.problem}</p>
-                            <p className="text-sm text-gray-400">{activity.time}</p>
-                          </div>
-                        </div>
-                        <div>
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs ${activity.difficulty === "Easy"
-                              ? "bg-green-500/20 text-green-400"
-                              : activity.difficulty === "Medium"
-                                ? "bg-yellow-500/20 text-yellow-400"
-                                : "bg-red-500/20 text-red-400"
-                              }`}
-                          >
-                            {activity.difficulty}
-                          </span>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                  <div className="p-4 border-t border-gray-800 flex justify-center">
-                    <Button variant="ghost" className="text-gray-400 hover:text-white">
-                      View All Activity <ArrowRight size={16} className="ml-2" />
-                    </Button>
-                  </div>
-                </Card>
+                <UserActivityComponent />
               </motion.div>
             </motion.div>
 
-            {/* Right Column - Stats & Recommendations */}
+            {/* Right Column - Recommendations */}
             <motion.div className="space-y-8" initial="hidden" animate="visible" variants={staggerContainer}>
-              {/* Calendar */}
-              <motion.div variants={fadeInUp}>
-                <h2 className="text-2xl font-bold mb-4 flex items-center">
-                  <Calendar className="mr-2 text-blue-400" size={24} />
-                  Coding Calendar
-                </h2>
-                <Card className="bg-gray-900/50 border-gray-800 p-6">
-                  <div className="grid grid-cols-7 gap-1">
-                    {Array.from({ length: 28 }).map((_, i) => {
-                      // Random activity level: 0 = none, 1-3 = low to high
-                      const activityLevel = Math.floor(Math.random() * 4)
-                      return (
-                        <div
-                          key={i}
-                          className={`aspect-square rounded-sm ${activityLevel === 0
-                            ? "bg-gray-800"
-                            : activityLevel === 1
-                              ? "bg-green-900"
-                              : activityLevel === 2
-                                ? "bg-green-700"
-                                : "bg-green-500"
-                            }`}
-                          title={`${activityLevel} problems solved`}
-                        />
-                      )
-                    })}
-                  </div>
-                  <p className="text-xs text-gray-400 mt-4 text-center">Your coding activity over the last 28 days</p>
-                </Card>
-              </motion.div>
-
               {/* Recommended Problems */}
               <motion.div variants={fadeInUp}>
                 <h2 className="text-2xl text-white font-bold mb-4 flex items-center">
@@ -290,31 +366,45 @@ const Dashboard = () => {
                 </h2>
                 <Card className="bg-gray-900/50 text-white border-gray-800 overflow-hidden">
                   <div className="divide-y divide-gray-800">
-                    {recommendedProblems.map((problem, index) => (
-                      <motion.div
-                        key={index}
-                        className="p-4 hover:bg-gray-800/30 transition-colors"
-                        whileHover={{ x: 5 }}
-                      >
-                        <div className="flex justify-between items-start mb-2">
-                          <p className="font-medium">{problem.name}</p>
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs ${problem.difficulty === "Easy"
-                              ? "bg-green-500/20 text-green-400"
-                              : problem.difficulty === "Medium"
-                                ? "bg-yellow-500/20 text-yellow-400"
-                                : "bg-red-500/20 text-red-400"
+                    {recommendedProblems.length > 0 ? (
+                      recommendedProblems.map((problem, index) => (
+                        <motion.div
+                          key={index}
+                          className="p-4 hover:bg-gray-800/30 transition-colors cursor-pointer"
+                          whileHover={{ x: 5 }}
+                          onClick={() => router.push(`/problem/${problem.source}/${problem.id}`)}
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <p className="font-medium">{problem.name}</p>
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs ${
+                                problem.difficulty.toLowerCase() === "easy"
+                                  ? "bg-green-500/20 text-green-400"
+                                  : problem.difficulty.toLowerCase() === "medium"
+                                    ? "bg-yellow-500/20 text-yellow-400"
+                                    : "bg-red-500/20 text-red-400"
                               }`}
-                          >
-                            {problem.difficulty}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-400">Category: {problem.category}</p>
-                      </motion.div>
-                    ))}
+                            >
+                              {problem.difficulty}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <p className="text-sm text-gray-400">Category: {problem.category}</p>
+                            <p className="text-xs text-gray-500">{problem.source}</p>
+                          </div>
+                        </motion.div>
+                      ))
+                    ) : (
+                      <div className="p-6 text-center text-gray-400">
+                        Loading recommendations...
+                      </div>
+                    )}
                   </div>
                   <div className="p-4 border-t border-gray-800">
-                    <Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+                    <Button 
+                      className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                      onClick={() => router.push('/problems/all')}
+                    >
                       Start Solving
                     </Button>
                   </div>

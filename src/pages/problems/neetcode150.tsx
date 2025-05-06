@@ -2,11 +2,9 @@ import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "@/Firebase/firebase"; // Firebase auth import
-import ProblemsTable from "@/components/ProblemsTable/ProblemsTable";
-import Image from "next/image";
 import useHasMounted from "@/components/hooks/useHasMounted";
 import TopBar from "@/components/TopBar/TopBar";
-import { SparklesCore } from "@/components/features/loading"; // Optional loading spinner
+import { SparklesCore } from "@/components/features/SparkleCore"; // Optional loading spinner
 import Striver150Table from "@/components/ProblemsTable/StriverTable";
 import Neetcode150Table from "@/components/ProblemsTable/NeetCodeTable";
 
@@ -80,7 +78,7 @@ export default function Home() {
                 </tr>
               </thead>
             )}
-            <Neetcode150Table setLoadingProblems={setLoadingProblems} />
+            <Neetcode150Table setLoadingProblems={setLoadingProblems} filter="all" />
           </table>
         </div>
       </main>

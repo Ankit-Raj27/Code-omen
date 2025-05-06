@@ -1,7 +1,7 @@
 import { auth } from "@/Firebase/firebase";
 import { authModalState } from "@/atoms/authModalAtom";
 import AuthModals from "@/components/Modals/AuthModals";
-import { SparklesCore } from "@/components/features/loading";
+// import { SparklesCore } from "@/components/features/Loading";
 import { LandingPage } from "@/components/home/LandingPage";
 import Navbar from "@/components/navbar/Navbar";
 import BlurFade from "@/components/ui/blur-fade";
@@ -12,6 +12,7 @@ import React, { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useRecoilValue } from "recoil";
 import TrophySection from "@/components/home/TrophySection";
+import { SparklesCore } from "@/components/features/SparkleCore";
 
 
 type AuthPageProps = {};

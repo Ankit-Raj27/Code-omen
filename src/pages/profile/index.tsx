@@ -33,6 +33,6 @@ export default function ProfilePage() {
 
   return <>
   <TopBar/>
-  {/* <ClientProfile userId={userId} /> */}
+  <ClientProfile userId={userId} />
   </>
 }

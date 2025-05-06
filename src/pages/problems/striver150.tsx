@@ -5,7 +5,7 @@ import { auth } from "@/Firebase/firebase";
 import Striver150Table from "@/components/ProblemsTable/StriverTable";
 import useHasMounted from "@/components/hooks/useHasMounted";
 import TopBar from "@/components/TopBar/TopBar";
-import { SparklesCore } from "@/components/features/loading";
+import { SparklesCore } from "@/components/features/SparkleCore";
 
 export default function Home() {
   const [loadingProblems, setLoadingProblems] = useState(true);
