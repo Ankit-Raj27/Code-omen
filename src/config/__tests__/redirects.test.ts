@@ -38,9 +38,18 @@ describe("problem key renames", () => {
       expect(problems[oldKey], oldKey).toBeUndefined();
     }
   });
-  it("redirects raw and percent-encoded old URLs", () => {
-    expect(problemRules.map((r) => r.source)).toContain("/problems/kadane's%20algorithm".replace("'", "%27"));
-    expect(problemRules.map((r) => r.source)).toContain("/problems/stock-buy-and-sell");
+  it("matches every encoding of old URLs, and only those", () => {
+    const hit = (url: string) =>
+      problemRules.find((r) => {
+        const src = r.source.replace(/^\/problems\//, "");
+        const re = src.startsWith(":old(") ? new RegExp(`^${src.slice(5, -1)}$`) : new RegExp(`^${src.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`);
+        return re.test(url);
+      })?.destination;
+    expect(hit("kadane's%20algorithm")).toBe("/problems/maximum-subarray"); // what browsers send
+    expect(hit("kadane%27s%20algorithm")).toBe("/problems/maximum-subarray");
+    expect(hit("pascal's-triangle")).toBe("/problems/pascals-triangle");
+    expect(hit("stock-buy-and-sell")).toBe("/problems/best-time-to-buy-and-sell-stock");
+    expect(hit("kadanesalgorithm")).toBeUndefined();
     for (const r of problemRules) expect(Object.values(renames)).toContain(r.destination.replace("/problems/", ""));
   });
   it("Java tests are keyed by current bank keys", () => {

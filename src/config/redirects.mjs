@@ -15,14 +15,21 @@ export const PROBLEM_KEY_RENAMES = {
   "words-search-II": "word-search-ii",
 };
 
-const encode = (k) => encodeURIComponent(k).replace(/'/g, "%27");
-const problemRedirects = Object.entries(PROBLEM_KEY_RENAMES).flatMap(([oldKey, newKey]) =>
-  [...new Set([oldKey, encode(oldKey)])].map((src) => ({
-    source: `/problems/${src}`,
-    destination: `/problems/${newKey}`,
-    permanent: true,
-  })),
-);
+// Plain keys redirect by exact path. Keys with ' or a space use one pattern that
+// accepts every encoding (browsers send ' raw and a space as %20; others use %27).
+const esc = (c) => c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const sourceFor = (key) =>
+  /^[\w-]+$/.test(key)
+    ? `/problems/${key}`
+    : `/problems/:old(${[...key]
+        .map((c) => (c === "'" ? "(?:'|%27)" : c === " " ? "(?:%20| )" : esc(c)))
+        .join("")})`;
+
+const problemRedirects = Object.entries(PROBLEM_KEY_RENAMES).map(([oldKey, newKey]) => ({
+  source: sourceFor(oldKey),
+  destination: `/problems/${newKey}`,
+  permanent: true,
+}));
 
 export const redirects = [
   ...problemRedirects,
