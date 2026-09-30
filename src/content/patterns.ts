@@ -205,6 +205,7 @@ export const PATTERNS: Pattern[] = [
       [19, "Remove Nth Node From End of List", "remove-nth-node-from-end-of-list", "M"],
       [146, "LRU Cache", "lru-cache", "M"],
     ],
+    stretch: [[234, "Palindrome Linked List", "palindrome-linked-list", "E"], [2, "Add Two Numbers", "add-two-numbers", "M"], [23, "Merge k Sorted Lists", "merge-k-sorted-lists", "H"]] as PatternProblem[],
   },
   {
     id: "trees-dfs-bfs",
@@ -231,6 +232,7 @@ export const PATTERNS: Pattern[] = [
       [199, "Binary Tree Right Side View", "binary-tree-right-side-view", "M"],
       [124, "Binary Tree Maximum Path Sum", "binary-tree-maximum-path-sum", "H"],
     ],
+    stretch: [[100, "Same Tree", "same-tree", "E"], [110, "Balanced Binary Tree", "balanced-binary-tree", "E"], [105, "Construct Binary Tree from Preorder and Inorder Traversal", "construct-binary-tree-from-preorder-and-inorder-traversal", "M"]] as PatternProblem[],
   },
   {
     id: "bst-trie",
@@ -257,6 +259,7 @@ export const PATTERNS: Pattern[] = [
       [211, "Design Add and Search Words Data Structure", "design-add-and-search-words-data-structure", "M"],
       [212, "Word Search II", "word-search-ii", "H"],
     ],
+    stretch: [[700, "Search in a Binary Search Tree", "search-in-a-binary-search-tree", "E"], [701, "Insert into a Binary Search Tree", "insert-into-a-binary-search-tree", "M"], [14, "Longest Common Prefix", "longest-common-prefix", "E"]] as PatternProblem[],
   },
   {
     id: "heap",
@@ -282,6 +285,7 @@ export const PATTERNS: Pattern[] = [
       [621, "Task Scheduler", "task-scheduler", "M"],
       [295, "Find Median from Data Stream", "find-median-from-data-stream", "H"],
     ],
+    stretch: [[692, "Top K Frequent Words", "top-k-frequent-words", "M"], [1642, "Furthest Building You Can Reach", "furthest-building-you-can-reach", "M"], [502, "IPO", "ipo", "H"]] as PatternProblem[],
   },
   {
     id: "intervals-greedy",
@@ -308,6 +312,7 @@ export const PATTERNS: Pattern[] = [
       [435, "Non-overlapping Intervals", "non-overlapping-intervals", "M"],
       [134, "Gas Station", "gas-station", "M"],
     ],
+    stretch: [[45, "Jump Game II", "jump-game-ii", "M"], [252, "Meeting Rooms", "meeting-rooms", "E"], [253, "Meeting Rooms II", "meeting-rooms-ii", "M"]] as PatternProblem[],
   },
   {
     id: "backtracking",
