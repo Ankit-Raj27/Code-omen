@@ -23,8 +23,8 @@ export default function PatternPage({ id }: Props) {
       subtitle={pattern.id === "mixed-mocks" ? "Weeks 18–22" : `Week ${pattern.week}`}
       actions={
         <nav className="flex gap-3 text-sm">
-          {prev && <Link href={`/patterns/${prev.id}`} className="text-dark-gray-6 hover:text-white">← {prev.name}</Link>}
-          {next && <Link href={`/patterns/${next.id}`} className="text-dark-gray-6 hover:text-white">{next.name} →</Link>}
+          {prev && <Link href={`/patterns/${prev.id}`} className="inline-flex min-h-[32px] items-center rounded px-2 hover:bg-dark-fill-3 text-dark-gray-6 hover:text-white">← {prev.name}</Link>}
+          {next && <Link href={`/patterns/${next.id}`} className="inline-flex min-h-[32px] items-center rounded px-2 hover:bg-dark-fill-3 text-dark-gray-6 hover:text-white">{next.name} →</Link>}
         </nav>
       }>
       <PatternDetail pattern={pattern} logs={hasMounted ? logs : []} signedIn={hasMounted && !!user} />

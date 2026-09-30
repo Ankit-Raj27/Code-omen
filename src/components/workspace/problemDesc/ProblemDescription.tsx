@@ -55,6 +55,19 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({
   const bankKey = session?.bankKey ?? problem.id;
   const hasPattern = !!patternIdForBank(bankKey);
   const [tab, setTab] = useState<TabId>(hasPattern ? "pattern" : "description");
+  const visibleTabs = TABS.filter((t) => t.id !== "pattern" || hasPattern);
+  /** WAI-ARIA tabs: arrows move between tabs, Home/End jump to the ends. */
+  const onTabKey = (e: React.KeyboardEvent) => {
+    const i = visibleTabs.findIndex((t) => t.id === tab);
+    const next =
+      e.key === "ArrowRight" ? (i + 1) % visibleTabs.length
+      : e.key === "ArrowLeft" ? (i - 1 + visibleTabs.length) % visibleTabs.length
+      : e.key === "Home" ? 0 : e.key === "End" ? visibleTabs.length - 1 : -1;
+    if (next < 0) return;
+    e.preventDefault();
+    setTab(visibleTabs[next].id);
+    document.getElementById(`tab-${visibleTabs[next].id}`)?.focus();
+  };
 
   const findProblemInCollection = async (problemId: string) => {
     // First, check if we have the selectedList 
@@ -265,12 +278,16 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({
   return (
     <div className="bg-dark-layer-1">
       {/* TABS: Pattern first, so you name the pattern before reading details. */}
-      <div role="tablist" className="flex h-11 w-full items-center pt-2 bg-dark-layer-2 text-white overflow-x-hidden">
-        {TABS.filter((t) => t.id !== "pattern" || hasPattern).map((t) => (
+      <div role="tablist" aria-label="Problem panels" onKeyDown={onTabKey}
+        className="flex h-11 w-full items-center pt-2 bg-dark-layer-2 text-white overflow-x-hidden">
+        {visibleTabs.map((t) => (
           <button
             key={t.id}
+            id={`tab-${t.id}`}
             role="tab"
             aria-selected={tab === t.id}
+            aria-controls={`panel-${t.id}`}
+            tabIndex={tab === t.id ? 0 : -1}
             onClick={() => setTab(t.id)}
             className={`rounded-t-[5px] px-5 py-[10px] text-xs ${
               tab === t.id ? "bg-dark-layer-1 text-white" : "text-dark-gray-6 hover:text-white"
@@ -282,18 +299,19 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({
       </div>
 
       {tab === "pattern" && (
-        <div className="h-[calc(100vh-94px)] overflow-y-auto py-4">
+        <div id="panel-pattern" role="tabpanel" aria-labelledby="tab-pattern" tabIndex={0} className="h-[calc(100vh-94px)] overflow-y-auto py-4">
           <p className="mb-4 px-5 text-lg font-medium text-white">{problem?.title}</p>
           <PatternPanel bankKey={bankKey} />
         </div>
       )}
       {tab === "mylog" && (
-        <div className="h-[calc(100vh-94px)] overflow-y-auto py-4">
+        <div id="panel-mylog" role="tabpanel" aria-labelledby="tab-mylog" tabIndex={0} className="h-[calc(100vh-94px)] overflow-y-auto py-4">
           <MyLogPanel bankKey={bankKey} />
         </div>
       )}
 
-      <div className={tab === "description" ? "flex px-0 py-4 h-[calc(100vh-94px)] overflow-y-auto" : "hidden"}>
+      <div id="panel-description" role="tabpanel" aria-labelledby="tab-description" tabIndex={0}
+        className={tab === "description" ? "flex px-0 py-4 h-[calc(100vh-94px)] overflow-y-auto" : "hidden"}>
         <div className="px-5">
           {/* Problem heading */}
           <div className="w-full">
@@ -315,44 +333,38 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({
                     <BsCheck2Circle />
                   </div>
                 )}
-                <div
-                  className="flex items-center cursor-pointer hover:bg-dark-fill-3 space-x-1 rounded p-[3px]  ml-4 text-lg transition-colors duration-200 text-dark-gray-6"
+                <button
+                  type="button"
+                  aria-pressed={liked}
+                  aria-label={`Like (${currentProblem.likes})`}
+                  disabled={updating}
+                  className="ml-4 flex min-h-[32px] items-center space-x-1 rounded p-[3px] text-lg text-dark-gray-6 transition-colors duration-200 hover:bg-dark-fill-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-blue-s"
                   onClick={handleLike}
                 >
-                  {liked && !updating && (
-                    <AiFillLike className="text-dark-blue-s" />
-                  )}
-                  {!liked && !updating && <AiFillLike />}
-                  {updating && (
-                    <AiOutlineLoading3Quarters className="animate-spin" />
-                  )}
-
+                  {updating ? <AiOutlineLoading3Quarters className="animate-spin" aria-hidden="true" /> : <AiFillLike className={liked ? "text-dark-blue-s" : ""} aria-hidden="true" />}
                   <span className="text-xs">{currentProblem.likes}</span>
-                </div>
-                <div
-                  className="flex items-center cursor-pointer hover:bg-dark-fill-3 space-x-1 rounded p-[3px]  ml-4 text-lg transition-colors duration-200 text-green-s text-dark-gray-6"
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={disliked}
+                  aria-label={`Dislike (${currentProblem.dislikes})`}
+                  disabled={updating}
+                  className="ml-4 flex min-h-[32px] items-center space-x-1 rounded p-[3px] text-lg text-dark-gray-6 transition-colors duration-200 hover:bg-dark-fill-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-blue-s"
                   onClick={handleDislike}
                 >
-                  {disliked && !updating && (
-                    <AiFillDislike className="text-dark-blue-s" />
-                  )}
-                  {!disliked && !updating && <AiFillDislike />}
-                  {updating && (
-                    <AiOutlineLoading3Quarters className="animate-spin" />
-                  )}
-
+                  {updating ? <AiOutlineLoading3Quarters className="animate-spin" aria-hidden="true" /> : <AiFillDislike className={disliked ? "text-dark-blue-s" : ""} aria-hidden="true" />}
                   <span className="text-xs">{currentProblem.dislikes}</span>
-                </div>
-                <div
-                  className="cursor-pointer hover:bg-dark-fill-3  rounded p-[3px]  ml-4 text-xl transition-colors duration-200 text-green-s text-dark-gray-6 "
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={starred}
+                  aria-label="Star"
+                  disabled={updating}
+                  className="ml-4 flex min-h-[32px] items-center rounded p-[3px] text-xl text-dark-gray-6 transition-colors duration-200 hover:bg-dark-fill-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-blue-s"
                   onClick={handleStar}
                 >
-                  {starred && !updating && (
-                    <AiFillStar className="text-dark-yellow" />
-                  )}
-                  {!starred && !updating && <TiStarOutline />}
-                  {updating && <AiOutlineLoading3Quarters />}
-                </div>
+                  {updating ? <AiOutlineLoading3Quarters aria-hidden="true" /> : starred ? <AiFillStar className="text-dark-yellow" aria-hidden="true" /> : <TiStarOutline aria-hidden="true" />}
+                </button>
               </div>
             )}
 

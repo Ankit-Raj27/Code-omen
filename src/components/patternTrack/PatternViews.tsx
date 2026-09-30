@@ -96,11 +96,11 @@ export const PatternDetail: React.FC<{ pattern: Pattern; logs: LogEntry[]; signe
                     <span className="flex-1 text-dark-gray-8">{lc}. {title}</span>
                     <DifficultyChip d={diff} />
                     {bank ? (
-                      <Link href={`/problems/${encodeURIComponent(bank)}`} className="text-xs text-dark-blue-s hover:underline">Solve</Link>
+                      <Link href={`/problems/${encodeURIComponent(bank)}`} className="inline-flex min-h-[32px] items-center rounded px-2 hover:bg-dark-fill-3 text-xs text-dark-blue-s">Solve</Link>
                     ) : null}
-                    <a href={LEETCODE_URL(slug)} target="_blank" rel="noreferrer" className="text-xs text-dark-gray-6 hover:underline">LeetCode ↗</a>
+                    <a href={LEETCODE_URL(slug)} target="_blank" rel="noreferrer" className="inline-flex min-h-[32px] items-center rounded px-2 hover:bg-dark-fill-3 text-xs text-dark-gray-6 hover:text-white">LeetCode ↗</a>
                     {signedIn && !done && (
-                      <Link href={`/log?slug=${encodeURIComponent(slug)}`} className="text-xs text-dark-gray-6 hover:underline">Log</Link>
+                      <Link href={`/log?slug=${encodeURIComponent(slug)}`} className="inline-flex min-h-[32px] items-center rounded px-2 hover:bg-dark-fill-3 text-xs text-dark-gray-6 hover:text-white">Log</Link>
                     )}
                   </li>
                 );
@@ -126,8 +126,8 @@ export const PatternDetail: React.FC<{ pattern: Pattern; logs: LogEntry[]; signe
                     </span>
                     <span className="flex-1 text-dark-gray-8">{lc}. {title}</span>
                     <DifficultyChip d={diff} />
-                    {bank && <Link href={`/problems/${encodeURIComponent(bank)}`} className="text-xs text-dark-blue-s hover:underline">Solve</Link>}
-                    <a href={LEETCODE_URL(slug)} target="_blank" rel="noreferrer" className="text-xs text-dark-gray-6 hover:underline">LeetCode ↗</a>
+                    {bank && <Link href={`/problems/${encodeURIComponent(bank)}`} className="inline-flex min-h-[32px] items-center rounded px-2 hover:bg-dark-fill-3 text-xs text-dark-blue-s">Solve</Link>}
+                    <a href={LEETCODE_URL(slug)} target="_blank" rel="noreferrer" className="inline-flex min-h-[32px] items-center rounded px-2 hover:bg-dark-fill-3 text-xs text-dark-gray-6 hover:text-white">LeetCode ↗</a>
                   </li>
                 );
               })}

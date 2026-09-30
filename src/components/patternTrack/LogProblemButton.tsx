@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useDialog } from "@/hooks/useDialog";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { toast } from "react-toastify";
 import { auth } from "@/Firebase/firebase";
@@ -15,12 +16,7 @@ const LogProblemButton: React.FC<{ bankKey: string }> = ({ bankKey }) => {
   const prefill = prefillForBank(bankKey);
   const session = useWorkspaceSession();
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
+  const dialogRef = useDialog<HTMLDivElement>(open && !!user, () => setOpen(false));
 
   if (!prefill) return null;
 
@@ -37,7 +33,7 @@ const LogProblemButton: React.FC<{ bankKey: string }> = ({ bankKey }) => {
       <button className={`${btnGhost} shrink-0 text-xs`} onClick={onClick}>+ Log to Pattern Track</button>
       {open && user && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setOpen(false)}>
-          <div role="dialog" aria-modal="true" aria-label="Log problem"
+          <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Log problem"
             className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl border border-gray-800 bg-gray-900 p-5"
             onClick={(e) => e.stopPropagation()}>
             <div className="mb-4 flex items-center justify-between">

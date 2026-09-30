@@ -70,7 +70,7 @@ export const PatternPanel: React.FC<{ bankKey: string }> = ({ bankKey }) => {
         <p className="text-xs text-dark-yellow">Hints used: {used}. This attempt will be logged as &ldquo;needed help&rdquo;.</p>
       )}
       {pattern && (
-        <Link href={`/patterns/${pattern.id}`} className="inline-block text-xs text-dark-blue-s hover:underline">
+        <Link href={`/patterns/${pattern.id}`} className="inline-flex min-h-[32px] items-center text-xs text-dark-blue-s hover:underline">
           Open the full {pattern.name} sheet →
         </Link>
       )}

@@ -2,6 +2,7 @@ import { BsCheckLg, BsChevronDown } from "react-icons/bs";
 import { IoClose } from "react-icons/io5";
 import { ISettings } from "../workspace/playground/Playground";
 import useLocalStorage from "../hooks/useLocalStorage";
+import { useDialog } from "@/hooks/useDialog";
 
 const EDITOR_FONT_SIZES = [
   "12px",
@@ -21,6 +22,8 @@ const SettingsModal: React.FC<SettingModalProps> = ({
   setting,
 }) => {
   const [fontSize,setFontSize] = useLocalStorage("cd-fontSize", "16px");
+  const close = () => setSetting((s) => ({ ...s, settingModalIsOpen: false }));
+  const dialogRef = useDialog<HTMLDivElement>(true, close);
 
   const handleClickDropDown = (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
@@ -31,8 +34,10 @@ const SettingsModal: React.FC<SettingModalProps> = ({
   return (
     <div className="text-white z-40">
       <div
+        ref={dialogRef}
         aria-modal="true"
         role="dialog"
+        aria-label="Editor settings"
         className="fixed inset-0 overflow-y-auto z-modal"
       >
         <div className="flex min-h-screen items-center justify-center px-4">
@@ -52,11 +57,10 @@ const SettingsModal: React.FC<SettingModalProps> = ({
               Settings
               <button
                 className="ml-auto cursor-pointer rounded transition-all"
-                onClick={() => {
-                  setSetting({ ...setting, settingModalIsOpen: false });
-                }}
+                aria-label="Close settings"
+                onClick={close}
               >
-                <IoClose />
+                <IoClose aria-hidden="true" />
               </button>
             </div>
 

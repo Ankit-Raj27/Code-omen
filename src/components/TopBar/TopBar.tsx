@@ -50,32 +50,35 @@ const TopBar: React.FC<TopBarProps> = ({ problemPage }) => {
         {/* Wide wordmark sized to the bar: the old 200×200 square logo overflowed
             the 50px bar and swallowed clicks on the problem-page tabs below it. */}
         <div className="flex flex-1 items-center">
-          <Link href="/" className="inline-flex items-center" aria-label="CodeOmen home">
+          <Link href="/" className="inline-flex min-h-[32px] items-center" aria-label="CodeOmen home">
             <Image src="/logo1.png" alt="CodeOmen" width={148} height={42} className="h-auto w-[148px]" priority />
           </Link>
         </div>
 
         {problemPage && (
           <div className="flex items-center gap-4 flex-1 justify-center">
-            <div className="flex items-center justify-center rounded bg-dark-fill-3  hover:bg-dark-fill-2 h-8 w-8 cursor-pointer"
+            <button type="button" aria-label="Previous problem" title="Previous problem"
+              className="flex items-center justify-center rounded bg-dark-fill-3 hover:bg-dark-fill-2 h-8 w-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-blue-s"
               onClick={() => handleProblemChange(false)}
             >
-              <FaChevronCircleLeft />
-            </div>
+              <FaChevronCircleLeft aria-hidden="true" />
+            </button>
             <Link
               href="/"
-              className="flex items-center gap-2 font-medium max-w-[170px] text-dark-gray-8 cursor-pointer"
+              aria-label="Problem list"
+              className="flex min-h-[32px] items-center gap-2 font-medium max-w-[170px] text-dark-gray-8 cursor-pointer"
             >
               <div>
-                <FaList />
+                <FaList aria-hidden="true" />
               </div>
-              <p>Problem List</p>
+              <p className="hidden whitespace-nowrap sm:block">Problem List</p>
             </Link>
-            <div className="flex items-center justify-center rounded bg-dark-fill-3  hover:bg-dark-fill-2 h-8 w-8 cursor-pointer"
+            <button type="button" aria-label="Next problem" title="Next problem"
+              className="flex items-center justify-center rounded bg-dark-fill-3 hover:bg-dark-fill-2 h-8 w-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-blue-s"
               onClick={() => handleProblemChange(true)}
             >
-              <FaChevronCircleRight />
-            </div>
+              <FaChevronCircleRight aria-hidden="true" />
+            </button>
           </div>
         )}
 

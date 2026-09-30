@@ -29,7 +29,7 @@ module.exports = {
   			'dark-pink': 'rgb(255 55 95)',
   			'olive': 'rgb(0, 184, 163)',
   			'dark-green-s': 'rgb(44 187 93)',
-  			'dark-blue-s': 'rgb(10 132 255)',
+  			'dark-blue-s': 'rgb(77 163 255)', // 4.6:1 on the grey panels (was 3.3:1)
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
