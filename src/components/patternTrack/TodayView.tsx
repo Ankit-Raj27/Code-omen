@@ -17,7 +17,7 @@ import {
 } from "@/lib/patternTrack/stats";
 import { daysBetween, safeHttpUrl, type Ymd } from "@/lib/patternTrack/dates";
 import {
-  Bar, DifficultyChip, EmptyState, Panel, PatternChip, SectionTitle, StageDots, StatTile, btnGhost, btnGradient, inputCls,
+  Bar, DifficultyChip, EmptyState, Panel, PatternChip, SectionTitle, StageDots, StatTile, btnGhost, btnGradient,
 } from "./ui";
 
 type Props = {
@@ -25,7 +25,6 @@ type Props = {
   logs: LogEntry[];
   today: Ymd;
   startDate: Ymd;
-  onStartDateChange: (d: Ymd) => void;
 };
 
 const GRADES: { result: ReviewResult; label: string; cls: string }[] = [
@@ -179,7 +178,7 @@ const QuestionOfTheDay: React.FC<{ q: PatternProblemRef | null }> = ({ q }) => {
   );
 };
 
-const TodayView: React.FC<Props> = ({ uid, logs, today, startDate, onStartDateChange }) => {
+const TodayView: React.FC<Props> = ({ uid, logs, today, startDate }) => {
   const reduce = useReducedMotion();
   // Graded this session → shown in "Just reviewed" with the insight revealed.
   const [graded, setGraded] = useState<Record<string, ReviewResult>>({});
@@ -295,11 +294,10 @@ const TodayView: React.FC<Props> = ({ uid, logs, today, startDate, onStartDateCh
                 </>
               )}
               <NextUp items={upcoming} />
-              <label className="mt-4 block border-t border-gray-800 pt-3 text-xs text-gray-400">
-                Track start date
-                <input type="date" className={`${inputCls} mt-1`} value={startDate}
-                  onChange={(e) => e.target.value && onStartDateChange(e.target.value)} />
-              </label>
+              <p className="mt-4 border-t border-gray-800 pt-3 text-xs text-gray-400">
+                Track started {startDate}.{" "}
+                <Link href="/profile#settings" className="text-dark-blue-s hover:underline">Change in Profile</Link>
+              </p>
             </Panel>
           </motion.section>
 

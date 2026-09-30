@@ -63,13 +63,32 @@ export async function deleteLog(uid: string, id: string): Promise<void> {
   await deleteDoc(doc(firestore, "users", uid, "logs", id));
 }
 
-export async function getStartDate(uid: string): Promise<Ymd> {
+export type EditorLanguagePref = "javascript" | "java";
+
+export interface TrackSettings {
+  startDate: Ymd;
+  preferredLanguage: EditorLanguagePref | null;
+}
+
+/** Pattern Track settings from users/{uid}.patternTrack (defaults when missing). */
+export async function getSettings(uid: string): Promise<TrackSettings> {
   const snap = await getDoc(doc(firestore, "users", uid));
-  const v = snap.data()?.patternTrack?.startDate;
-  return typeof v === "string" && isYmd(v) ? v : DEFAULT_START_DATE;
+  const pt = snap.data()?.patternTrack ?? {};
+  return {
+    startDate: typeof pt.startDate === "string" && isYmd(pt.startDate) ? pt.startDate : DEFAULT_START_DATE,
+    preferredLanguage: pt.preferredLanguage === "java" || pt.preferredLanguage === "javascript" ? pt.preferredLanguage : null,
+  };
+}
+
+export async function getStartDate(uid: string): Promise<Ymd> {
+  return (await getSettings(uid)).startDate;
 }
 
 export async function setStartDate(uid: string, startDate: Ymd): Promise<void> {
   if (!isYmd(startDate)) throw new Error("Invalid date");
   await setDoc(doc(firestore, "users", uid), { patternTrack: { startDate } }, { merge: true });
+}
+
+export async function setPreferredLanguage(uid: string, preferredLanguage: EditorLanguagePref): Promise<void> {
+  await setDoc(doc(firestore, "users", uid), { patternTrack: { preferredLanguage } }, { merge: true });
 }

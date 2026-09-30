@@ -168,3 +168,30 @@ describe("questionOfTheDay", () => {
     expect(questionOfTheDay(all, "2026-10-05", "2026-10-01", "u1")).toBeNull();
   });
 });
+
+import { activityLevel, dailyActivity } from "../stats";
+describe("profile data", () => {
+  it("weeklyActivity tracks mediums solved solo per week", () => {
+    const w = weeklyActivity([
+      log({ dateSolved: "2026-10-06", difficulty: "M", solvedSolo: true }),
+      log({ dateSolved: "2026-10-07", difficulty: "M", solvedSolo: false }),
+      log({ dateSolved: "2026-10-08", difficulty: "E", solvedSolo: false }),
+    ], "2026-10-08", 2);
+    expect(w.map((x) => [x.mediums, x.mediumsSolo, x.mediumSoloPct])).toEqual([[0, 0, null], [2, 1, 50]]);
+  });
+  it("dailyActivity covers whole Monday-start weeks and counts logs and reviews", () => {
+    const d = dailyActivity([
+      log({ dateSolved: "2026-10-06", reviews: [{ date: "2026-10-07", result: "clean" }, { date: "2026-10-07", result: "shaky" }] }),
+      log({ dateSolved: "2025-01-01" }),
+    ], "2026-10-08", 2);
+    expect(d).toHaveLength(14);
+    expect(d[0].date).toBe("2026-09-28");
+    expect(d.at(-1)?.date).toBe("2026-10-11");
+    expect(d.find((x) => x.date === "2026-10-06")?.logged).toBe(1);
+    expect(d.find((x) => x.date === "2026-10-07")?.reviews).toBe(2);
+    expect(d.reduce((s, x) => s + x.logged, 0)).toBe(1);
+  });
+  it("buckets activity into 5 levels", () => {
+    expect([0, 1, 2, 3, 4, 5, 6, 20].map(activityLevel)).toEqual([0, 1, 2, 2, 3, 3, 4, 4]);
+  });
+});

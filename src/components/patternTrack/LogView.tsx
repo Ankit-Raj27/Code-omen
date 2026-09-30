@@ -28,7 +28,7 @@ const DeleteButton: React.FC<{ onConfirm: () => Promise<void> }> = ({ onConfirm 
   );
 };
 
-function downloadCsv(logs: LogEntry[], today: Ymd) {
+export function downloadCsv(logs: LogEntry[], today: Ymd) {
   const blob = new Blob(["﻿" + logsToCsv(logs)], { type: "text/csv;charset=utf-8" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
