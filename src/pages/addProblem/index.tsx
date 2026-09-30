@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { toast } from "react-toastify";
 import { auth, firestore } from "@/Firebase/firebase";
 import TopBar from "@/components/TopBar/TopBar";
+import { allBankMeta } from "@/lib/patternTrack/bank";
 
 const LISTS = [
   { value: "striver150", label: "Striver 150" },
@@ -30,6 +31,27 @@ export default function AddProblem() {
       .then((s) => setIsAdmin(s.exists()))
       .catch(() => setIsAdmin(false));
   }, [user, loading]);
+
+  const [syncing, setSyncing] = useState(false);
+  /** Create problems/{slug} for every bank problem that has no document yet (likes start at 0). */
+  const syncBank = async () => {
+    setSyncing(true);
+    try {
+      const existing = new Set((await getDocs(collection(firestore, "problems"))).docs.map((d) => d.id));
+      const missing = allBankMeta().filter((m) => !existing.has(m.id));
+      for (const m of missing) {
+        await setDoc(doc(firestore, "problems", m.id), {
+          ...m, likes: 0, dislikes: 0, videoId: "", link: "", selectedList: "problems",
+        });
+      }
+      toast.success(missing.length ? `Added ${missing.length} problem${missing.length === 1 ? "" : "s"}` : "Firestore is up to date", { theme: "dark" });
+    } catch (err) {
+      console.error(err);
+      toast.error("Sync failed (are you an admin?)", { theme: "dark" });
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setInput((s) => ({ ...s, [e.target.name]: e.target.value }));
@@ -92,6 +114,18 @@ export default function AddProblem() {
               {saving ? "Saving…" : "Save"}
             </button>
           </form>
+        )}
+        {isAdmin && (
+          <section className="mt-10 border-t border-dark-divider-border-2 pt-6">
+            <h2 className="mb-1 text-base font-medium text-dark-gray-8">Problem bank</h2>
+            <p className="mb-3 text-sm text-dark-gray-6">
+              Problems live in code. This adds a Firestore document (for likes) for any bank problem that doesn&apos;t have one. Existing documents are left alone.
+            </p>
+            <button type="button" onClick={syncBank} disabled={syncing}
+              className="rounded-lg bg-dark-fill-3 px-3 py-2 text-sm font-medium text-dark-gray-8 hover:bg-dark-fill-2 disabled:opacity-50">
+              {syncing ? "Syncing…" : "Sync problem bank to Firestore"}
+            </button>
+          </section>
         )}
       </div>
     </main>

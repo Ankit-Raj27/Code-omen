@@ -1,6 +1,6 @@
 import { auth, firestore } from "@/Firebase/firebase";
 import LogProblemButton from "@/components/patternTrack/LogProblemButton";
-import { patternIdForBank } from "@/lib/patternTrack/bank";
+import { bankMeta, patternIdForBank } from "@/lib/patternTrack/bank";
 import { useWorkspaceSession } from "../WorkspaceSession";
 import { MyLogPanel, PatternPanel } from "./PatternPanels";
 import CircleSkeleton from "@/components/skeletons/CircleSkeleton";
@@ -451,9 +451,13 @@ function useGetCurrentProblem(problemId: string) {
         }
       }
       
-      if (problemDoc.exists()) {
-        const problem = problemDoc.data();
-        setCurrentProblem({ id: problemDoc.id, ...problem } as DBProblem);
+      // Not seeded in Firestore yet: fall back to the metadata in code (no likes until seeded).
+      const meta = problemDoc.exists() ? null : bankMeta(problemId);
+      if (problemDoc.exists() || meta) {
+        const problem = problemDoc.exists()
+          ? problemDoc.data()
+          : { ...meta!, likes: 0, dislikes: 0, selectedList: "problems" };
+        setCurrentProblem({ id: problemId, ...problem } as DBProblem);
         // easy, medium, hard
         setProblemDifficultyClass(
           problem.difficulty === "Easy"

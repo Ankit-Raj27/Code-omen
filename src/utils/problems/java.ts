@@ -173,7 +173,8 @@ export const JAVA_PROBLEMS: Record<string, JavaProblem> = {
   "reverse-linked-list": {
     starter: `/**
  * Definition for singly-linked list (provided):
- * class ListNode { int val; ListNode next; ListNode(int val) { this.val = val; } }
+ * class ListNode { int val; ListNode next; ListNode() {} ListNode(int val) { this.val = val; } ListNode(int val, ListNode next) { this.val = val; this.next = next; } }
+class TreeNode { int val; TreeNode left, right; TreeNode() {} TreeNode(int val) { this.val = val; } TreeNode(int val, TreeNode left, TreeNode right) { this.val = val; this.left = left; this.right = right; } }
  */
 class Solution {
     public ListNode reverseList(ListNode head) {
@@ -191,7 +192,8 @@ class Solution {
 
 /** Helpers + ListNode available to every harness. Java 13 compatible. */
 export const JAVA_PRELUDE = `
-class ListNode { int val; ListNode next; ListNode(int val) { this.val = val; } }
+class ListNode { int val; ListNode next; ListNode() {} ListNode(int val) { this.val = val; } ListNode(int val, ListNode next) { this.val = val; this.next = next; } }
+class TreeNode { int val; TreeNode left, right; TreeNode() {} TreeNode(int val) { this.val = val; } TreeNode(int val, TreeNode left, TreeNode right) { this.val = val; this.left = left; this.right = right; } }
 
 public class Main {
   private static int passed = 0, total = 0;
@@ -249,6 +251,68 @@ public class Main {
 
   static ListNode list(int... v) { ListNode d = new ListNode(0), c = d; for (int x : v) { c.next = new ListNode(x); c = c.next; } return d.next; }
   static int[] toArr(ListNode h) { java.util.List<Integer> l = new java.util.ArrayList<>(); int guard = 0; while (h != null && guard++ < 100000) { l.add(h.val); h = h.next; } return l.stream().mapToInt(Integer::intValue).toArray(); }
+
+  static ListNode cycle(int[] v, int pos) {
+    ListNode h = list(v), tail = h, target = null;
+    for (int i = 0; tail != null; i++) { if (i == pos) target = tail; if (tail.next == null) break; tail = tail.next; }
+    if (tail != null) tail.next = target;
+    return h;
+  }
+
+  /** Build a tree from LeetCode level order (nulls for missing children). */
+  static TreeNode tree(Integer[] v) {
+    if (v.length == 0 || v[0] == null) return null;
+    TreeNode root = new TreeNode(v[0]);
+    java.util.List<TreeNode> q = new java.util.ArrayList<>(); q.add(root);
+    for (int i = 1, h = 0; i < v.length; h++) {
+      TreeNode n = q.get(h);
+      if (i < v.length && v[i] != null) { n.left = new TreeNode(v[i]); q.add(n.left); } i++;
+      if (i < v.length && v[i] != null) { n.right = new TreeNode(v[i]); q.add(n.right); } i++;
+    }
+    return root;
+  }
+
+  /** Level order with nulls, trailing nulls trimmed, rendered like List.toString. */
+  static String treeStr(TreeNode root) {
+    java.util.List<Integer> out = new java.util.ArrayList<>();
+    java.util.List<TreeNode> q = new java.util.ArrayList<>(); q.add(root);
+    for (int h = 0; h < q.size() && h < 20000; h++) {
+      TreeNode n = q.get(h);
+      if (n == null) { out.add(null); continue; }
+      out.add(n.val); q.add(n.left); q.add(n.right);
+    }
+    while (!out.isEmpty() && out.get(out.size() - 1) == null) out.remove(out.size() - 1);
+    return out.toString();
+  }
+
+  static int[] inorderArr(TreeNode root) {
+    java.util.List<Integer> out = new java.util.ArrayList<>();
+    java.util.Deque<TreeNode> st = new java.util.ArrayDeque<>();
+    TreeNode c = root; int guard = 0;
+    while ((c != null || !st.isEmpty()) && guard++ < 100000) {
+      while (c != null) { st.push(c); c = c.left; }
+      c = st.pop(); out.add(c.val); c = c.right;
+    }
+    return out.stream().mapToInt(Integer::intValue).toArray();
+  }
+
+  static TreeNode find(TreeNode root, int val) {
+    if (root == null) return null;
+    if (root.val == val) return root;
+    TreeNode l = find(root.left, val);
+    return l != null ? l : find(root.right, val);
+  }
+
+  static Integer valOf(TreeNode n) { return n == null ? null : n.val; }
+
+  /** Order-insensitive rendering of int[][] rows. */
+  static String canonRows(int[][] a) {
+    if (a == null) return "null";
+    java.util.List<String> rows = new java.util.ArrayList<>();
+    for (int[] r : a) rows.add(java.util.Arrays.toString(r));
+    java.util.Collections.sort(rows);
+    return rows.toString();
+  }
 
   public static void main(String[] args) {
     final String nonce = "/*__NONCE__*/";

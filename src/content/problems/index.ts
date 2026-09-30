@@ -1,9 +1,10 @@
 // Registry of spec-generated problems. Add new batches here.
 import type { Problem } from "@/utils/types/problems";
 import { BATCH_A } from "./batchA";
+import { BATCH_B } from "./batchB";
 import { toJava, toProblem, type GeneratedJava, type ProblemSpec } from "./spec";
 
-export const SPECS: ProblemSpec[] = [...BATCH_A];
+export const SPECS: ProblemSpec[] = [...BATCH_A, ...BATCH_B];
 
 /** Orders continue after the 26 hand-written problems. */
 const FIRST_ORDER = 27;

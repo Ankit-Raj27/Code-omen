@@ -1,5 +1,5 @@
 // CodeOmen's local problem bank (src/utils/problems) is keyed by LeetCode slug.
-import { PATTERNS, LEETCODE_URL, type Difficulty } from "@/content/patterns";
+import { PATTERNS, PATTERN_BY_ID, LEETCODE_URL, type Difficulty } from "@/content/patterns";
 import { PROBLEM_KEY_RENAMES } from "@/config/redirects.mjs";
 import { problems } from "@/utils/problems";
 
@@ -78,4 +78,37 @@ export function prefillForBank(bankKey: string): LogPrefill | undefined {
       bankSlug: key,
     }
   );
+}
+
+const DIFFICULTY_WORD: Record<Difficulty, "Easy" | "Medium" | "Hard"> = { E: "Easy", M: "Medium", H: "Hard" };
+
+/** Firestore `problems/{key}` metadata for a bank problem, derived from code (the source of truth). */
+export interface BankMeta {
+  id: string;
+  title: string;
+  difficulty: "Easy" | "Medium" | "Hard";
+  category: string;
+  order: number;
+}
+
+export function bankMeta(bankKey: string): BankMeta | undefined {
+  const key = currentBankKey(bankKey);
+  const p = problems[key];
+  const pre = prefillForBank(key);
+  if (!p || !pre) return undefined;
+  return {
+    id: key,
+    title: p.title,
+    difficulty: DIFFICULTY_WORD[pre.difficulty],
+    category: PATTERN_BY_ID[pre.patternId]?.name ?? "",
+    order: p.order,
+  };
+}
+
+/** Every bank problem's metadata, in bank order. */
+export function allBankMeta(): BankMeta[] {
+  return Object.keys(problems)
+    .map((k) => bankMeta(k))
+    .filter((m): m is BankMeta => !!m)
+    .sort((a, b) => a.order - b.order);
 }
