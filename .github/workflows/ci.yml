@@ -14,6 +14,10 @@ jobs:
         with:
           node-version: 20
           cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17 # tests compile Java harnesses with --release 13 (Judge0's version)
       - run: npm ci
       - name: Lint
         run: npm run lint

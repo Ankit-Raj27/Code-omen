@@ -30,7 +30,9 @@ export function buildJavaSource(problemId: string, userCode: string, nonce: stri
     .replace(/\bclass\s+Main\b/g, "class UserMain");
   const std = ["import java.util.*;", "import java.util.function.*;"];
   const header = Array.from(new Set([...std, ...imports])).join("\n");
-  return `${header}\n\n${body}\n${JAVA_PRELUDE.replace("/*__TESTS__*/", p.tests).replace("/*__NONCE__*/", nonce)}`;
+  return `${header}\n\n${body}\n${JAVA_PRELUDE.replace("/*__SETUP__*/", p.setup ?? "Solution s = new Solution();")
+    .replace("/*__TESTS__*/", p.tests)
+    .replace("/*__NONCE__*/", nonce)}`;
 }
 
 export interface JavaRunResult {

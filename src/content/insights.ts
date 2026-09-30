@@ -1,7 +1,10 @@
 // Hint 3 of the workspace hint ladder: the one idea that cracks each problem.
 // Keyed by LeetCode slug (= bank key). Ideas, not code. Reviewed in PRs.
 
+import { GENERATED_INSIGHTS } from "@/content/problems";
+
 export const KEY_INSIGHTS: Record<string, string> = {
+  ...GENERATED_INSIGHTS,
   "two-sum": "For each number, the partner you need is target − x. Keep a map of value → index for what you've already seen and check it before inserting.",
   "contains-duplicate": "A set answers 'seen before?' in O(1). The first time add() finds the value already there, you're done.",
   "valid-anagram": "Same length, and a 26-slot count array that goes +1 for s and −1 for t ends all zeros.",

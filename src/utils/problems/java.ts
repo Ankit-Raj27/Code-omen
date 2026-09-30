@@ -4,6 +4,8 @@
 // SERVER (pages/api/run.ts) so clients can't swap in their own tests.
 
 export interface JavaProblem {
+  /** Replaces the default `Solution s = new Solution();` (design problems use ""). */
+  setup?: string;
   starter: string;
   tests: string; // Java statements calling t(i, expected, () -> actual)
 }
@@ -11,7 +13,11 @@ export interface JavaProblem {
 const sol = (body: string, extraImports = "") =>
   `${extraImports}class Solution {\n${body}\n}\n`;
 
+import { GENERATED_JAVA } from "@/content/problems";
+
 export const JAVA_PROBLEMS: Record<string, JavaProblem> = {
+  // Spec-generated problems (src/content/problems); hand-written harnesses below.
+  ...GENERATED_JAVA,
   "two-sum": {
     starter: sol(`    public int[] twoSum(int[] nums, int target) {\n        // Write your code here\n        return new int[0];\n    }`),
     tests: `
@@ -208,6 +214,23 @@ public class Main {
     }
   }
 
+  /** Order-insensitive rendering of a List (deep = also sort each inner List). */
+  @SuppressWarnings("unchecked")
+  static String canonAny(Object o, boolean deep) {
+    if (!(o instanceof java.util.List)) return String.valueOf(o);
+    java.util.List<String> parts = new java.util.ArrayList<>();
+    for (Object x : (java.util.List<Object>) o) {
+      if (deep && x instanceof java.util.List) {
+        java.util.List<String> in = new java.util.ArrayList<>();
+        for (Object y : (java.util.List<Object>) x) in.add(String.valueOf(y));
+        java.util.Collections.sort(in);
+        parts.add(in.toString());
+      } else parts.add(String.valueOf(x));
+    }
+    java.util.Collections.sort(parts);
+    return parts.toString();
+  }
+
   static int[] sortInts(int[] a) { if (a == null) return null; int[] c = a.clone(); java.util.Arrays.sort(c); return c; }
 
   static String canonInt(java.util.List<java.util.List<Integer>> ll) {
@@ -229,7 +252,7 @@ public class Main {
 
   public static void main(String[] args) {
     final String nonce = "/*__NONCE__*/";
-    Solution s = new Solution();
+    /*__SETUP__*/
     /*__TESTS__*/
     System.out.flush();
     System.out.println();

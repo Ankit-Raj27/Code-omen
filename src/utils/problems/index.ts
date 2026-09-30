@@ -1,4 +1,5 @@
 import { Problem } from "../types/problems";
+import { GENERATED_PROBLEMS } from "@/content/problems";
 import { threeSum } from "./3sum";
 import { containerWithMostWater } from "./container-with-most-water";
 import { containsDuplicate } from "./contains-duplicate";
@@ -30,6 +31,8 @@ interface ProblemMap{
     [key:string]:Problem;
 }
 export const problems:ProblemMap = {
+    // Spec-generated problems (src/content/problems); hand-written ones below.
+    ...GENERATED_PROBLEMS,
     "two-sum":twoSum,
     "reverse-linked-list": reverseLinkedList,
     "jump-game": jumpGame,

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { LEETCODE_URL, PATTERNS, type Pattern } from "@/content/patterns";
 import { bankKeyForLc } from "@/lib/patternTrack/bank";
 import { isMastered } from "@/lib/patternTrack/srs";
-import { patternProgress, sortNewestFirst, type LogEntry } from "@/lib/patternTrack/stats";
+import { patternProgress, sortNewestFirst, urlMatchesSlug, type LogEntry } from "@/lib/patternTrack/stats";
 import { Bar, DifficultyChip, EmptyState, Panel, StageDots } from "./ui";
 
 const weekText = (p: Pattern) => (p.id === "mixed-mocks" ? "Wk 18–22" : `Week ${p.week}`);
@@ -108,6 +108,32 @@ export const PatternDetail: React.FC<{ pattern: Pattern; logs: LogEntry[]; signe
             </ul>
           )}
         </Panel>
+
+        {pattern.stretch && pattern.stretch.length > 0 && (
+          <Panel>
+            <div className="mb-1 flex items-baseline justify-between">
+              <h2 className="font-medium text-dark-gray-8">Stretch</h2>
+              <span className="text-xs text-dark-gray-6">extra practice · not counted in progress</span>
+            </div>
+            <ul className="mt-2 divide-y divide-gray-800">
+              {pattern.stretch.map(([lc, title, slug, diff]) => {
+                const bank = bankKeyForLc(slug);
+                const done = logs.some((l) => urlMatchesSlug(l.url, slug) || l.bankSlug === slug);
+                return (
+                  <li key={slug} className="flex flex-wrap items-center gap-2 py-2 text-sm">
+                    <span className={`w-4 ${done ? "text-dark-green-s" : "text-dark-gray-6"}`} aria-label={done ? "Logged" : "Not logged"}>
+                      {done ? "✓" : "·"}
+                    </span>
+                    <span className="flex-1 text-dark-gray-8">{lc}. {title}</span>
+                    <DifficultyChip d={diff} />
+                    {bank && <Link href={`/problems/${encodeURIComponent(bank)}`} className="text-xs text-dark-blue-s hover:underline">Solve</Link>}
+                    <a href={LEETCODE_URL(slug)} target="_blank" rel="noreferrer" className="text-xs text-dark-gray-6 hover:underline">LeetCode ↗</a>
+                  </li>
+                );
+              })}
+            </ul>
+          </Panel>
+        )}
 
         {signedIn && (
           <section>

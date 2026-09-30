@@ -35,7 +35,7 @@ export interface LogPrefill {
 /** Prefill for a roadmap problem by LeetCode slug (used by /log?slug=...). */
 export function prefillForLc(lcSlug: string): LogPrefill | undefined {
   for (const pattern of PATTERNS) {
-    const hit = pattern.problems.find(([, , slug]) => slug === lcSlug);
+    const hit = [...pattern.problems, ...(pattern.stretch ?? [])].find(([, , slug]) => slug === lcSlug);
     if (hit) {
       return {
         name: hit[1],
