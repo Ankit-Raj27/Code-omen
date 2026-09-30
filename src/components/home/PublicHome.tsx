@@ -26,7 +26,7 @@ const PublicHome: React.FC = () => {
           <div className="max-w-7xl mx-auto relative z-10">
             <LandingPage />
             <div className="bg-black relative bottom-16">
-              <BlurFade delay={0.25 * 5}>
+              <BlurFade delay={0.3}>
                 <NeonGradientCard
                   className="max-w-fit h-fit mx-auto"
                   borderSize={1}

@@ -4,7 +4,13 @@ import { BookOpen, LineChart, RotateCcw, Star, Target } from "lucide-react";
 import BlurFade from "@/components/ui/blur-fade";
 import { Carousel } from "@/components/ui/miniCarousel";
 import { NeonGradientCard } from "@/components/ui/neon-gradient-card";
-import TrackCharts from "./TrackCharts";
+import dynamic from "next/dynamic";
+
+// Charts (recharts) load on demand; the rest of the page doesn't wait for them.
+const TrackCharts = dynamic(() => import("./TrackCharts"), {
+  ssr: false,
+  loading: () => <div className="h-56 animate-pulse rounded-xl bg-gray-900/50" aria-label="Loading charts" />,
+});
 import Link from "next/link";
 import { toast } from "react-toastify";
 import { LEETCODE_URL, PATTERN_BY_ID } from "@/content/patterns";

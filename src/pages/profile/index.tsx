@@ -7,9 +7,20 @@ import useHasMounted from "@/components/hooks/useHasMounted";
 import PageFrame from "@/components/layout/PageFrame";
 import { downloadCsv } from "@/components/patternTrack/LogView";
 import RequireSignIn from "@/components/patternTrack/RequireSignIn";
-import TrackCharts from "@/components/patternTrack/TrackCharts";
+import dynamic from "next/dynamic";
+
+// Charts (recharts) load on demand; the rest of the page doesn't wait for them.
+const TrackCharts = dynamic(() => import("@/components/patternTrack/TrackCharts"), {
+  ssr: false,
+  loading: () => <div className="h-56 animate-pulse rounded-xl bg-gray-900/50" aria-label="Loading charts" />,
+});
 import { ErrorState, EmptyState, Panel, SectionTitle, StatTile, btnGhost, inputCls } from "@/components/patternTrack/ui";
-import { ActivityHeatmap, MasteryGrid, SoloTrendChart } from "@/components/profile/ProfileViews";
+import { ActivityHeatmap, MasteryGrid } from "@/components/profile/ProfileViews";
+
+const SoloTrendChart = dynamic(() => import("@/components/profile/SoloTrendChart").then((m) => m.SoloTrendChart), {
+  ssr: false,
+  loading: () => <div className="h-56 animate-pulse rounded-xl bg-gray-900/50" aria-label="Loading chart" />,
+});
 import { usePatternTrack } from "@/context/PatternTrackContext";
 import { setPreferredLanguage, setStartDate, type EditorLanguagePref } from "@/lib/patternTrack/firestore";
 import { save } from "@/components/patternTrack/save";

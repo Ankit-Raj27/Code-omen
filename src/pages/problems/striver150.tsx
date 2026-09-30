@@ -6,7 +6,7 @@ import { auth } from "@/Firebase/firebase";
 import Striver150Table from "@/components/ProblemsTable/StriverTable";
 import useHasMounted from "@/components/hooks/useHasMounted";
 import TopBar from "@/components/TopBar/TopBar";
-import { SparklesCore } from "@/components/features/SparkleCore";
+import PageLoader from "@/components/layout/PageLoader";
 
 export default function Home() {
   const [loadingProblems, setLoadingProblems] = useState(true);
@@ -25,7 +25,7 @@ export default function Home() {
     }
   }, [user, loading, router]);
 
-  if (!hasMounted || loading) return <SparklesCore />;
+  if (!hasMounted || loading) return <PageLoader />;
 
   const LoadingSkeleton = () => (
     <div className="flex items-center space-x-12 mt-4 px-6">

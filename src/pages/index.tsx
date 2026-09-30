@@ -1,6 +1,6 @@
 import React from "react";
 import useHasMounted from "@/components/hooks/useHasMounted";
-import { SparklesCore } from "@/components/features/SparkleCore";
+import PageLoader from "@/components/layout/PageLoader";
 import PublicHome from "@/components/home/PublicHome";
 import PageFrame from "@/components/layout/PageFrame";
 import TodayView from "@/components/patternTrack/TodayView";
@@ -13,7 +13,7 @@ export default function Home() {
   const hasMounted = useHasMounted();
   const { user, authLoading, logs, startDate, today, loading, error, retry } = usePatternTrack();
 
-  if (!hasMounted || authLoading) return <SparklesCore />;
+  if (!hasMounted || authLoading) return <PageLoader />;
   if (!user) return <PublicHome />;
 
   return (

@@ -19,7 +19,7 @@ const ProblemPage: React.FC<ProblemPageProps> = ({ problem, bankKey }) => {
   }
   return (
     <WorkspaceSessionProvider bankKey={bankKey}>
-      <div>
+      <div id="main" tabIndex={-1} className="outline-none">
         <TopBar problemPage />
         <Workspace problem={problem} />
         <LogSlideOver />

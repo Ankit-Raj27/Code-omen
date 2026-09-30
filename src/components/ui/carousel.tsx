@@ -1,9 +1,7 @@
 "use client";
 import { IconArrowNarrowRight } from "@tabler/icons-react";
-import { useState, useRef, useId, useEffect } from "react";
+import { useState, useRef, useId } from "react";
 import Image from "next/image";
-import BlurFade from "./blur-fade";
-import { NeonGradientCard } from "./neon-gradient-card";
 import { useRouter } from "next/router";
 import { useSetRecoilState } from "recoil";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -20,54 +18,31 @@ interface SlideData {
 interface SlideProps {
     slide: SlideData;
     index: number;
+    total: number;
     current: number;
     handleSlideClick: (index: number) => void;
 }
 
-const Slide = ({ slide, index, current, handleSlideClick }: SlideProps) => {
+const Slide = ({ slide, index, total, current, handleSlideClick }: SlideProps) => {
     
     const router = useRouter();
     const slideRef = useRef<HTMLLIElement>(null);
 
-    const xRef = useRef(0);
-    const yRef = useRef(0);
-    const frameRef = useRef<number>();
-
-    useEffect(() => {
-        const animate = () => {
-            if (!slideRef.current) { return };
-
-            const x = xRef.current;
-            const y = yRef.current;
-
-            slideRef.current.style.setProperty("--x", `${x}px`);
-            slideRef.current.style.setProperty("--y", `${y}px`);
-
-            frameRef.current = requestAnimationFrame(animate);
-        };
-
-        frameRef.current = requestAnimationFrame(animate);
-
-        return () => {
-            if (frameRef.current) {
-                cancelAnimationFrame(frameRef.current);
-            }
-        };
-    }, []);
+    // Parallax: move the image with the pointer. Set the CSS variables straight from
+    // the event instead of running an animation loop on every frame.
+    const setPointer = (x: number, y: number) => {
+        slideRef.current?.style.setProperty("--x", `${x}px`);
+        slideRef.current?.style.setProperty("--y", `${y}px`);
+    };
 
     const handleMouseMove = (event: React.MouseEvent) => {
         const el = slideRef.current;
         if (!el) { return };
-
         const r = el.getBoundingClientRect();
-        xRef.current = event.clientX - (r.left + Math.floor(r.width / 2));
-        yRef.current = event.clientY - (r.top + Math.floor(r.height / 2));
+        setPointer(event.clientX - (r.left + Math.floor(r.width / 2)), event.clientY - (r.top + Math.floor(r.height / 2)));
     };
 
-    const handleMouseLeave = () => {
-        xRef.current = 0;
-        yRef.current = 0;
-    };
+    const handleMouseLeave = () => setPointer(0, 0);
 
     const imageLoaded = (event: React.SyntheticEvent<HTMLImageElement>) => {
         event.currentTarget.style.opacity = "1";
@@ -91,10 +66,12 @@ const handleButtonClick = () => {
 };
 
     return (
-        <div className="[perspective:1200px] [transform-style:preserve-3d]">
             <li
                 ref={slideRef}
-                className="flex flex-1 flex-col items-center justify-center relative text-center text-white opacity-100 transition-all duration-300 ease-in-out w-[70vmin] h-[70vmin] mx-[4vmin] z-10 "
+                aria-roledescription="slide"
+                aria-label={`${index + 1} of ${total}: ${title}`}
+                aria-hidden={current !== index}
+                className="[perspective:1200px] [transform-style:preserve-3d] flex flex-1 flex-col items-center justify-center relative text-center text-white opacity-100 transition-all duration-300 ease-in-out w-[70vmin] h-[70vmin] mx-[4vmin] z-10 "
                 onClick={() => handleSlideClick(index)}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
@@ -126,8 +103,8 @@ const handleButtonClick = () => {
                         alt={title}
                         src={src}
                         onLoad={imageLoaded}
-                        loading="eager"
-                        decoding="sync"
+                        priority={index === current}
+                        sizes="70vmin"
                     />
                     {current === index && (
                         <div className="absolute inset-0 bg-transparent transition-all duration-1000" />
@@ -142,7 +119,7 @@ const handleButtonClick = () => {
                         {title}
                     </h2>
                     <div className="flex justify-center">
-                        <button className="mt-6  px-4 py-2 w-fit mx-auto sm:text-sm text-black bg-white h-12 border border-transparent text-xs flex justify-center items-center rounded-2xl hover:shadow-lg transition duration-200 shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)]"
+                        <button tabIndex={current === index ? 0 : -1} className="mt-6  px-4 py-2 w-fit mx-auto sm:text-sm text-black bg-white h-12 border border-transparent text-xs flex justify-center items-center rounded-2xl hover:shadow-lg transition duration-200 shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)]"
                             onClick={handleButtonClick}
                         >
                             {button}
@@ -150,7 +127,6 @@ const handleButtonClick = () => {
                     </div>
                 </article>
             </li>
-        </div>
     );
 };
 
@@ -170,9 +146,10 @@ const CarouselControl = ({
             className={`w-10 h-10 flex items-center mx-2 justify-center bg-neutral-200 dark:bg-neutral-800 border-3 border-transparent rounded-full focus:border-[#6D64F7] focus:outline-none hover:-translate-y-0.5 active:translate-y-0.5 transition duration-200 ${type === "previous" ? "rotate-180" : ""
                 }`}
             title={title}
+            aria-label={title}
             onClick={handleClick}
         >
-            <IconArrowNarrowRight className="text-neutral-600 dark:text-neutral-200" />
+            <IconArrowNarrowRight aria-hidden="true" className="text-neutral-600 dark:text-neutral-200" />
         </button>
     );
 };
@@ -203,18 +180,12 @@ export function Carousel({ slides }: CarouselProps) {
     const id = useId();
 
     return (
-        <BlurFade delay={0.25 * 5}>
-            <NeonGradientCard
-                className="max-w-fit h-fit mx-auto"
-                borderSize={1}
-                neonColors={{
-                    firstColor: "yellow , orange",
-                    secondColor: "blue, green",
-                }}
-            >
                 <div
                     className="relative w-[70vmin] h-[70vmin] mx-auto "
-                    aria-labelledby={`carousel-heading-${id}`}
+                    role="region"
+                    aria-roledescription="carousel"
+                    aria-label="Problem collections"
+                    id={`carousel-${id}`}
                 >
                     <ul
                         className="absolute flex mx-[-4vmin] transition-transform duration-1000 ease-in-out"
@@ -228,6 +199,7 @@ export function Carousel({ slides }: CarouselProps) {
                                 key={index}
                                 slide={slide}
                                 index={index}
+                                total={slides.length}
                                 current={current}
                                 handleSlideClick={handleSlideClick}
                             />
@@ -249,7 +221,5 @@ export function Carousel({ slides }: CarouselProps) {
                         />
                     </div>
                 </div>
-            </NeonGradientCard>
-        </BlurFade>
     );
 }
