@@ -16,6 +16,7 @@ import { arrayUnion, doc, setDoc, updateDoc } from "firebase/firestore";
 import useLocalStorage from "@/components/hooks/useLocalStorage";
 import { JAVA_PROBLEMS } from "@/utils/problems/java";
 import type { JavaRunResult } from "@/lib/javaRunner";
+import { useWorkspaceSession } from "../WorkspaceSession";
 
 export type EditorLanguage = "javascript" | "java";
 
@@ -60,8 +61,10 @@ const Playground: React.FC<PlaygroundProps> = ({
   const [javaResult, setJavaResult] = useState<JavaRunResult | null>(null);
   const [running, setRunning] = useState(false);
 
+  const session = useWorkspaceSession();
   const markSolved = async () => {
     if (!user) return;
+    session?.onAccepted(language);
     toast.success("Congrats! All tests passed!", { position: "top-center", autoClose: 3000, theme: "dark" });
     setSuccess(true);
     setTimeout(() => setSuccess(false), 4000);

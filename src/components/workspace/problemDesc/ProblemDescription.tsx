@@ -1,5 +1,8 @@
 import { auth, firestore } from "@/Firebase/firebase";
 import LogProblemButton from "@/components/patternTrack/LogProblemButton";
+import { patternIdForBank } from "@/lib/patternTrack/bank";
+import { useWorkspaceSession } from "../WorkspaceSession";
+import { MyLogPanel, PatternPanel } from "./PatternPanels";
 import CircleSkeleton from "@/components/skeletons/CircleSkeleton";
 import RectangleSkeleton from "@/components/skeletons/RectangleSkeleton";
 import { DBProblem, Problem } from "@/utils/types/problems";
@@ -25,6 +28,13 @@ import {
 } from "firebase/firestore";
 
 
+const TABS = [
+  { id: "pattern", label: "Pattern" },
+  { id: "description", label: "Description" },
+  { id: "mylog", label: "My log" },
+] as const;
+type TabId = (typeof TABS)[number]["id"];
+
 type ProblemDescriptionProps = {
   problem: Problem;
   _solved: boolean;
@@ -41,6 +51,10 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({
   const [user] = useAuthState(auth);
 
   const [updating, setUpdating] = useState(false);
+  const session = useWorkspaceSession();
+  const bankKey = session?.bankKey ?? problem.id;
+  const hasPattern = !!patternIdForBank(bankKey);
+  const [tab, setTab] = useState<TabId>(hasPattern ? "pattern" : "description");
 
   const findProblemInCollection = async (problemId: string) => {
     // First, check if we have the selectedList 
@@ -250,18 +264,36 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({
   
   return (
     <div className="bg-dark-layer-1">
-      {/* TAB */}
-      <div className="flex h-11 w-full items-center pt-2 bg-dark-layer-2 text-white overflow-x-hidden">
-        <div
-          className={
-            "bg-dark-layer-1 rounded-t-[5px] px-5 py-[10px] text-xs cursor-pointer"
-          }
-        >
-          Description
-        </div>
+      {/* TABS: Pattern first, so you name the pattern before reading details. */}
+      <div role="tablist" className="flex h-11 w-full items-center pt-2 bg-dark-layer-2 text-white overflow-x-hidden">
+        {TABS.filter((t) => t.id !== "pattern" || hasPattern).map((t) => (
+          <button
+            key={t.id}
+            role="tab"
+            aria-selected={tab === t.id}
+            onClick={() => setTab(t.id)}
+            className={`rounded-t-[5px] px-5 py-[10px] text-xs ${
+              tab === t.id ? "bg-dark-layer-1 text-white" : "text-dark-gray-6 hover:text-white"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
-      <div className="flex px-0 py-4 h-[calc(100vh-94px)] overflow-y-auto">
+      {tab === "pattern" && (
+        <div className="h-[calc(100vh-94px)] overflow-y-auto py-4">
+          <p className="mb-4 px-5 text-lg font-medium text-white">{problem?.title}</p>
+          <PatternPanel bankKey={bankKey} />
+        </div>
+      )}
+      {tab === "mylog" && (
+        <div className="h-[calc(100vh-94px)] overflow-y-auto py-4">
+          <MyLogPanel bankKey={bankKey} />
+        </div>
+      )}
+
+      <div className={tab === "description" ? "flex px-0 py-4 h-[calc(100vh-94px)] overflow-y-auto" : "hidden"}>
         <div className="px-5">
           {/* Problem heading */}
           <div className="w-full">
@@ -269,7 +301,7 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({
               <div className="flex-1 mr-2 text-lg text-white font-medium">
                 {problem?.title}
               </div>
-              <LogProblemButton bankKey={problem.id} />
+              <LogProblemButton bankKey={bankKey} />
             </div>
             {!loading && currentProblem && (
               <div className="flex items-center mt-3">

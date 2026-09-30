@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import { auth } from "@/Firebase/firebase";
 import { prefillForBank } from "@/lib/patternTrack/bank";
 import { todayLocal } from "@/lib/patternTrack/dates";
+import { loggedMinutes, useWorkspaceSession } from "@/components/workspace/WorkspaceSession";
 import LogForm from "./LogForm";
 import { btnGhost } from "./ui";
 
@@ -12,6 +13,7 @@ const LogProblemButton: React.FC<{ bankKey: string }> = ({ bankKey }) => {
   const [user] = useAuthState(auth);
   const [open, setOpen] = useState(false);
   const prefill = prefillForBank(bankKey);
+  const session = useWorkspaceSession();
 
   useEffect(() => {
     if (!open) return;
@@ -42,7 +44,14 @@ const LogProblemButton: React.FC<{ bankKey: string }> = ({ bankKey }) => {
               <h2 className="text-lg font-medium text-dark-gray-8">Log to Pattern Track</h2>
               <button className="text-dark-gray-6 hover:text-dark-gray-8" onClick={() => setOpen(false)} aria-label="Close">✕</button>
             </div>
-            <LogForm uid={user.uid} today={todayLocal()} prefill={prefill} onSaved={() => setOpen(false)} />
+            <LogForm
+              uid={user.uid}
+              today={todayLocal()}
+              prefill={prefill}
+              initial={session ? { minutes: loggedMinutes(session.elapsed), solvedSolo: session.hintsUsed === 0 } : undefined}
+              extra={session ? { hintsUsed: session.hintsUsed } : undefined}
+              onSaved={() => setOpen(false)}
+            />
           </div>
         </div>
       )}

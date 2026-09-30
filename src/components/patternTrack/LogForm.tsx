@@ -13,24 +13,33 @@ type Props = {
   prefill?: Partial<LogPrefill>;
   defaultPatternId?: string;
   onSaved?: () => void;
+  /** Starting values from a solving session (timer minutes, solo from hints). */
+  initial?: { minutes?: number; solvedSolo?: boolean };
+  /** Extra fields saved with the entry (not shown in the form). */
+  extra?: { hintsUsed?: number; language?: "js" | "java" };
 };
 
-const empty = (today: Ymd, prefill: Partial<LogPrefill> = {}, patternId?: string) => ({
+const empty = (
+  today: Ymd,
+  prefill: Partial<LogPrefill> = {},
+  patternId?: string,
+  initial: Props["initial"] = {},
+) => ({
   bankSlug: prefill.bankSlug ?? "",
   name: prefill.name ?? "",
   url: prefill.url ?? "",
   patternId: prefill.patternId ?? patternId ?? PATTERNS[0].id,
   difficulty: (prefill.difficulty ?? "M") as LogDifficulty,
-  minutes: "25",
+  minutes: String(initial.minutes ?? 25),
   dateSolved: today,
-  solvedSolo: true,
+  solvedSolo: initial.solvedSolo ?? true,
   insight: "",
   stuckOn: "",
   complexity: "",
 });
 
-const LogForm: React.FC<Props> = ({ uid, today, prefill, defaultPatternId, onSaved }) => {
-  const [f, setF] = useState(() => empty(today, prefill, defaultPatternId));
+const LogForm: React.FC<Props> = ({ uid, today, prefill, defaultPatternId, onSaved, initial, extra }) => {
+  const [f, setF] = useState(() => empty(today, prefill, defaultPatternId, initial));
   const [saving, setSaving] = useState(false);
   const set = <K extends keyof typeof f>(k: K, v: (typeof f)[K]) => setF((s) => ({ ...s, [k]: v }));
 
@@ -51,6 +60,7 @@ const LogForm: React.FC<Props> = ({ uid, today, prefill, defaultPatternId, onSav
         stuckOn: f.stuckOn,
         complexity: f.complexity,
         bankSlug: f.bankSlug || undefined,
+        ...extra,
       });
       toast.success("Logged. First review is tomorrow.", { theme: "dark", position: "top-center", autoClose: 2000 });
       setF(empty(today, {}, f.patternId));

@@ -21,6 +21,10 @@ export interface LogEntry {
   nextDue: Ymd;
   reviews: Review[];
   bankSlug?: string;
+  /** Workspace hints opened before solving (0–3). */
+  hintsUsed?: number;
+  /** Editor language used when solved in CodeOmen. */
+  language?: "js" | "java";
   createdAtMs?: number;
 }
 
