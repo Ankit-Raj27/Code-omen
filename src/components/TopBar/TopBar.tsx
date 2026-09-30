@@ -47,15 +47,13 @@ const TopBar: React.FC<TopBarProps> = ({ problemPage }) => {
         className={`flex w-full items-center justify-between ${!problemPage ? "max-w-[1200px] mx-auto" : ""
           }`}
       >
-        <Link href="/" className="object-cover  flex-1">
-          <Image
-            src="/logo.png"
-            alt="Logo"
-            className="h-full"
-            width={200}
-            height={200}
-          />
-        </Link>
+        {/* Wide wordmark sized to the bar: the old 200×200 square logo overflowed
+            the 50px bar and swallowed clicks on the problem-page tabs below it. */}
+        <div className="flex flex-1 items-center">
+          <Link href="/" className="inline-flex items-center" aria-label="CodeOmen home">
+            <Image src="/logo1.png" alt="CodeOmen" width={148} height={42} className="h-auto w-[148px]" priority />
+          </Link>
+        </div>
 
         {problemPage && (
           <div className="flex items-center gap-4 flex-1 justify-center">
