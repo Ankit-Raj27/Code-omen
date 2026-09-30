@@ -1,4 +1,7 @@
 import { auth, firestore } from "@/Firebase/firebase";
+import { usePatternTrack } from "@/context/PatternTrackContext";
+import { isLoggedListProblem } from "@/lib/patternTrack/lists";
+import { PatternCell, matchesPattern } from "./PatternCells";
 import { DBProblem } from "@/utils/types/problems";
 import {
   collection,
@@ -16,10 +19,11 @@ import { IoClose, IoLogoYoutube } from "react-icons/io5";
 import YouTube from "react-youtube";
 
 type ProblemsTableProps = {
+  patternFilter?: string;
   setLoadingProblems: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const Gfg150Table: React.FC<ProblemsTableProps> = ({ setLoadingProblems }) => {
+const Gfg150Table: React.FC<ProblemsTableProps> = ({ setLoadingProblems, patternFilter = "all" }) => {
   const [youtubePlayer, setYoutubePlayer] = useState({
     isOpen: false,
     videoId: "",
@@ -27,6 +31,9 @@ const Gfg150Table: React.FC<ProblemsTableProps> = ({ setLoadingProblems }) => {
 
   const problems = useGetProblems(setLoadingProblems);
   const solvedProblems = useGetSolvedProblems();
+  const { logs } = usePatternTrack();
+  // Done = solved in CodeOmen's editor, or logged in Pattern Track (e.g. solved on LeetCode).
+  const isDone = (p: { id: string; link?: string }) => solvedProblems.includes(p.id) || isLoggedListProblem(p, logs);
 
   const closeModal = () => {
     setYoutubePlayer({ isOpen: false, videoId: "" });
@@ -47,7 +54,7 @@ const Gfg150Table: React.FC<ProblemsTableProps> = ({ setLoadingProblems }) => {
   return (
     <>
       <tbody className="text-white">
-        {problems.map((problem, idx) => {
+        {problems.filter((problem) => matchesPattern(problem, patternFilter)).map((problem, idx) => {
           const difficultyColor =
             problem.difficulty === "Easy"
               ? "text-ark-green-s"
@@ -60,7 +67,7 @@ const Gfg150Table: React.FC<ProblemsTableProps> = ({ setLoadingProblems }) => {
               key={problem.id}
             >
               <th className="px-2 py-4 font-medium whitespace-nowrap text-dark-green-s">
-                {solvedProblems.includes(problem.id) && (
+                {isDone(problem) && (
                   <FaRegCheckCircle fontSize={"18"} width={"18"} />
                 )}
               </th>
@@ -86,6 +93,7 @@ const Gfg150Table: React.FC<ProblemsTableProps> = ({ setLoadingProblems }) => {
                 {problem.difficulty}
               </td>
               <td className={`px-6 py-4`}>{problem.category}</td>
+              <PatternCell problem={problem} />
               <td className={`px-6 py-4`}>
                 {problem.videoId ? (
                   <IoLogoYoutube

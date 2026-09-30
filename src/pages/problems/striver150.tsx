@@ -1,5 +1,6 @@
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
+import { PatternFilterSelect } from "@/components/ProblemsTable/PatternCells";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "@/Firebase/firebase";
 import Striver150Table from "@/components/ProblemsTable/StriverTable";
@@ -16,6 +17,7 @@ export default function Home() {
   const [statusFilter, setStatusFilter] = useState<"all" | "solved" | "unsolved">("all");
   const [difficultyFilter, setDifficultyFilter] = useState<"all" | "Easy" | "Medium" | "Hard">("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [patternFilter, setPatternFilter] = useState("all");
 
   useEffect(() => {
     if (!loading && !user) {
@@ -68,6 +70,8 @@ export default function Home() {
             {d}
           </button>
         ))}
+
+        <PatternFilterSelect value={patternFilter} onChange={setPatternFilter} />
       </div>
 
       <div className="flex justify-center mb-6">
@@ -77,6 +81,7 @@ export default function Home() {
           difficultyFilter={difficultyFilter}
           categoryFilter={categoryFilter}
           setCategoryFilter={setCategoryFilter}
+          patternFilter={patternFilter}
         />
       </div>
     </main>

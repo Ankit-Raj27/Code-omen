@@ -1,5 +1,6 @@
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
+import { PatternFilterSelect } from "@/components/ProblemsTable/PatternCells";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "@/Firebase/firebase"; // Firebase auth import
 import useHasMounted from "@/components/hooks/useHasMounted";
@@ -10,6 +11,7 @@ import Neetcode150Table from "@/components/ProblemsTable/NeetCodeTable";
 
 export default function Home() {
   const [loadingProblems, setLoadingProblems] = useState(true);
+  const [patternFilter, setPatternFilter] = useState("all");
   const hasMounted = useHasMounted();
   const router = useRouter();
   
@@ -55,6 +57,9 @@ export default function Home() {
               ))}
             </div>
           )}
+          <div className="mx-auto mb-4 flex w-full max-w-[1200px] justify-end sm:w-7/12">
+            <PatternFilterSelect value={patternFilter} onChange={setPatternFilter} />
+          </div>
           <table className="text-sm text-left text-gray-500 dark:text-gray-400 sm:w-7/12 w-full max-w-[1200px] mx-auto">
             {!loadingProblems && (
               <thead className="text-xs text-gray-700 uppercase dark:text-gray-400 border-b ">
@@ -73,12 +78,15 @@ export default function Home() {
                     Category
                   </th>
                   <th scope="col" className="px-6 py-3 w-0 font-medium">
+                    Pattern
+                  </th>
+                  <th scope="col" className="px-6 py-3 w-0 font-medium">
                     Solution
                   </th>
                 </tr>
               </thead>
             )}
-            <Neetcode150Table setLoadingProblems={setLoadingProblems} filter="all" />
+            <Neetcode150Table setLoadingProblems={setLoadingProblems} filter="all" patternFilter={patternFilter} />
           </table>
         </div>
       </main>
