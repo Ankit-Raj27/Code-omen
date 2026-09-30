@@ -105,3 +105,13 @@ describe("table helpers", () => {
     expect(row).toContain(`"2026-10-06:clean"`);
   });
 });
+
+import { safeHttpUrl } from "../dates";
+describe("safeHttpUrl", () => {
+  it("allows http(s) only", () => {
+    expect(safeHttpUrl(" https://leetcode.com/problems/x/ ")).toBe("https://leetcode.com/problems/x/");
+    expect(safeHttpUrl("javascript:alert(1)")).toBe("");
+    expect(safeHttpUrl("JavaScript:alert(1)")).toBe("");
+    expect(safeHttpUrl(undefined)).toBe("");
+  });
+});

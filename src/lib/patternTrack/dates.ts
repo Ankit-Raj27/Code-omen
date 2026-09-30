@@ -3,6 +3,12 @@
 
 export type Ymd = string;
 
+/** Only http(s) URLs are stored or rendered as links (blocks javascript: etc.). */
+export function safeHttpUrl(url: string | undefined): string {
+  const u = (url ?? "").trim();
+  return /^https?:\/\//i.test(u) ? u : "";
+}
+
 const YMD_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export function isYmd(value: string): value is Ymd {

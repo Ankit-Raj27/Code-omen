@@ -42,9 +42,10 @@ const Playground: React.FC<PlaygroundProps> = ({
   })
   const [user] = useAuthState(auth);
 
+  const router = useRouter();
   const {
-    query: { pid },
-  } = useRouter();
+    query: { pid, fresh },
+  } = router;
   const handleSubmit = async () => {
     if (!user) {
       toast.error("Please login to submit!", {
@@ -99,13 +100,22 @@ const Playground: React.FC<PlaygroundProps> = ({
   
 
   useEffect(() => {
+    // Pattern Track "Re-solve": start from a blank editor, discarding saved code.
+    if (fresh === "1") {
+      localStorage.removeItem(`code-${pid}`);
+      setUserCode(problem.starterCode);
+      const { fresh: _f, ...rest } = router.query;
+      router.replace({ pathname: router.pathname, query: rest }, undefined, { shallow: true });
+      return;
+    }
     const code = localStorage.getItem(`code-${pid}`);
     if (user) {
       setUserCode(code ? JSON.parse(code) : problem.starterCode);
     } else {
       setUserCode(problem.starterCode);
     }
-  }, [pid, user, problem.starterCode]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pid, user, problem.starterCode, fresh]);
   const onChange = (value: string) => {
     setUserCode(value);
     localStorage.setItem(`code-${pid}`, JSON.stringify(value));
