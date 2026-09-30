@@ -431,46 +431,49 @@ function useGetCurrentProblem(problemId: string) {
 
   useEffect(() => {
     // Get problem from DB
+    let cancelled = false;
+    const show = (problem: Record<string, any>) => {
+      if (cancelled) return;
+      setCurrentProblem({ id: problemId, ...problem } as DBProblem);
+      setProblemDifficultyClass(
+        problem.difficulty === "Easy"
+          ? "bg-olive text-green"
+          : problem.difficulty === "Medium"
+          ? "bg-dark-yellow text-dark-yellow"
+          : " bg-dark-pink text-dark-pink"
+      );
+    };
     const getCurrentProblem = async () => {
       setLoading(true);
-      
-      //  to get the problem from "problems" collection
-      const problemsDocRef = doc(firestore, "problems", problemId);
-      let problemDoc = await getDoc(problemsDocRef);
-      
-      // If problem not found in "problems" collection
-      if (!problemDoc.exists()) {
-        const collections = ["striver150", "neetcode150", "gfg150"];
-        for (const collection of collections) {
-          const collectionDocRef = doc(firestore, collection, problemId);
-          const collectionDocSnap = await getDoc(collectionDocRef);
-          if (collectionDocSnap.exists()) {
-            problemDoc = collectionDocSnap;
-            break;
+      // Show what the code knows at once; Firestore only adds likes and older list fields.
+      const meta = bankMeta(problemId);
+      if (meta) {
+        show({ ...meta, likes: 0, dislikes: 0, selectedList: "problems" });
+        setLoading(false);
+      }
+      try {
+        let problemDoc = await getDoc(doc(firestore, "problems", problemId));
+        if (!problemDoc.exists()) {
+          for (const collection of ["striver150", "neetcode150", "gfg150"]) {
+            const snap = await getDoc(doc(firestore, collection, problemId));
+            if (snap.exists()) {
+              problemDoc = snap;
+              break;
+            }
           }
         }
+        if (problemDoc.exists()) show(problemDoc.data());
+      } catch (e) {
+        // Offline or unreachable: keep the code metadata.
+        console.warn("Problem metadata unavailable:", e);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      
-      // Not seeded in Firestore yet: fall back to the metadata in code (no likes until seeded).
-      const meta = problemDoc.exists() ? null : bankMeta(problemId);
-      if (problemDoc.exists() || meta) {
-        const problem = problemDoc.exists()
-          ? problemDoc.data()
-          : { ...meta!, likes: 0, dislikes: 0, selectedList: "problems" };
-        setCurrentProblem({ id: problemId, ...problem } as DBProblem);
-        // easy, medium, hard
-        setProblemDifficultyClass(
-          problem.difficulty === "Easy"
-            ? "bg-olive text-green"
-            : problem.difficulty === "Medium"
-            ? "bg-dark-yellow text-dark-yellow"
-            : " bg-dark-pink text-dark-pink"
-        );
-      }
-      setLoading(false);
     };
-    
     getCurrentProblem();
+    return () => {
+      cancelled = true;
+    };
   }, [problemId]);
 
   return { currentProblem, loading, problemDifficultyClass, setCurrentProblem };

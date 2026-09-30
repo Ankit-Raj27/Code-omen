@@ -21,7 +21,7 @@ const PublicHome: React.FC = () => {
   return (
     <>
       <Navbar />
-      <main className="bg-black min-h-screen text-white overflow-hidden">
+      <main id="main" tabIndex={-1} className="outline-none bg-black min-h-screen text-white overflow-hidden">
         <section className="relative pt-20 pb-32 px-4 md:px-8">
           <div className="max-w-7xl mx-auto relative z-10">
             <LandingPage />

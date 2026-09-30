@@ -16,6 +16,7 @@ import {
   type LogEntry, type PatternProblemRef,
 } from "@/lib/patternTrack/stats";
 import { daysBetween, safeHttpUrl, type Ymd } from "@/lib/patternTrack/dates";
+import { save } from "./save";
 import {
   Bar, DifficultyChip, EmptyState, Panel, PatternChip, SectionTitle, StageDots, StatTile, btnGhost, btnGradient,
 } from "./ui";
@@ -57,7 +58,7 @@ const ReviewCard: React.FC<{
   const grade = async (r: ReviewResult) => {
     setBusy(true);
     try {
-      await gradeLog(uid, log, r, today);
+      await save(gradeLog(uid, log, r, today), "review");
       onGraded(log.id, r);
     } catch (e) {
       console.error(e);

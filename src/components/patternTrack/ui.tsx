@@ -74,3 +74,15 @@ export const SectionTitle: React.FC<{ icon: React.ReactNode; children: React.Rea
     {action}
   </div>
 );
+
+/** A load failure with a way out. */
+export const ErrorState: React.FC<{ what?: string; onRetry?: () => void }> = ({ what = "your log", onRetry }) => (
+  <Panel>
+    <div role="alert" className="flex flex-wrap items-center justify-between gap-3">
+      <p className="text-sm text-dark-label-2">
+        Couldn&apos;t load {what}. Check your connection{onRetry ? " and try again" : ", then refresh"}.
+      </p>
+      {onRetry && <button className={btnGhost} onClick={onRetry}>Try again</button>}
+    </div>
+  </Panel>
+);

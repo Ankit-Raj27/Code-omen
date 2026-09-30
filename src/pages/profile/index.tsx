@@ -8,10 +8,11 @@ import PageFrame from "@/components/layout/PageFrame";
 import { downloadCsv } from "@/components/patternTrack/LogView";
 import RequireSignIn from "@/components/patternTrack/RequireSignIn";
 import TrackCharts from "@/components/patternTrack/TrackCharts";
-import { EmptyState, Panel, SectionTitle, StatTile, btnGhost, inputCls } from "@/components/patternTrack/ui";
+import { ErrorState, EmptyState, Panel, SectionTitle, StatTile, btnGhost, inputCls } from "@/components/patternTrack/ui";
 import { ActivityHeatmap, MasteryGrid, SoloTrendChart } from "@/components/profile/ProfileViews";
 import { usePatternTrack } from "@/context/PatternTrackContext";
 import { setPreferredLanguage, setStartDate, type EditorLanguagePref } from "@/lib/patternTrack/firestore";
+import { save } from "@/components/patternTrack/save";
 import {
   currentWeek, dailyActivity, streak, todayStats, weekLabel, weeklyActivity,
 } from "@/lib/patternTrack/stats";
@@ -23,7 +24,7 @@ export default function ProfilePage() {
   const hasMounted = useHasMounted();
   const reduce = useReducedMotion();
   const {
-    user, authLoading, logs, loading, error, startDate, setStartDateState, today,
+    user, authLoading, logs, loading, error, retry, startDate, setStartDateState, today,
     preferredLanguage, setPreferredLanguageState,
   } = usePatternTrack();
 
@@ -39,7 +40,7 @@ export default function ProfilePage() {
   const body = (() => {
     if (authLoading) return null;
     if (!user) return <RequireSignIn what="see your progress" />;
-    if (error) return <EmptyState>Couldn&apos;t load your log. Refresh to retry.</EmptyState>;
+    if (error) return <ErrorState onRetry={retry} />;
     if (loading) return <div className="h-64 animate-pulse rounded-xl bg-gray-900/50" />;
 
     const stats = todayStats(logs, today);
@@ -50,14 +51,14 @@ export default function ProfilePage() {
 
     const changeStart = async (d: string) => {
       setStartDateState(d);
-      try { await setStartDate(user.uid, d); } catch { fail("start date"); }
+      try { await save(setStartDate(user.uid, d), "start date"); } catch { fail("start date"); }
     };
     const changeLang = async (l: EditorLanguagePref) => {
       setPreferredLanguageState(l);
       try {
         window.localStorage.setItem("cd-language", JSON.stringify(l));
       } catch { /* storage unavailable */ }
-      try { await setPreferredLanguage(user.uid, l); } catch { fail("language"); }
+      try { await save(setPreferredLanguage(user.uid, l), "language"); } catch { fail("language"); }
     };
 
     return (

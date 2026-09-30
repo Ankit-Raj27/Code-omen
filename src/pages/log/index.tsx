@@ -4,7 +4,7 @@ import useHasMounted from "@/components/hooks/useHasMounted";
 import PageFrame from "@/components/layout/PageFrame";
 import LogView from "@/components/patternTrack/LogView";
 import RequireSignIn from "@/components/patternTrack/RequireSignIn";
-import { EmptyState } from "@/components/patternTrack/ui";
+import { ErrorState, EmptyState } from "@/components/patternTrack/ui";
 import { usePatternTrack } from "@/context/PatternTrackContext";
 import { prefillForLc } from "@/lib/patternTrack/bank";
 import { currentWeek, patternForWeek } from "@/lib/patternTrack/stats";
@@ -12,7 +12,7 @@ import { currentWeek, patternForWeek } from "@/lib/patternTrack/stats";
 export default function LogPage() {
   const hasMounted = useHasMounted();
   const { query } = useRouter();
-  const { user, authLoading, logs, startDate, today, loading, error } = usePatternTrack();
+  const { user, authLoading, logs, startDate, today, loading, error, retry } = usePatternTrack();
   const prefill = typeof query.slug === "string" ? prefillForLc(query.slug) : undefined;
 
   return (
@@ -20,7 +20,7 @@ export default function LogPage() {
       {!hasMounted || authLoading ? null : !user ? (
         <RequireSignIn what="log problems and schedule reviews" />
       ) : error ? (
-        <EmptyState>Couldn&apos;t load your log. Refresh to retry.</EmptyState>
+        <ErrorState onRetry={retry} />
       ) : loading ? (
         <div className="h-40 animate-pulse rounded-xl bg-gray-900/50" />
       ) : (
