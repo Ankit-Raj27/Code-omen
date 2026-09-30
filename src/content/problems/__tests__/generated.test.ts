@@ -40,8 +40,8 @@ describe("spec registry", () => {
       expect(JAVA_PROBLEMS[s.slug], s.slug).toBeTruthy();
     }
   });
-  it("weeks 1–10: every core and stretch problem now runs in CodeOmen", () => {
-    for (const p of PATTERNS.filter((x) => x.week <= 10)) {
+  it("weeks 1–14: every core and stretch problem now runs in CodeOmen", () => {
+    for (const p of PATTERNS.filter((x) => x.week <= 14)) {
       for (const [, , slug] of [...p.problems, ...(p.stretch ?? [])]) expect(problems[slug], `${p.id}: ${slug}`).toBeTruthy();
       expect(p.stretch?.length, p.id).toBe(3);
     }
