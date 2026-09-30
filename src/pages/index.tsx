@@ -21,7 +21,7 @@ import { auth, firestore } from "@/Firebase/firebase"
 import { getUserData } from "@/Firebase/firebase"
 import { useAuthState } from "react-firebase-hooks/auth"
 import { useRouter } from "next/navigation"
-import { collection, getDocs, query, orderBy, limit, where } from "firebase/firestore"
+import { collection, doc, getDoc, getDocs, query, orderBy, limit, where } from "firebase/firestore"
 import UserActivityComponent from "@/components/features/UserActivityComponent"
 import Loading from "@/components/features/loading"
 
@@ -133,9 +133,9 @@ const Dashboard = () => {
       const solvedIds = new Set();
       
       if (user) {
-        const solvedProblemsRef = collection(firestore, "users", user.uid, "solvedProblems");
-        const solvedProblemsSnap = await getDocs(solvedProblemsRef);
-        solvedProblemsSnap.docs.forEach(doc => solvedIds.add(doc.id));
+        const userSnap = await getDoc(doc(firestore, "users", user.uid));
+        const ids: unknown = userSnap.data()?.solvedProblems;
+        if (Array.isArray(ids)) ids.forEach((id) => solvedIds.add(id));
       }
       
       // Get problems from all collections

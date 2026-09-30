@@ -96,41 +96,7 @@ export function UserStats({ onStatsCalculated }: UserStatsProps) {
                         title: doc.data()!.title || `Problem ${doc.id}`
                     }))
 
-                // Generate recent activity data if it doesn't exist
-                if (activity.length === 0 && solvedProblems.length > 0) {
-                    // Create mock activity data based on solved problems
-                    const mockActivity = solvedProblems.map((problem, index) => {
-                        // Create timestamps with slight variations so they're distributed over time
-                        // Newer problems (with higher indices) will have more recent timestamps
-                        const mockDate = new Date();
-                        mockDate.setDate(mockDate.getDate() - (solvedProblems.length - index));
-
-                        return {
-                            problemId: problem.id,
-                            problemName: problem.title,
-                            timestamp: mockDate.toISOString(),
-                            difficulty: problem.difficulty
-                        };
-                    });
-
-                    // Sort most recent first
-                    mockActivity.sort((a, b) =>
-                        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-                    );
-
-                    activity = mockActivity;
-
-                    // Store this activity in Firestore for future use
-                    try {
-                        await updateDoc(userRef, {
-                            recentActivity: activity
-                        });
-                        console.log("Created and stored activity data");
-                    } catch (err) {
-                        console.error("Error storing activity data:", err);
-                    }
-                }
-
+                // Only real, timestamped activity is charted. No synthetic dates.
                 // Generate data for the past 3 months for the chart
                 const currentMonth = new Date();
                 const monthlyData: Record<string, ChartData> = {};
@@ -159,17 +125,6 @@ export function UserStats({ onStatsCalculated }: UserStatsProps) {
                                 }
                             }
                         }
-                    });
-                } else {
-                    // Fallback: distribute problems across recent months
-                    const monthsArr = Object.keys(monthlyData);
-                    solvedProblems.forEach((problem, idx) => {
-                        const monthName = monthsArr[idx % monthsArr.length];
-                        const difficulty = problem.difficulty.toLowerCase();
-
-                        if (difficulty === "easy") { monthlyData[monthName].easy += 1; }
-                        if (difficulty === "medium") { monthlyData[monthName].medium += 1; }
-                        if (difficulty === "hard") { monthlyData[monthName].hard += 1; }
                     });
                 }
 
