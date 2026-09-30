@@ -77,7 +77,7 @@ const AppNav: React.FC = () => {
             Lists ▾
           </button>
           {listsOpen && (
-            <div role="menu" className="absolute left-0 top-9 z-50 w-44 rounded-lg border border-dark-divider-border-2 bg-dark-layer-1 p-1 shadow-lg">
+            <div role="menu" className="absolute left-0 top-9 z-50 w-44 rounded-xl border border-gray-800 bg-gray-900 p-1 shadow-lg">
               {LISTS.map((l) => (
                 <Link key={l.href} href={l.href} role="menuitem"
                   className="block rounded-md px-3 py-2 text-sm text-dark-label-2 hover:bg-dark-fill-3">

@@ -131,3 +131,40 @@ describe("nextUp / weekLabel", () => {
     expect(weekLabel("2026-10-05", "2027-02-20")).toBe("Wk 20 · Mixed Mocks");
   });
 });
+
+import { questionOfTheDay, weekStartOf, weeklyActivity } from "../stats";
+describe("weeklyActivity", () => {
+  it("buckets logs and reviews by Monday-start week, oldest first", () => {
+    expect(weekStartOf("2026-10-11")).toBe("2026-10-05"); // Sunday -> Monday
+    expect(weekStartOf("2026-10-05")).toBe("2026-10-05");
+    const w = weeklyActivity([
+      log({ dateSolved: "2026-10-06", reviews: [{ date: "2026-10-07", result: "clean" }, { date: "2026-10-13", result: "forgot" }] }),
+      log({ dateSolved: "2026-10-12", reviews: [{ date: "2026-10-13", result: "clean" }] }),
+      log({ dateSolved: "2026-01-01" }),
+    ], "2026-10-14", 3);
+    expect(w.map((x) => x.weekStart)).toEqual(["2026-09-28", "2026-10-05", "2026-10-12"]);
+    expect(w.map((x) => [x.logged, x.reviews, x.recallPct])).toEqual([[0, 0, null], [1, 1, 100], [1, 2, 50]]);
+    expect(w[1].label).toBe("5 Oct");
+  });
+});
+
+describe("questionOfTheDay", () => {
+  it("is stable within a day, varies by seed, and skips logged + excluded problems", () => {
+    const a = questionOfTheDay([], "2026-10-05", "2026-10-20", "u1");
+    expect(questionOfTheDay([], "2026-10-05", "2026-10-20", "u1")).toEqual(a);
+    const seeds = new Set(["a", "b", "c", "d", "e", "f"].map((s) => questionOfTheDay([], "2026-10-05", "2026-10-20", s)?.slug));
+    expect(seeds.size).toBeGreaterThan(1);
+    // Before the track starts, only week 1 is eligible.
+    const early = questionOfTheDay([], "2026-10-05", "2026-10-01", "u1");
+    expect(PATTERN_BY_ID["arrays-hashing"].problems.map((p) => p[2])).toContain(early?.slug);
+    // Excluding every week-1 problem but one forces that one.
+    const w1 = PATTERN_BY_ID["arrays-hashing"].problems.map((p) => p[2]);
+    expect(questionOfTheDay([], "2026-10-05", "2026-10-01", "u1", () => true, w1.slice(1))?.slug).toBe(w1[0]);
+  });
+  it("prefers runnable problems and returns null when everything is logged", () => {
+    const q = questionOfTheDay([], "2026-10-05", "2026-10-20", "u1", (s) => s === "3sum");
+    expect(q?.slug).toBe("3sum");
+    const all = PATTERN_BY_ID["arrays-hashing"].problems.map(([, , slug]) => log({ url: `https://leetcode.com/problems/${slug}/` }));
+    expect(questionOfTheDay(all, "2026-10-05", "2026-10-01", "u1")).toBeNull();
+  });
+});
