@@ -35,32 +35,11 @@ const handlerWordSearchII = (WordSearchConstructor: any) => {
 export const wordSearchII: Problem = {
   id: "word-search-ii",
   title: "Word Search II",
-  problemStatement: `<p class='mt-3'>
-    Given a 2D board and a list of words from the dictionary, find all words in the board.
-  </p>
-  <p class='mt-3'>
-    Each word must be constructed from letters of sequentially adjacent cells, where adjacent cells are horizontally or vertically neighboring. The same letter cell may not be used more than once in a word.
-  </p>
-  <p class='mt-3'>
-    Implement the <code>WordSearch</code> class:
-    <ul class="list-disc pl-5">
-      <li><code>WordSearch(board, words)</code> Initializes the object with a given board and a list of words.</li>
-      <li><code>findWords()</code> Returns a list of all words that are found in the board.</li>
-    </ul>
-  </p>`,
+  problemStatement: `<p class='mt-3'>A <code>WordSearch</code> is created with a grid of letters <code>board</code> and a list of <code>words</code>. <code>findWords()</code> returns every word from the list that can be traced on the grid.</p><p class='mt-3'>A word is traced by stepping between horizontally or vertically neighbouring cells, and one cell can't be used twice in the same word. Return the found words in any order.</p>`,
   examples: [
-    {
-      id: 1,
-      inputText: `board = [['o', 'a', 'a', 'n'], ['e', 't', 'a', 'e'], ['i', 'h', 'k', 'r'], ['i', 'f', 'l', 'v']];\nwords = ['oath', 'pea', 'eat', 'rain'];\nwordSearch = new WordSearch(board, words);\nwordSearch.findWords();`,
-      outputText: `["oath", "eat"]`,
-      explanation: "The words 'oath' and 'eat' can be formed from the board.",
-    },
+    { id: 1, inputText: "board = [[\"c\",\"a\",\"t\"],[\"x\",\"r\",\"o\"],[\"d\",\"o\",\"g\"]], words = [\"cat\",\"car\",\"dog\",\"tax\"]", outputText: "[\"cat\",\"car\",\"dog\"]", explanation: "\"tax\" would need a diagonal step from a to x." },
   ],
-  constraints: `<li class='mt-2'><code>1 ≤ board.length ≤ 12</code></li>
-<li class='mt-2'><code>1 ≤ board[i].length ≤ 12</code></li>
-<li class='mt-2'><code>1 ≤ words.length ≤ 3 * 10^4</code></li>
-<li class='mt-2'><code>1 ≤ words[i].length ≤ 10</code></li>
-<li class='mt-2'>All words have distinct characters.</li>`,
+  constraints: `<li class='mt-2'><code>1 ≤ board.length, board[i].length ≤ 12</code></li><li class='mt-2'><code>1 ≤ words.length ≤ 3 × 10<sup>4</sup></code></li><li class='mt-2'>Letters are lowercase; words are distinct.</li>`,
   handlerFunction: handlerWordSearchII,
   starterCode: starterCodeWordSearchII,
   order: 19,

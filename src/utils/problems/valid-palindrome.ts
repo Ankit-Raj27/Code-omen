@@ -31,34 +31,12 @@ const handlerValidPalindrome = (fn: any) => {
 export const validPalindrome: Problem = {
   id: "valid-palindrome",
   title: "Valid Palindrome",
-  problemStatement: `<p class='mt-3'>
-  A phrase is a palindrome if, after converting all uppercase letters into lowercase letters and removing all non-alphanumeric characters, it reads the same forward and backward.
-</p>
-<p class='mt-3'>
-  Given a string <code>s</code>, return <code>true</code> if it is a palindrome, or <code>false</code> otherwise.
-</p>`,
+  problemStatement: `<p class='mt-3'>Given a string <code>s</code>, ignore everything that isn't a letter or a digit and treat uppercase and lowercase letters as equal. Return <code>true</code> if what remains reads the same forwards and backwards.</p>`,
   examples: [
-    {
-      id: 1,
-      inputText: "s = 'A man, a plan, a canal: Panama'",
-      outputText: "true",
-      explanation: "After cleaning the input, it's 'amanaplanacanalpanama', which is a palindrome.",
-    },
-    {
-      id: 2,
-      inputText: "s = 'race a car'",
-      outputText: "false",
-      explanation: "The cleaned string is 'raceacar', which is not a palindrome.",
-    },
-    {
-      id: 3,
-      inputText: "s = ' '",
-      outputText: "true",
-      explanation: "An empty string is a valid palindrome.",
-    },
+    { id: 1, inputText: "s = \"Was it a car or a cat I saw?\"", outputText: "true", explanation: "Cleaned up it becomes \"wasitacaroracatisaw\"." },
+    { id: 2, inputText: "s = \"code omen\"", outputText: "false" },
   ],
-  constraints: `<li class='mt-2'><code>1 ≤ s.length ≤ 2 × 10⁵</code></li>
-<li class='mt-2'>The string <code>s</code> consists only of printable ASCII characters.</li>`,
+  constraints: `<li class='mt-2'><code>1 ≤ s.length ≤ 2 × 10<sup>5</sup></code></li><li class='mt-2'><code>s</code> contains printable ASCII characters.</li>`,
   handlerFunction: handlerValidPalindrome,
   starterCode: starterCodeValidPalindrome,
   order: 7,

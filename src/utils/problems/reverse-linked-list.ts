@@ -1,6 +1,5 @@
 import assert from "assert";
 import { Problem } from "../types/problems";
-import example from "../images/reverseLL.jpg"
 
 // JS doesn't have a built in LinkedList class, so we'll create one
 class LinkedList {
@@ -80,28 +79,12 @@ function reverseLinkedList(head) {
 export const reverseLinkedList: Problem = {
 	id: "reverse-linked-list",
 	title: "2. Reverse Linked List",
-	problemStatement: `<p class='mt-3'>Given the <code>head</code> of a singly linked list, reverse the list, and return <em>the reversed list</em>.</p>
-	`,
+	problemStatement: `<p class='mt-3'>Given the <code>head</code> of a singly linked list, reverse the direction of every link and return the new head.</p>`,
 	examples: [
-		{
-			id: 0,
-			inputText: "head = [1,2,3,4,5]",
-			outputText: "[5,4,3,2,1]",
-			img: example.src,
-		},
-		{
-			id: 1,
-			inputText: "head = [1,2,3]",
-			outputText: "[3,2,1]",
-		},
-		{
-			id: 2,
-			inputText: "head = [1]",
-			outputText: "[1]",
-		},
+		{ id: 1, inputText: "head = [3,6,9]", outputText: "[9,6,3]" },
+		{ id: 2, inputText: "head = []", outputText: "[]", explanation: "An empty list stays empty." },
 	],
-	constraints: `<li class='mt-2'>The number of nodes in the list is the range <code>[0, 5000]</code>.</li>
-<li class='mt-2'><code>-5000 <= Node.val <= 5000</code></li>`,
+	constraints: `<li class='mt-2'>The list has between 0 and 5000 nodes.</li><li class='mt-2'><code>-5000 ≤ Node.val ≤ 5000</code></li>`,
 	starterCode: starterCodeReverseLinkedListJS,
 	handlerFunction: reverseLinkedListHandler,
 	starterFunctionName: "function reverseLinkedList(",

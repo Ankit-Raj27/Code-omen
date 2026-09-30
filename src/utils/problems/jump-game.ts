@@ -28,33 +28,12 @@ const starterCodeJumpGameJS = `function canJump(nums) {
 export const jumpGame: Problem = {
   id: "jump-game",
   title: "3. Jump Game",
-  problemStatement: `<p class='mt-3'>
-    You are given an integer array <code>nums</code>. You are initially positioned at the <strong>first index</strong>
-    and each element in the array represents your maximum jump length at that position.
-  </p>
-    <p class='mt-3'>
-    Return <code>true</code> if you can reach the last index, or <code>false</code> otherwise.
-    </p>
-  `,
-
+  problemStatement: `<p class='mt-3'>You start at index 0 of <code>nums</code>. From index <code>i</code> you may jump forward any number of steps from 1 up to <code>nums[i]</code>.</p><p class='mt-3'>Return <code>true</code> if you can reach the last index.</p>`,
   examples: [
-    {
-      id: 0,
-      inputText: `nums = [2,3,1,1,4]`,
-      outputText: `true`,
-      explanation:
-        "Jump 1 step from index 0 to 1, then 3 steps to the last index.",
-    },
-    {
-      id: 1,
-      inputText: `nums = [3,2,1,0,4]`,
-      outputText: `false`,
-      explanation:
-        "You will always arrive at index 3 no matter what. Its maximum jump length is 0, which makes it impossible to reach the last index.",
-    },
+    { id: 1, inputText: "nums = [1,2,0,1]", outputText: "true", explanation: "0 → 1, then jump 2 to index 3." },
+    { id: 2, inputText: "nums = [1,0,2]", outputText: "false", explanation: "You get stuck at index 1." },
   ],
-  constraints: `<li class='mt-2'><code>1 <= nums.length <= 10^4</code></li>
-    <li class='mt-2'><code>0 <= nums[i] <= 10^5</code></li>`,
+  constraints: `<li class='mt-2'><code>1 ≤ nums.length ≤ 10<sup>4</sup></code></li><li class='mt-2'><code>0 ≤ nums[i] ≤ 10<sup>5</sup></code></li>`,
   starterCode: starterCodeJumpGameJS,
   handlerFunction: jumpGameHandler,
   starterFunctionName: "function canJump(",

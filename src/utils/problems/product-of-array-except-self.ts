@@ -34,29 +34,12 @@ const handlerProductExceptSelf = (fn: any) => {
 export const productExceptSelf: Problem = {
   id: "product-except-self",
   title: "Product of Array Except Self",
-  problemStatement: `<p class='mt-3'>
-  Given an integer array <code>nums</code>, return an array <code>answer</code> such that <code>answer[i]</code> is equal to the product of all the elements of <code>nums</code> except <code>nums[i]</code>.
-</p>
-<p class='mt-3'>
-  The solution must be done in <strong>O(n)</strong> time without using division.
-</p>`,
+  problemStatement: `<p class='mt-3'>Given an integer array <code>nums</code>, build an array <code>answer</code> where <code>answer[i]</code> is the product of every element except <code>nums[i]</code>.</p><p class='mt-3'>Do it in O(n) time without using division.</p>`,
   examples: [
-    {
-      id: 1,
-      inputText: "nums = [1,2,3,4]",
-      outputText: "[24,12,8,6]",
-      explanation: "The product of all elements except nums[i] is returned in each index.",
-    },
-    {
-      id: 2,
-      inputText: "nums = [-1,1,0,-3,3]",
-      outputText: "[0,0,9,0,0]",
-      explanation: "The presence of a zero affects all products.",
-    },
+    { id: 1, inputText: "nums = [2,3,4]", outputText: "[12,8,6]" },
+    { id: 2, inputText: "nums = [1,-2,0,5]", outputText: "[0,0,-10,0]", explanation: "Only the position holding 0 gets a non-zero product." },
   ],
-  constraints: `<li class='mt-2'><code>2 ≤ nums.length ≤ 10⁵</code></li>
-<li class='mt-2'><code>-30 ≤ nums[i] ≤ 30</code></li>
-<li class='mt-2'><strong>The product of any prefix or suffix of nums is guaranteed to fit in a 32-bit integer.</strong></li>`,
+  constraints: `<li class='mt-2'><code>2 ≤ nums.length ≤ 10<sup>5</sup></code></li><li class='mt-2'><code>-30 ≤ nums[i] ≤ 30</code></li><li class='mt-2'>Every product fits in a 32-bit integer.</li>`,
   handlerFunction: handlerProductExceptSelf,
   starterCode: starterCodeProductExceptSelf,
   order: 5,

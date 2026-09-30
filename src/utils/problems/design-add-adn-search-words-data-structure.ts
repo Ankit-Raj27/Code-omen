@@ -38,31 +38,11 @@ const handlerWordDictionary = (WordDictionaryConstructor: any) => {
 export const wordDictionary: Problem = {
   id: "word-dictionary",
   title: "Design Add and Search Words Data Structure",
-  problemStatement: `<p class='mt-3'>
-    Design a data structure that supports adding new words and finding if a string matches any previously added string.
-  </p>
-  <p class='mt-3'>
-    Implement the <code>WordDictionary</code> class:
-    <ul class="list-disc pl-5">
-      <li><code>WordDictionary()</code> Initializes the object.</li>
-      <li><code>void addWord(word)</code> Adds <code>word</code> to the data structure.</li>
-      <li><code>boolean search(word)</code> Returns true if there is any string in the data structure that matches <code>word</code>.
-      <br/>A word could contain the dot character <code>'.'</code> to represent any one letter.
-      </li>
-    </ul>
-  </p>`,
+  problemStatement: `<p class='mt-3'>Build a <code>WordDictionary</code> class. <code>addWord(word)</code> stores a word, and <code>search(pattern)</code> returns <code>true</code> if some stored word matches the pattern.</p><p class='mt-3'>In a pattern, <code>'.'</code> matches any single letter; every other character must match exactly, and lengths must be equal.</p>`,
   examples: [
-    {
-      id: 1,
-      inputText: `wordDictionary = new WordDictionary();\nwordDictionary.addWord("bad");\nwordDictionary.addWord("dad");\nwordDictionary.addWord("mad");\nwordDictionary.search("pad");\nwordDictionary.search("bad");\nwordDictionary.search(".ad");\nwordDictionary.search("b..");`,
-      outputText: `false, true, true, true`,
-      explanation: "The dot character matches any one character.",
-    },
+    { id: 1, inputText: "addWord(\"pan\"), addWord(\"pen\"), search(\"p.n\"), search(\"pa\"), search(\"..n\")", outputText: "true, false, true", explanation: "\"pa\" is shorter than every stored word." },
   ],
-  constraints: `<li class='mt-2'><code>1 ≤ word.length ≤ 25</code></li>
-<li class='mt-2'>word in <code>addWord</code> consists of lowercase English letters.</li>
-<li class='mt-2'>word in <code>search</code> consists of <code>'.'</code> or lowercase English letters.</li>
-<li class='mt-2'>At most <code>10<sup>4</sup></code> calls will be made to <code>addWord</code> and <code>search</code>.</li>`,
+  constraints: `<li class='mt-2'><code>1 ≤ word.length ≤ 25</code></li><li class='mt-2'>Stored words are lowercase letters; patterns may also contain <code>'.'</code>.</li><li class='mt-2'>At most 2 dots per search.</li>`,
   handlerFunction: handlerWordDictionary,
   starterCode: starterCodeWordDictionary,
   order: 18,
