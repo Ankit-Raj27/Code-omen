@@ -20,8 +20,8 @@ export const PatternList: React.FC<{ logs: LogEntry[]; currentWeek: number }> = 
         return (
           <li key={p.id}>
             <Link href={`/patterns/${p.id}`}
-              className={`flex items-center gap-4 rounded-lg border bg-dark-layer-1 px-4 py-3 transition-colors hover:bg-dark-fill-3 ${
-                current ? "border-dark-green-s/60" : "border-dark-divider-border-2"
+              className={`flex items-center gap-4 rounded-lg border bg-gray-900/50 px-4 py-3 transition-colors hover:bg-dark-fill-3 ${
+                current ? "border-dark-green-s/60" : "border-gray-800"
               }`}>
               <span className="w-16 shrink-0 text-xs text-dark-gray-6">{weekText(p)}</span>
               <span className="flex-1 font-medium text-dark-gray-8">
@@ -84,7 +84,7 @@ export const PatternDetail: React.FC<{ pattern: Pattern; logs: LogEntry[]; signe
               No fixed set: pick 2 unseen mediums from any pattern, 60 minutes, and name the pattern before you code.
             </p>
           ) : (
-            <ul className="mt-3 divide-y divide-dark-divider-border-2">
+            <ul className="mt-3 divide-y divide-gray-800">
               {pattern.problems.map(([lc, title, slug, diff]) => {
                 const bank = bankKeyForLc(slug);
                 const done = pr.done.has(slug);
@@ -117,7 +117,7 @@ export const PatternDetail: React.FC<{ pattern: Pattern; logs: LogEntry[]; signe
             ) : (
               <ul className="space-y-2">
                 {mine.map((l) => (
-                  <li key={l.id} className="rounded-lg border border-dark-divider-border-2 bg-dark-layer-1 p-3 text-sm">
+                  <li key={l.id} className="rounded-lg border border-gray-800 bg-gray-900/50 p-3 text-sm">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-medium text-dark-gray-8">{l.name}</span>
                       <DifficultyChip d={l.difficulty} />

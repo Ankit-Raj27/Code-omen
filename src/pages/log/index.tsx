@@ -22,7 +22,7 @@ export default function LogPage() {
       ) : error ? (
         <EmptyState>Couldn&apos;t load your log. Refresh to retry.</EmptyState>
       ) : loading ? (
-        <div className="h-40 animate-pulse rounded-lg bg-dark-layer-1" />
+        <div className="h-40 animate-pulse rounded-xl bg-gray-900/50" />
       ) : (
         <LogView uid={user.uid} logs={logs} today={today} prefill={prefill}
           currentPatternId={patternForWeek(currentWeek(startDate, today))?.id} />

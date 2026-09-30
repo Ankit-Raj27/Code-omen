@@ -28,12 +28,15 @@ export default function Home() {
   };
 
   return (
-    <PageFrame title="Today" subtitle={weekLabel(startDate, today)}>
+    <PageFrame
+      title={`Welcome back, ${user.displayName?.split(" ")[0] || "Coder"}!`}
+      documentTitle="Today"
+      subtitle={`${weekLabel(startDate, today)} · revise first, then learn.`}>
       {error ? (
         <EmptyState>Couldn&apos;t load your log. Refresh to retry.</EmptyState>
       ) : loading ? (
         <div className="animate-pulse space-y-2">
-          {[0, 1, 2].map((i) => <div key={i} className="h-16 rounded-lg bg-dark-layer-1" />)}
+          {[0, 1, 2].map((i) => <div key={i} className="h-16 rounded-xl bg-gray-900/50" />)}
         </div>
       ) : (
         <TodayView uid={user.uid} logs={logs} today={today} startDate={startDate} onStartDateChange={changeStart} />

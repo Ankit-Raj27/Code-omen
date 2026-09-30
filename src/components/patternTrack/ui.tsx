@@ -30,15 +30,17 @@ export const Bar: React.FC<{ value: number; total: number }> = ({ value, total }
 );
 
 export const Panel: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = "" }) => (
-  <div className={`rounded-lg border border-dark-divider-border-2 bg-dark-layer-1 p-4 ${className}`}>{children}</div>
+  <div className={`rounded-xl border border-gray-800 bg-gray-900/50 p-4 backdrop-blur-sm ${className}`}>{children}</div>
 );
 
 export const btn =
   "inline-flex items-center justify-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-dark-blue-s disabled:opacity-50";
 export const btnGhost = `${btn} bg-dark-fill-3 text-dark-label-2 hover:bg-dark-fill-2`;
 export const btnPrimary = `${btn} bg-dark-green-s text-white hover:opacity-90`;
+/** The old dashboard's gradient call-to-action. */
+export const btnGradient = `${btn} bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700`;
 export const inputCls =
-  "w-full rounded-lg border border-dark-divider-border-2 bg-dark-layer-2 px-3 py-2 text-sm text-dark-gray-8 placeholder:text-dark-gray-6 focus:outline-none focus:ring-2 focus:ring-dark-blue-s";
+  "w-full rounded-lg border border-gray-800 bg-black/40 px-3 py-2 text-sm text-dark-gray-8 placeholder:text-dark-gray-6 focus:outline-none focus:ring-2 focus:ring-dark-blue-s";
 
 export const StatTile: React.FC<{ label: string; value: React.ReactNode; hint?: string }> = ({ label, value, hint }) => (
   <Panel>
@@ -60,4 +62,15 @@ export const EmptyState: React.FC<{ children: React.ReactNode; action?: React.Re
     <p className="text-sm text-dark-label-2">{children}</p>
     {action && <div className="mt-3">{action}</div>}
   </Panel>
+);
+
+/** Section heading with a colored icon, as on the original dashboard. */
+export const SectionTitle: React.FC<{ icon: React.ReactNode; children: React.ReactNode; action?: React.ReactNode }> = ({ icon, children, action }) => (
+  <div className="mb-3 flex items-center justify-between gap-2">
+    <h2 className="flex items-center gap-2 text-xl font-bold text-white">
+      <span aria-hidden="true">{icon}</span>
+      {children}
+    </h2>
+    {action}
+  </div>
 );

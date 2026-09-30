@@ -168,3 +168,85 @@ export function weekLabel(startDate: Ymd, today: Ymd): string {
   }
   return `Wk ${week} · ${patternForWeek(week)?.name ?? ""}`;
 }
+
+export interface WeekActivity {
+  weekStart: Ymd; // Monday
+  label: string; // e.g. "5 Oct"
+  logged: number; // new problems logged that week
+  reviews: number; // reviews graded that week
+  clean: number; // of which "clean"
+  recallPct: number | null; // clean / reviews, null when no reviews
+}
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** Monday of the week containing `ymd` (ISO weeks). */
+export function weekStartOf(ymd: Ymd): Ymd {
+  const [y, m, d] = ymd.split("-").map(Number);
+  const dow = new Date(Date.UTC(y, m - 1, d)).getUTCDay(); // 0 = Sun
+  return addDays(ymd, -((dow + 6) % 7));
+}
+
+/** Per-week counts for the last `weeks` weeks ending with the current one, oldest first. */
+export function weeklyActivity(logs: LogEntry[], today: Ymd, weeks = 8): WeekActivity[] {
+  const last = weekStartOf(today);
+  const out: WeekActivity[] = [];
+  for (let i = weeks - 1; i >= 0; i--) {
+    const ws = addDays(last, -7 * i);
+    const [, m, d] = ws.split("-").map(Number);
+    out.push({ weekStart: ws, label: `${d} ${MONTHS[m - 1]}`, logged: 0, reviews: 0, clean: 0, recallPct: null });
+  }
+  const idx = new Map(out.map((w, i) => [w.weekStart, i]));
+  for (const l of logs) {
+    const i = idx.get(weekStartOf(l.dateSolved));
+    if (i !== undefined) out[i].logged++;
+    for (const r of l.reviews ?? []) {
+      const j = idx.get(weekStartOf(r.date));
+      if (j === undefined) continue;
+      out[j].reviews++;
+      if (r.result === "clean") out[j].clean++;
+    }
+  }
+  for (const w of out) w.recallPct = w.reviews ? Math.round((100 * w.clean) / w.reviews) : null;
+  return out;
+}
+
+/** Small stable string hash (FNV-1a) for deterministic daily picks. */
+function hash(s: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return h >>> 0;
+}
+
+/**
+ * Question of the day: one unlogged roadmap problem from the patterns you've reached
+ * (week 1 before the track starts), stable for the whole day. Prefers problems runnable
+ * in CodeOmen (`isRunnable`) and skips `exclude` (e.g. Next up) when there's a choice.
+ */
+export function questionOfTheDay(
+  logs: LogEntry[],
+  startDate: Ymd,
+  today: Ymd,
+  seed: string,
+  isRunnable: (slug: string) => boolean = () => true,
+  exclude: string[] = [],
+): PatternProblemRef | null {
+  const reached = Math.max(1, Math.min(currentWeek(startDate, today), 17));
+  const pool = PATTERNS.filter((p) => p.week <= reached).flatMap((p) => {
+    const { done } = patternProgress(p, logs);
+    return p.problems
+      .filter(([, , slug]) => !done.has(slug))
+      .map(([lc, title, slug, difficulty]) => ({ lc, title, slug, difficulty, patternId: p.id }));
+  });
+  const tiers = [
+    pool.filter((q) => isRunnable(q.slug) && !exclude.includes(q.slug)),
+    pool.filter((q) => !exclude.includes(q.slug)),
+    pool,
+  ];
+  const choice = tiers.find((t) => t.length > 0);
+  if (!choice) return null;
+  return choice[hash(`${today}|${seed}`) % choice.length];
+}

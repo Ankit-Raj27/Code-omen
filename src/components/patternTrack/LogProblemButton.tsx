@@ -36,7 +36,7 @@ const LogProblemButton: React.FC<{ bankKey: string }> = ({ bankKey }) => {
       {open && user && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setOpen(false)}>
           <div role="dialog" aria-modal="true" aria-label="Log problem"
-            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-dark-divider-border-2 bg-dark-layer-1 p-5"
+            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl border border-gray-800 bg-gray-900 p-5"
             onClick={(e) => e.stopPropagation()}>
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-medium text-dark-gray-8">Log to Pattern Track</h2>

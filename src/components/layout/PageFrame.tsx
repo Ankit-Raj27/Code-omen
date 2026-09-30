@@ -1,32 +1,48 @@
 import React from "react";
 import Head from "next/head";
+import { motion, useReducedMotion } from "framer-motion";
 import TopBar from "@/components/TopBar/TopBar";
+import AppBackground from "./AppBackground";
 
 type Props = {
-  title: string;
+  title: React.ReactNode;
+  /** Plain-text title for the browser tab when `title` isn't a string. */
+  documentTitle?: string;
   subtitle?: React.ReactNode;
   actions?: React.ReactNode;
   children: React.ReactNode;
 };
 
-/** Standard page: top bar, then a 1200px column with title, subtitle and content. */
-const PageFrame: React.FC<Props> = ({ title, subtitle, actions, children }) => (
-  <>
-    <Head><title>{`${title} · CodeOmen`}</title></Head>
-    <div className="min-h-screen bg-dark-layer-2 pb-16">
-      <TopBar />
-      <main className="mx-auto max-w-[1200px] px-4 pt-8 sm:px-6">
-        <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-semibold text-dark-gray-8">{title}</h1>
-            {subtitle && <p className="mt-1 text-sm text-dark-gray-6">{subtitle}</p>}
-          </div>
-          {actions}
-        </header>
-        {children}
-      </main>
-    </div>
-  </>
-);
+/** Standard page: top bar, glow background, a 1200px column with title and content. */
+const PageFrame: React.FC<Props> = ({ title, documentTitle, subtitle, actions, children }) => {
+  const reduce = useReducedMotion();
+  const tab = documentTitle ?? (typeof title === "string" ? title : "CodeOmen");
+  return (
+    <>
+      <Head><title>{`${tab} · CodeOmen`}</title></Head>
+      <div className="relative min-h-screen bg-black pb-20 text-white">
+        <AppBackground />
+        <div className="relative z-10">
+          <TopBar />
+        </div>
+        <main className="relative mx-auto max-w-[1200px] px-4 pt-10 sm:px-6">
+          <motion.header
+            initial={reduce ? false : { opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-8 flex flex-wrap items-end justify-between gap-3"
+          >
+            <div>
+              <h1 className="text-3xl font-bold md:text-4xl">{title}</h1>
+              {subtitle && <p className="mt-2 text-gray-400">{subtitle}</p>}
+            </div>
+            {actions}
+          </motion.header>
+          {children}
+        </main>
+      </div>
+    </>
+  );
+};
 
 export default PageFrame;

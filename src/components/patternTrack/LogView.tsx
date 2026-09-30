@@ -80,16 +80,16 @@ const LogView: React.FC<{
         <button className={btnGhost} onClick={() => downloadCsv(logs, today)} disabled={!logs.length}>Export CSV</button>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-dark-divider-border-2">
+      <div className="overflow-x-auto rounded-lg border border-gray-800">
         <table className="w-full text-left text-sm text-dark-label-2">
-          <thead className="bg-dark-layer-1 text-xs uppercase text-dark-gray-6">
+          <thead className="bg-gray-900/50 text-xs uppercase text-dark-gray-6">
             <tr>
               {["Problem", "Pattern", "Diff", "Solo", "Min", "Date", "Reviews", "Next due", ""].map((h) => (
                 <th key={h} scope="col" className="px-3 py-2 font-medium">{h}</th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-dark-divider-border-2">
+          <tbody className="divide-y divide-gray-800">
             {rows.length === 0 && (
               <tr><td colSpan={9} className="px-3 py-6 text-center text-dark-gray-6">
                 {logs.length ? "No entries match these filters." : "No problems logged yet."}
