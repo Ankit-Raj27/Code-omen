@@ -392,4 +392,253 @@ export const JS_REFS: Record<string, string> = {
     for (let i = 0; i < s.length; i++) { while (e[j] <= s[i]) { j++; rooms--; } rooms++; best = Math.max(best, rooms); }
     return best;
   }`,
+  // ---------------------------------------------------------------- batch C
+  "subsets": `function subsets(nums) {
+    const out = [], path = [];
+    const go = (i) => { if (i === nums.length) { out.push([...path]); return; } path.push(nums[i]); go(i + 1); path.pop(); go(i + 1); };
+    go(0); return out;
+  }`,
+  "combination-sum": `function combinationSum(candidates, target) {
+    const out = [], path = [];
+    const go = (i, left) => { if (left === 0) { out.push([...path]); return; } if (i === candidates.length || left < 0) return;
+      path.push(candidates[i]); go(i, left - candidates[i]); path.pop(); go(i + 1, left); };
+    go(0, target); return out;
+  }`,
+  "permutations": `function permute(nums) {
+    const out = [], path = [], used = new Array(nums.length).fill(false);
+    const go = () => { if (path.length === nums.length) { out.push([...path]); return; }
+      for (let i = 0; i < nums.length; i++) if (!used[i]) { used[i] = true; path.push(nums[i]); go(); path.pop(); used[i] = false; } };
+    go(); return out;
+  }`,
+  "subsets-ii": `function subsetsWithDup(nums) {
+    const a = [...nums].sort((x, y) => x - y), out = [], path = [];
+    const go = (start) => { out.push([...path]); for (let i = start; i < a.length; i++) { if (i > start && a[i] === a[i - 1]) continue; path.push(a[i]); go(i + 1); path.pop(); } };
+    go(0); return out;
+  }`,
+  "word-search": `function exist(board, word) {
+    const R = board.length, C = board[0].length;
+    const dfs = (r, c, k) => {
+      if (k === word.length) return true;
+      if (r < 0 || c < 0 || r >= R || c >= C || board[r][c] !== word[k]) return false;
+      const ch = board[r][c]; board[r][c] = "#";
+      const ok = dfs(r + 1, c, k + 1) || dfs(r - 1, c, k + 1) || dfs(r, c + 1, k + 1) || dfs(r, c - 1, k + 1);
+      board[r][c] = ch; return ok;
+    };
+    for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) if (dfs(r, c, 0)) return true;
+    return false;
+  }`,
+  "n-queens": `function solveNQueens(n) {
+    const out = [], cols = new Set(), d1 = new Set(), d2 = new Set(), q = [];
+    const go = (r) => { if (r === n) { out.push(q.map((c) => ".".repeat(c) + "Q" + ".".repeat(n - c - 1))); return; }
+      for (let c = 0; c < n; c++) { if (cols.has(c) || d1.has(r - c) || d2.has(r + c)) continue;
+        cols.add(c); d1.add(r - c); d2.add(r + c); q.push(c); go(r + 1); q.pop(); cols.delete(c); d1.delete(r - c); d2.delete(r + c); } };
+    go(0); return out;
+  }`,
+  "combination-sum-ii": `function combinationSum2(candidates, target) {
+    const a = [...candidates].sort((x, y) => x - y), out = [], path = [];
+    const go = (start, left) => { if (left === 0) { out.push([...path]); return; }
+      for (let i = start; i < a.length && a[i] <= left; i++) { if (i > start && a[i] === a[i - 1]) continue; path.push(a[i]); go(i + 1, left - a[i]); path.pop(); } };
+    go(0, target); return out;
+  }`,
+  "letter-combinations-of-a-phone-number": `function letterCombinations(digits) {
+    if (!digits) return [];
+    const m = { 2: "abc", 3: "def", 4: "ghi", 5: "jkl", 6: "mno", 7: "pqrs", 8: "tuv", 9: "wxyz" };
+    let out = [""]; for (const d of digits) out = out.flatMap((p) => [...m[d]].map((ch) => p + ch));
+    return out;
+  }`,
+  "palindrome-partitioning": `function partition(s) {
+    const out = [], path = [], pal = (i, j) => { while (i < j) if (s[i++] !== s[j--]) return false; return true; };
+    const go = (i) => { if (i === s.length) { out.push([...path]); return; } for (let j = i; j < s.length; j++) if (pal(i, j)) { path.push(s.slice(i, j + 1)); go(j + 1); path.pop(); } };
+    go(0); return out;
+  }`,
+  "number-of-islands": `function numIslands(grid) {
+    const R = grid.length, C = grid[0].length; let n = 0;
+    const sink = (r, c) => { if (r < 0 || c < 0 || r >= R || c >= C || grid[r][c] !== "1") return; grid[r][c] = "0"; sink(r + 1, c); sink(r - 1, c); sink(r, c + 1); sink(r, c - 1); };
+    for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) if (grid[r][c] === "1") { n++; sink(r, c); }
+    return n;
+  }`,
+  "max-area-of-island": `function maxAreaOfIsland(grid) {
+    const R = grid.length, C = grid[0].length; let best = 0;
+    const area = (r, c) => { if (r < 0 || c < 0 || r >= R || c >= C || grid[r][c] !== 1) return 0; grid[r][c] = 0; return 1 + area(r + 1, c) + area(r - 1, c) + area(r, c + 1) + area(r, c - 1); };
+    for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) best = Math.max(best, area(r, c));
+    return best;
+  }`,
+  "clone-graph": `function cloneGraph(node) {
+    const copies = new Map();
+    const go = (n) => { if (!n) return null; if (copies.has(n)) return copies.get(n); const c = new _Node(n.val); copies.set(n, c); c.neighbors = n.neighbors.map(go); return c; };
+    return go(node);
+  }`,
+  "rotting-oranges": `function orangesRotting(grid) {
+    const R = grid.length, C = grid[0].length; let q = [], fresh = 0, t = 0;
+    for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) { if (grid[r][c] === 2) q.push([r, c]); if (grid[r][c] === 1) fresh++; }
+    while (q.length && fresh) { const nq = [];
+      for (const [r, c] of q) for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const a = r + dr, b = c + dc; if (a >= 0 && b >= 0 && a < R && b < C && grid[a][b] === 1) { grid[a][b] = 2; fresh--; nq.push([a, b]); } }
+      q = nq; t++; }
+    return fresh ? -1 : t;
+  }`,
+  "pacific-atlantic-water-flow": `function pacificAtlantic(heights) {
+    const R = heights.length, C = heights[0].length;
+    const flood = (starts) => { const seen = new Set(starts.map(([r, c]) => r * C + c)), st = [...starts];
+      while (st.length) { const [r, c] = st.pop(); for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const a = r + dr, b = c + dc;
+        if (a >= 0 && b >= 0 && a < R && b < C && !seen.has(a * C + b) && heights[a][b] >= heights[r][c]) { seen.add(a * C + b); st.push([a, b]); } } }
+      return seen; };
+    const p = [], at = [];
+    for (let r = 0; r < R; r++) { p.push([r, 0]); at.push([r, C - 1]); }
+    for (let c = 0; c < C; c++) { p.push([0, c]); at.push([R - 1, c]); }
+    const P = flood(p), A = flood(at), out = [];
+    for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) if (P.has(r * C + c) && A.has(r * C + c)) out.push([r, c]);
+    return out;
+  }`,
+  "surrounded-regions": `function solve(board) {
+    const R = board.length, C = board[0].length;
+    const mark = (r, c) => { if (r < 0 || c < 0 || r >= R || c >= C || board[r][c] !== "O") return; board[r][c] = "S"; mark(r + 1, c); mark(r - 1, c); mark(r, c + 1); mark(r, c - 1); };
+    for (let r = 0; r < R; r++) { mark(r, 0); mark(r, C - 1); }
+    for (let c = 0; c < C; c++) { mark(0, c); mark(R - 1, c); }
+    for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) board[r][c] = board[r][c] === "S" ? "O" : "X";
+  }`,
+  "flood-fill": `function floodFill(image, sr, sc, color) {
+    const old = image[sr][sc]; if (old === color) return image;
+    const go = (r, c) => { if (r < 0 || c < 0 || r >= image.length || c >= image[0].length || image[r][c] !== old) return; image[r][c] = color; go(r + 1, c); go(r - 1, c); go(r, c + 1); go(r, c - 1); };
+    go(sr, sc); return image;
+  }`,
+  "01-matrix": `function updateMatrix(mat) {
+    const R = mat.length, C = mat[0].length, d = mat.map((row) => row.map((v) => (v === 0 ? 0 : -1))); let q = [];
+    for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) if (mat[r][c] === 0) q.push([r, c]);
+    for (let h = 0; h < q.length; h++) { const [r, c] = q[h]; for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const a = r + dr, b = c + dc; if (a >= 0 && b >= 0 && a < R && b < C && d[a][b] < 0) { d[a][b] = d[r][c] + 1; q.push([a, b]); } } }
+    return d;
+  }`,
+  "shortest-path-in-binary-matrix": `function shortestPathBinaryMatrix(grid) {
+    const n = grid.length; if (grid[0][0] || grid[n - 1][n - 1]) return -1;
+    const dist = grid.map((r) => r.map(() => 0)); dist[0][0] = 1; const q = [[0, 0]];
+    for (let h = 0; h < q.length; h++) { const [r, c] = q[h]; if (r === n - 1 && c === n - 1) return dist[r][c];
+      for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) { const a = r + dr, b = c + dc; if (a >= 0 && b >= 0 && a < n && b < n && !grid[a][b] && !dist[a][b]) { dist[a][b] = dist[r][c] + 1; q.push([a, b]); } } }
+    return -1;
+  }`,
+  "course-schedule": `function canFinish(numCourses, prerequisites) {
+    const indeg = new Array(numCourses).fill(0), adj = Array.from({ length: numCourses }, () => []);
+    for (const [a, b] of prerequisites) { adj[b].push(a); indeg[a]++; }
+    const q = []; indeg.forEach((d, i) => d === 0 && q.push(i));
+    for (let h = 0; h < q.length; h++) for (const v of adj[q[h]]) if (--indeg[v] === 0) q.push(v);
+    return q.length === numCourses;
+  }`,
+  "course-schedule-ii": `function findOrder(numCourses, prerequisites) {
+    const indeg = new Array(numCourses).fill(0), adj = Array.from({ length: numCourses }, () => []);
+    for (const [a, b] of prerequisites) { adj[b].push(a); indeg[a]++; }
+    const q = []; indeg.forEach((d, i) => d === 0 && q.push(i));
+    for (let h = 0; h < q.length; h++) for (const v of adj[q[h]]) if (--indeg[v] === 0) q.push(v);
+    return q.length === numCourses ? q : [];
+  }`,
+  "number-of-connected-components-in-an-undirected-graph": `function countComponents(n, edges) {
+    const p = Array.from({ length: n }, (_, i) => i), find = (x) => (p[x] === x ? x : (p[x] = find(p[x])));
+    let k = n; for (const [a, b] of edges) { const x = find(a), y = find(b); if (x !== y) { p[x] = y; k--; } }
+    return k;
+  }`,
+  "redundant-connection": `function findRedundantConnection(edges) {
+    const p = Array.from({ length: edges.length + 1 }, (_, i) => i), find = (x) => (p[x] === x ? x : (p[x] = find(p[x])));
+    for (const [a, b] of edges) { const x = find(a), y = find(b); if (x === y) return [a, b]; p[x] = y; }
+    return [];
+  }`,
+  "graph-valid-tree": `function validTree(n, edges) {
+    if (edges.length !== n - 1) return false;
+    const p = Array.from({ length: n }, (_, i) => i), find = (x) => (p[x] === x ? x : (p[x] = find(p[x])));
+    for (const [a, b] of edges) { const x = find(a), y = find(b); if (x === y) return false; p[x] = y; }
+    return true;
+  }`,
+  "alien-dictionary": `function alienOrder(words) {
+    const adj = new Map(), indeg = new Map();
+    for (const w of words) for (const ch of w) { if (!adj.has(ch)) adj.set(ch, new Set()); if (!indeg.has(ch)) indeg.set(ch, 0); }
+    for (let i = 0; i + 1 < words.length; i++) {
+      const a = words[i], b = words[i + 1]; let j = 0;
+      while (j < a.length && j < b.length && a[j] === b[j]) j++;
+      if (j === Math.min(a.length, b.length)) { if (a.length > b.length) return ""; continue; }
+      if (!adj.get(a[j]).has(b[j])) { adj.get(a[j]).add(b[j]); indeg.set(b[j], indeg.get(b[j]) + 1); }
+    }
+    const q = [...indeg.keys()].filter((ch) => indeg.get(ch) === 0);
+    for (let h = 0; h < q.length; h++) for (const v of adj.get(q[h])) { indeg.set(v, indeg.get(v) - 1); if (indeg.get(v) === 0) q.push(v); }
+    return q.length === indeg.size ? q.join("") : "";
+  }`,
+  "number-of-provinces": `function findCircleNum(isConnected) {
+    const n = isConnected.length, seen = new Array(n).fill(false); let k = 0;
+    const go = (i) => { seen[i] = true; for (let j = 0; j < n; j++) if (isConnected[i][j] && !seen[j]) go(j); };
+    for (let i = 0; i < n; i++) if (!seen[i]) { k++; go(i); }
+    return k;
+  }`,
+  "find-eventual-safe-states": `function eventualSafeNodes(graph) {
+    const n = graph.length, state = new Array(n).fill(0);
+    const safe = (u) => { if (state[u]) return state[u] === 2; state[u] = 1; for (const v of graph[u]) if (!safe(v)) return false; state[u] = 2; return true; };
+    const out = []; for (let i = 0; i < n; i++) if (safe(i)) out.push(i);
+    return out;
+  }`,
+  "minimum-height-trees": `function findMinHeightTrees(n, edges) {
+    if (n === 1) return [0];
+    const adj = Array.from({ length: n }, () => new Set()); for (const [a, b] of edges) { adj[a].add(b); adj[b].add(a); }
+    let leaves = []; for (let i = 0; i < n; i++) if (adj[i].size === 1) leaves.push(i);
+    let left = n;
+    while (left > 2) { left -= leaves.length; const next = [];
+      for (const l of leaves) for (const m of adj[l]) { adj[m].delete(l); if (adj[m].size === 1) next.push(m); }
+      leaves = next; }
+    return leaves;
+  }`,
+  "network-delay-time": `function networkDelayTime(times, n, k) {
+    const dist = new Array(n + 1).fill(Infinity); dist[k] = 0;
+    for (let i = 0; i < n; i++) for (const [u, v, w] of times) if (dist[u] + w < dist[v]) dist[v] = dist[u] + w;
+    const m = Math.max(...dist.slice(1)); return m === Infinity ? -1 : m;
+  }`,
+  "cheapest-flights-within-k-stops": `function findCheapestPrice(n, flights, src, dst, k) {
+    let d = new Array(n).fill(Infinity); d[src] = 0;
+    for (let i = 0; i <= k; i++) { const nd = [...d]; for (const [u, v, w] of flights) if (d[u] + w < nd[v]) nd[v] = d[u] + w; d = nd; }
+    return d[dst] === Infinity ? -1 : d[dst];
+  }`,
+  "path-with-minimum-effort": `function minimumEffortPath(heights) {
+    const R = heights.length, C = heights[0].length;
+    const ok = (lim) => { const seen = new Set([0]), st = [[0, 0]];
+      while (st.length) { const [r, c] = st.pop(); if (r === R - 1 && c === C - 1) return true;
+        for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const a = r + dr, b = c + dc;
+          if (a >= 0 && b >= 0 && a < R && b < C && !seen.has(a * C + b) && Math.abs(heights[a][b] - heights[r][c]) <= lim) { seen.add(a * C + b); st.push([a, b]); } } }
+      return false; };
+    let lo = 0, hi = 1e6; while (lo < hi) { const m = Math.floor((lo + hi) / 2); if (ok(m)) hi = m; else lo = m + 1; }
+    return lo;
+  }`,
+  "min-cost-to-connect-all-points": `function minCostConnectPoints(points) {
+    const n = points.length, best = new Array(n).fill(Infinity), used = new Array(n).fill(false); best[0] = 0; let total = 0;
+    for (let it = 0; it < n; it++) { let u = -1; for (let i = 0; i < n; i++) if (!used[i] && (u < 0 || best[i] < best[u])) u = i;
+      used[u] = true; total += best[u];
+      for (let v = 0; v < n; v++) if (!used[v]) best[v] = Math.min(best[v], Math.abs(points[u][0] - points[v][0]) + Math.abs(points[u][1] - points[v][1])); }
+    return total;
+  }`,
+  "swim-in-rising-water": `function swimInWater(grid) {
+    const n = grid.length;
+    const ok = (t) => { if (grid[0][0] > t) return false; const seen = new Set([0]), st = [[0, 0]];
+      while (st.length) { const [r, c] = st.pop(); if (r === n - 1 && c === n - 1) return true;
+        for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const a = r + dr, b = c + dc;
+          if (a >= 0 && b >= 0 && a < n && b < n && !seen.has(a * n + b) && grid[a][b] <= t) { seen.add(a * n + b); st.push([a, b]); } } }
+      return false; };
+    let lo = 0, hi = n * n; while (lo < hi) { const m = (lo + hi) >> 1; if (ok(m)) hi = m; else lo = m + 1; }
+    return lo;
+  }`,
+  "find-the-city-with-the-smallest-number-of-neighbors-at-a-threshold-distance": `function findTheCity(n, edges, distanceThreshold) {
+    const d = Array.from({ length: n }, (_, i) => Array.from({ length: n }, (_, j) => (i === j ? 0 : Infinity)));
+    for (const [a, b, w] of edges) { d[a][b] = Math.min(d[a][b], w); d[b][a] = Math.min(d[b][a], w); }
+    for (let k = 0; k < n; k++) for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) if (d[i][k] + d[k][j] < d[i][j]) d[i][j] = d[i][k] + d[k][j];
+    let best = -1, bestCount = Infinity;
+    for (let i = 0; i < n; i++) { const cnt = d[i].filter((x, j) => j !== i && x <= distanceThreshold).length; if (cnt <= bestCount) { bestCount = cnt; best = i; } }
+    return best;
+  }`,
+  "number-of-ways-to-arrive-at-destination": `function countPaths(n, roads) {
+    const MOD = 1000000007n, adj = Array.from({ length: n }, () => []);
+    for (const [u, v, t] of roads) { adj[u].push([v, t]); adj[v].push([u, t]); }
+    const dist = new Array(n).fill(Infinity), ways = new Array(n).fill(0n), done = new Array(n).fill(false);
+    dist[0] = 0; ways[0] = 1n;
+    for (let it = 0; it < n; it++) { let u = -1; for (let i = 0; i < n; i++) if (!done[i] && (u < 0 || dist[i] < dist[u])) u = i;
+      if (dist[u] === Infinity) break; done[u] = true;
+      for (const [v, t] of adj[u]) { const nd = dist[u] + t; if (nd < dist[v]) { dist[v] = nd; ways[v] = ways[u]; } else if (nd === dist[v]) ways[v] = (ways[v] + ways[u]) % MOD; } }
+    return Number(ways[n - 1] % MOD);
+  }`,
+  "minimum-obstacle-removal-to-reach-corner": `function minimumObstacles(grid) {
+    const R = grid.length, C = grid[0].length, d = grid.map((r) => r.map(() => Infinity)); d[0][0] = 0; const dq = [[0, 0]];
+    while (dq.length) { const [r, c] = dq.shift();
+      for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const a = r + dr, b = c + dc; if (a < 0 || b < 0 || a >= R || b >= C) continue;
+        const nd = d[r][c] + grid[a][b]; if (nd < d[a][b]) { d[a][b] = nd; if (grid[a][b]) dq.push([a, b]); else dq.unshift([a, b]); } } }
+    return d[R - 1][C - 1];
+  }`,
 };

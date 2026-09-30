@@ -8,6 +8,8 @@ export interface JavaProblem {
   setup?: string;
   starter: string;
   tests: string; // Java statements calling t(i, expected, () -> actual)
+  /** Extra top-level types compiled with this problem only (e.g. the graph Node class). */
+  types?: string;
 }
 
 const sol = (body: string, extraImports = "") =>

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildList, buildTree, javaLiteral, listValues, treeLevel } from "../spec";
+import { buildGraph, buildList, buildTree, graphAdj, javaLiteral, listValues, treeLevel } from "../spec";
+import { problems } from "@/utils/problems";
 
 describe("list and tree test data", () => {
   it("round-trips lists", () => {
@@ -24,5 +25,14 @@ describe("list and tree test data", () => {
     expect(javaLiteral([[1], []], "ListNode[]")).toBe("new ListNode[]{list(1), list()}");
     expect(javaLiteral([[1, 2], 0], "CycleList")).toBe("cycle(new int[]{1, 2}, 0)");
     expect(javaLiteral(["A", "B"], "char[]")).toBe("new char[]{'A', 'B'}");
+  });
+  it("graphs: round-trip adjacency lists and reject a non-copy", () => {
+    const adj = [[2, 4], [1, 3], [2, 4], [1, 3]];
+    const g = buildGraph(adj);
+    expect(graphAdj(g)).toEqual(adj);
+    expect(graphAdj(g, g)).toBe("shares nodes with the input");
+    expect(graphAdj(buildGraph([]))).toEqual([]);
+    const handler = problems["clone-graph"].handlerFunction as (fn: unknown) => boolean;
+    expect(() => handler((node: unknown) => node)).toThrow(/AssertionError/);
   });
 });

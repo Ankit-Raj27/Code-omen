@@ -15,7 +15,9 @@ export type JType =
   // [values, pos]: a list whose tail links back to node `pos` (-1 = no cycle).
   | "CycleList"
   // A value; the argument is the node holding it in the first TreeNode argument.
-  | "TreeRef";
+  | "TreeRef"
+  // Undirected graph as a 1-indexed adjacency list: entry i lists node (i+1)'s neighbours.
+  | "Graph";
 
 /**
  * How results are compared. anyOrder: outer list order ignored; anyOrderDeep: inner lists too;
@@ -85,8 +87,15 @@ class JsTreeNode {
 }
 type JsNode = { val: number; next?: JsNode | null; left?: JsNode | null; right?: JsNode | null };
 
+// LeetCode's JS name for a graph node (plain \`Node\` is taken by the DOM).
+class JsGraphNode {
+  val: number; neighbors: JsGraphNode[];
+  constructor(val = 0, neighbors: JsGraphNode[] = []) { this.val = val; this.neighbors = neighbors; }
+}
+
 function installNodeClasses() {
   const g = globalThis as Record<string, unknown>;
+  if (typeof g._Node !== "function") g._Node = JsGraphNode;
   if (typeof g.ListNode !== "function") g.ListNode = JsListNode;
   if (typeof g.TreeNode !== "function") g.TreeNode = JsTreeNode;
 }
@@ -142,6 +151,34 @@ function treeInorder(root: JsNode | null | undefined): number[] {
   return out;
 }
 
+export function buildGraph(adj: number[][]): JsGraphNode | null {
+  const nodes = adj.map((_, i) => new JsGraphNode(i + 1));
+  adj.forEach((ns, i) => { nodes[i].neighbors = ns.map((v) => nodes[v - 1]); });
+  return nodes[0] ?? null;
+}
+
+function graphNodes(start: JsGraphNode | null | undefined): Map<number, JsGraphNode> {
+  const seen = new Map<number, JsGraphNode>();
+  const stack = start ? [start] : [];
+  while (stack.length && seen.size < 1000) {
+    const n = stack.pop()!;
+    if (seen.has(n.val)) continue;
+    seen.set(n.val, n);
+    for (const m of n.neighbors ?? []) stack.push(m);
+  }
+  return seen;
+}
+
+/** Adjacency list of the graph reachable from `start`; "shares nodes with the input" if it isn't a copy. */
+export function graphAdj(start: JsGraphNode | null | undefined, original?: JsGraphNode | null): number[][] | string {
+  const nodes = graphNodes(start);
+  if (original) {
+    const orig = new Set(Array.from(graphNodes(original).values()));
+    if (Array.from(nodes.values()).some((n) => orig.has(n))) return "shares nodes with the input";
+  }
+  return Array.from(nodes.keys()).sort((a, b) => a - b).map((v) => (nodes.get(v)!.neighbors ?? []).map((m) => m.val));
+}
+
 function findNode(root: JsNode | null | undefined, val: number): JsNode | null {
   if (!root) return null;
   if (root.val === val) return root;
@@ -168,12 +205,14 @@ function toJsArg(v: unknown, t: JType, built: unknown[], params: Param[]): unkno
       const k = params.findIndex((p) => p.type === "TreeNode");
       return findNode(built[k] as JsNode, v as number);
     }
+    case "Graph": return buildGraph(v as number[][]);
     default: return v;
   }
 }
 
 /** The user's answer → comparable test data. */
-function fromJs(v: unknown, t: JType | "void", compare: Compare): unknown {
+function fromJs(v: unknown, t: JType | "void", compare: Compare, input?: unknown): unknown {
+  if (t === "Graph") return graphAdj(v as JsGraphNode, input as JsGraphNode);
   if (t === "ListNode") return listValues(v as JsNode);
   if (t === "TreeNode") {
     if (compare === "nodeVal") return (v as JsNode | null)?.val ?? null;
@@ -202,7 +241,7 @@ function jsHandler(spec: ProblemSpec): (fn: any) => boolean {
         const ret = fn(...built);
         const got = spec.returns === "void" && spec.mutates !== undefined
           ? fromJs(built[spec.mutates], spec.params[spec.mutates].type, compare)
-          : fromJs(ret, spec.returns, compare);
+          : fromJs(ret, spec.returns, compare, built[spec.params.findIndex((p) => p.type === "Graph")]);
         if (!same(canon(got, compare), canon(t.expected, compare))) fail(i, t.expected, got);
       });
       return true;
@@ -236,9 +275,15 @@ const JS_TREE_DOC = `/**
  */
 `;
 
+const JS_GRAPH_DOC = `/**
+ * Definition for a graph node (provided):
+ * class _Node { constructor(val = 0, neighbors = []) { this.val = val; this.neighbors = neighbors; } }
+ */
+`;
+
 function jsStarter(spec: ProblemSpec): string {
   if (spec.kind === "function") {
-    const doc = (usesType(spec, "ListNode", "CycleList") ? JS_LIST_DOC : "") + (usesType(spec, "TreeNode", "TreeRef") ? JS_TREE_DOC : "");
+    const doc = (usesType(spec, "Graph") ? JS_GRAPH_DOC : "") + (usesType(spec, "ListNode", "CycleList") ? JS_LIST_DOC : "") + (usesType(spec, "TreeNode", "TreeRef") ? JS_TREE_DOC : "");
     return `${doc}function ${spec.fn}(${spec.params.map((p) => p.name).join(", ")}) {\n  // Write your code here\n};`;
   }
   const ctor = spec.ctor.map((p) => p.name).join(", ");
@@ -266,7 +311,7 @@ export function toProblem(spec: ProblemSpec, order: number): Problem {
 // ---------------------------------------------------------------------- Java
 
 const javaDefault: Record<JType | "void", string> = {
-  ListNode: "null", TreeNode: "null", "ListNode[]": "new ListNode[0]", CycleList: "null", TreeRef: "null",
+  ListNode: "null", TreeNode: "null", Graph: "null", "ListNode[]": "new ListNode[0]", CycleList: "null", TreeRef: "null",
   int: "0", long: "0L", double: "0.0", boolean: "false", String: "\"\"", char: "' '",
   "int[]": "new int[0]", "int[][]": "new int[0][]", "String[]": "new String[0]", "char[]": "new char[0]", "char[][]": "new char[0][]",
   "List<Integer>": "new ArrayList<>()", "List<List<Integer>>": "new ArrayList<>()",
@@ -297,6 +342,7 @@ export function javaLiteral(v: unknown, t: JType): string {
     case "TreeNode": return `tree(new Integer[]{${(v as (number | null)[]).map(String).join(", ")}})`;
     case "ListNode[]": return `new ListNode[]{${(v as number[][]).map((r) => javaLiteral(r, "ListNode")).join(", ")}}`;
     case "CycleList": { const [vals, pos] = v as [number[], number]; return `cycle(new int[]{${vals.join(", ")}}, ${pos})`; }
+    case "Graph": return `G.graph(${javaLiteral(v, "int[][]")})`;
     case "TreeRef": throw new Error("TreeRef literals need the tree; see javaTests");
   }
 }
@@ -310,7 +356,7 @@ function javaShow(v: unknown, t?: JType | "void"): string {
 }
 
 /** Java type for a local holding an argument of this JType. */
-const javaLocalType = (t: JType) => (t === "CycleList" ? "ListNode" : t === "TreeRef" ? "TreeNode" : t);
+const javaLocalType = (t: JType) => (t === "CycleList" ? "ListNode" : t === "TreeRef" ? "TreeNode" : t === "Graph" ? "Node" : t);
 
 const sig = (params: Param[]) => params.map((p) => `${p.type} ${p.name}`).join(", ");
 
@@ -325,9 +371,15 @@ const JAVA_TREE_DOC = `/**
  */
 `;
 
+const JAVA_GRAPH_DOC = `/**
+ * Definition for a graph node (provided):
+ * class Node { public int val; public List<Node> neighbors; Node() {} Node(int val) { ... } Node(int val, ArrayList<Node> neighbors) { ... } }
+ */
+`;
+
 function javaStarter(spec: ProblemSpec): string {
   if (spec.kind === "function") {
-    const doc = (usesType(spec, "ListNode", "CycleList") ? JAVA_LIST_DOC : "") + (usesType(spec, "TreeNode", "TreeRef") ? JAVA_TREE_DOC : "");
+    const doc = (usesType(spec, "Graph") ? JAVA_GRAPH_DOC : "") + (usesType(spec, "ListNode", "CycleList") ? JAVA_LIST_DOC : "") + (usesType(spec, "TreeNode", "TreeRef") ? JAVA_TREE_DOC : "");
     const ret = spec.returns === "void" ? "void" : javaLocalType(spec.returns);
     const sigF = spec.params.map((p) => `${javaLocalType(p.type)} ${p.name}`).join(", ");
     return `${doc}class Solution {\n    public ${ret} ${spec.fn}(${sigF}) {\n        // Write your code here${spec.returns === "void" ? "" : `\n        return ${javaDefault[spec.returns]};`}\n    }\n}\n`;
@@ -362,6 +414,10 @@ function javaTests(spec: ProblemSpec): string {
           return line(javaLiteral(t.expected, mt), `${call}; return a${m};`);
         }
         const r = spec.returns;
+        if (r === "Graph") {
+          const g = spec.params.findIndex((p) => p.type === "Graph");
+          return line(jStr(javaShow(t.expected)), `return G.graphStr(${call}, ${g >= 0 ? `a${g}` : "null"});`);
+        }
         if (r === "ListNode") return line(javaLiteral(t.expected, "int[]"), `return toArr(${call});`);
         if (r === "TreeNode") {
           if (compare === "nodeVal") return line(t.expected === null ? "null" : `(Integer) ${t.expected}`, `return valOf(${call});`);
@@ -394,7 +450,17 @@ function javaTests(spec: ProblemSpec): string {
     .join("\n");
 }
 
-export interface GeneratedJava { starter: string; tests: string; setup?: string }
+export interface GeneratedJava { starter: string; tests: string; setup?: string; types?: string }
+
+/** Graph node + helpers, only compiled into problems that use them (users often name a trie node \`Node\`). */
+const JAVA_GRAPH_TYPES = `
+class Node { public int val; public List<Node> neighbors; public Node() { neighbors = new ArrayList<>(); } public Node(int val) { this.val = val; neighbors = new ArrayList<>(); } public Node(int val, ArrayList<Node> neighbors) { this.val = val; this.neighbors = neighbors; } }
+class G {
+  static Node graph(int[][] adj) { Node[] n = new Node[adj.length]; for (int i = 0; i < adj.length; i++) n[i] = new Node(i + 1); for (int i = 0; i < adj.length; i++) for (int v : adj[i]) n[i].neighbors.add(n[v - 1]); return adj.length == 0 ? null : n[0]; }
+  static Map<Integer, Node> nodes(Node s) { Map<Integer, Node> seen = new TreeMap<>(); Deque<Node> st = new ArrayDeque<>(); if (s != null) st.push(s); while (!st.isEmpty() && seen.size() < 1000) { Node x = st.pop(); if (seen.containsKey(x.val)) continue; seen.put(x.val, x); if (x.neighbors != null) for (Node m : x.neighbors) st.push(m); } return seen; }
+  static String graphStr(Node res, Node orig) { Map<Integer, Node> r = nodes(res); Set<Node> o = Collections.newSetFromMap(new IdentityHashMap<>()); o.addAll(nodes(orig).values()); List<List<Integer>> out = new ArrayList<>(); for (Node x : r.values()) { if (o.contains(x)) return "shares nodes with the input"; List<Integer> l = new ArrayList<>(); if (x.neighbors != null) for (Node m : x.neighbors) l.add(m.val); out.add(l); } return out.toString(); }
+}
+`;
 
 export function toJava(spec: ProblemSpec): GeneratedJava {
   return {
@@ -402,5 +468,6 @@ export function toJava(spec: ProblemSpec): GeneratedJava {
     tests: javaTests(spec),
     // Every test builds its own Solution (or design object), so no shared instance.
     setup: "",
+    types: spec.kind === "function" && [spec.returns, ...spec.params.map((p) => p.type)].includes("Graph") ? JAVA_GRAPH_TYPES : undefined,
   };
 }

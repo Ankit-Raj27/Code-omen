@@ -339,6 +339,7 @@ export const PATTERNS: Pattern[] = [
       [79, "Word Search", "word-search", "M"],
       [51, "N-Queens", "n-queens", "H"],
     ],
+    stretch: [[40, "Combination Sum II", "combination-sum-ii", "M"], [17, "Letter Combinations of a Phone Number", "letter-combinations-of-a-phone-number", "M"], [131, "Palindrome Partitioning", "palindrome-partitioning", "M"]] as PatternProblem[],
   },
   {
     id: "graphs-grids",
@@ -365,6 +366,7 @@ export const PATTERNS: Pattern[] = [
       [417, "Pacific Atlantic Water Flow", "pacific-atlantic-water-flow", "M"],
       [130, "Surrounded Regions", "surrounded-regions", "M"],
     ],
+    stretch: [[733, "Flood Fill", "flood-fill", "E"], [542, "01 Matrix", "01-matrix", "M"], [1091, "Shortest Path in Binary Matrix", "shortest-path-in-binary-matrix", "M"]] as PatternProblem[],
   },
   {
     id: "topo-union-find",
@@ -391,6 +393,7 @@ export const PATTERNS: Pattern[] = [
       [261, "Graph Valid Tree", "graph-valid-tree", "M"],
       [269, "Alien Dictionary", "alien-dictionary", "H"],
     ],
+    stretch: [[547, "Number of Provinces", "number-of-provinces", "M"], [802, "Find Eventual Safe States", "find-eventual-safe-states", "M"], [310, "Minimum Height Trees", "minimum-height-trees", "M"]] as PatternProblem[],
   },
   {
     id: "shortest-paths",
@@ -416,6 +419,7 @@ export const PATTERNS: Pattern[] = [
       [1584, "Min Cost to Connect All Points", "min-cost-to-connect-all-points", "M"],
       [778, "Swim in Rising Water", "swim-in-rising-water", "H"],
     ],
+    stretch: [[1334, "Find the City With the Smallest Number of Neighbors at a Threshold Distance", "find-the-city-with-the-smallest-number-of-neighbors-at-a-threshold-distance", "M"], [1976, "Number of Ways to Arrive at Destination", "number-of-ways-to-arrive-at-destination", "M"], [2290, "Minimum Obstacle Removal to Reach Corner", "minimum-obstacle-removal-to-reach-corner", "H"]] as PatternProblem[],
   },
   {
     id: "dp-1d",
