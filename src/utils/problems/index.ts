@@ -44,18 +44,18 @@ export const problems:ProblemMap = {
     "product-of-array-except-self": productExceptSelf,
     "longest-consecutive-sequence": longestConsecutive,
     "valid-palindrome": validPalindrome,
-    "kadane's algorithm": kadaneAlgorithm,
-    "stock-buy-and-sell": stockBuyAndSell,
+    "maximum-subarray": kadaneAlgorithm,
+    "best-time-to-buy-and-sell-stock": stockBuyAndSell,
     "set-matrix-zeroes": setMatrixZeroes,
-    "pascal's-triangle": pascalsTriangle,
-    "spiral-on-a-matrix": spiralMatrix,
-    "two-sum-two-input-array-is-sorted": twoSumSorted,
+    "pascals-triangle": pascalsTriangle,
+    "spiral-matrix": spiralMatrix,
+    "two-sum-ii-input-array-is-sorted": twoSumSorted,
     "3sum" : threeSum,
     "container-with-most-water": containerWithMostWater,
     "trapping-rain-water": trappingRainWater,
-    "implementing-trie-prefix-tree":implementTrie,
-    "design-add-adn-search-words-data-structure":wordDictionary,
-    "words-search-II":wordSearchII
+    "implement-trie-prefix-tree":implementTrie,
+    "design-add-and-search-words-data-structure":wordDictionary,
+    "word-search-ii":wordSearchII
 
 
 

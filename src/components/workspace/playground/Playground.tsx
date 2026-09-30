@@ -16,6 +16,7 @@ import { arrayUnion, doc, setDoc, updateDoc } from "firebase/firestore";
 import useLocalStorage from "@/components/hooks/useLocalStorage";
 import { JAVA_PROBLEMS } from "@/utils/problems/java";
 import type { JavaRunResult } from "@/lib/javaRunner";
+import { useWorkspaceSession } from "../WorkspaceSession";
 
 export type EditorLanguage = "javascript" | "java";
 
@@ -51,7 +52,8 @@ const Playground: React.FC<PlaygroundProps> = ({
     query: { pid, fresh },
   } = router;
 
-  const javaProblem = JAVA_PROBLEMS[problem.id];
+  // Java tests are keyed by the bank key (= LeetCode slug), i.e. the route param.
+  const javaProblem = JAVA_PROBLEMS[pid as string];
   const [langPref, setLangPref] = useLocalStorage("cd-language", "javascript");
   const language: EditorLanguage = langPref === "java" && javaProblem ? "java" : "javascript";
   const starterFor = (lang: EditorLanguage) => (lang === "java" && javaProblem ? javaProblem.starter : problem.starterCode);
@@ -59,12 +61,15 @@ const Playground: React.FC<PlaygroundProps> = ({
   const [javaResult, setJavaResult] = useState<JavaRunResult | null>(null);
   const [running, setRunning] = useState(false);
 
+  const session = useWorkspaceSession();
   const markSolved = async () => {
     if (!user) return;
+    session?.onAccepted(language);
     toast.success("Congrats! All tests passed!", { position: "top-center", autoClose: 3000, theme: "dark" });
     setSuccess(true);
     setTimeout(() => setSuccess(false), 4000);
-    await setDoc(doc(firestore, "users", user.uid), { solvedProblems: arrayUnion(pid) }, { merge: true });
+    // problem.id is the Firestore document id the lists check against.
+    await setDoc(doc(firestore, "users", user.uid), { solvedProblems: arrayUnion(problem.id) }, { merge: true });
     setSolved(true);
   };
 
@@ -77,7 +82,7 @@ const Playground: React.FC<PlaygroundProps> = ({
       const r = await fetch("/api/run", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ problemId: problem.id, code: userCode }),
+        body: JSON.stringify({ problemId: pid, code: userCode }),
       });
       const data = await r.json();
       if (!r.ok) {

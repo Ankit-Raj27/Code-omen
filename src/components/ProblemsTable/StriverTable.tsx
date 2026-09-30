@@ -1,4 +1,7 @@
 import { auth, firestore } from "@/Firebase/firebase";
+import { usePatternTrack } from "@/context/PatternTrackContext";
+import { isLoggedListProblem } from "@/lib/patternTrack/lists";
+import { PatternCell, matchesPattern } from "./PatternCells";
 import { DBProblem } from "@/utils/types/problems";
 import {
   collection,
@@ -16,6 +19,7 @@ import { IoClose, IoLogoYoutube } from "react-icons/io5";
 import YouTube from "react-youtube";
 
 type ProblemsTableProps = {
+  patternFilter?: string;
   setLoadingProblems: React.Dispatch<React.SetStateAction<boolean>>;
   statusFilter: "all" | "solved" | "unsolved";
   difficultyFilter: "all" | "Easy" | "Medium" | "Hard";
@@ -29,6 +33,7 @@ const Striver150Table: React.FC<ProblemsTableProps> = ({
   difficultyFilter,
   categoryFilter,
   setCategoryFilter,
+  patternFilter = "all",
 }) => {
   const [youtubePlayer, setYoutubePlayer] = useState({
     isOpen: false,
@@ -37,11 +42,15 @@ const Striver150Table: React.FC<ProblemsTableProps> = ({
 
   const problems = useGetProblems(setLoadingProblems);
   const solvedProblems = useGetSolvedProblems();
+  const { logs } = usePatternTrack();
+  // Done = solved in CodeOmen's editor, or logged in Pattern Track (e.g. solved on LeetCode).
+  const isDone = (p: { id: string; link?: string }) => solvedProblems.includes(p.id) || isLoggedListProblem(p, logs);
 
   const categories = Array.from(new Set(problems.map(p => p.category))).sort();
 
   const filteredProblems = problems.filter((problem) => {
-    const isSolved = solvedProblems.includes(problem.id);
+    if (!matchesPattern(problem, patternFilter)) return false;
+    const isSolved = isDone(problem);
     const matchStatus =
       statusFilter === "solved" ? isSolved :
       statusFilter === "unsolved" ? !isSolved :
@@ -79,6 +88,7 @@ const Striver150Table: React.FC<ProblemsTableProps> = ({
               <th className="px-6 py-3 w-0 font-medium">Title</th>
               <th className="px-6 py-3 w-0 font-medium">Difficulty</th>
               <th className="px-6 py-3 w-0 font-medium">Category</th>
+              <th className="px-6 py-3 w-0 font-medium">Pattern</th>
               <th className="px-6 py-3 w-0 font-medium">Solution</th>
             </tr>
           </thead>
@@ -93,7 +103,7 @@ const Striver150Table: React.FC<ProblemsTableProps> = ({
               return (
                 <tr key={problem.id} className={`${idx % 2 === 1 ? "bg-dark-layer-1" : ""}`}>
                   <th className="px-2 py-4 font-medium text-dark-green-s">
-                    {solvedProblems.includes(problem.id) && (
+                    {isDone(problem) && (
                       <FaRegCheckCircle fontSize={"18"} /> 
                     )}
                   </th>
@@ -108,6 +118,7 @@ const Striver150Table: React.FC<ProblemsTableProps> = ({
                   </td>
                   <td className={`px-6 py-4 ${difficultyColor}`}>{problem.difficulty}</td>
                   <td className="px-6 py-4">{problem.category}</td>
+              <PatternCell problem={problem} />
                   <td className="px-6 py-4">
                     {problem.videoId ? (
                       <IoLogoYoutube

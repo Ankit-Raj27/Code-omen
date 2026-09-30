@@ -1,4 +1,7 @@
 import { auth, firestore } from "@/Firebase/firebase";
+import { usePatternTrack } from "@/context/PatternTrackContext";
+import { isLoggedListProblem } from "@/lib/patternTrack/lists";
+import { PatternCell, matchesPattern } from "./PatternCells";
 import { DBProblem } from "@/utils/types/problems";
 import {
   collection,
@@ -18,9 +21,10 @@ import YouTube from "react-youtube";
 type ProblemsTableProps = {
   setLoadingProblems: React.Dispatch<React.SetStateAction<boolean>>;
   filter: "all" | "solved" | "unsolved";
+  patternFilter?: string;
 };
 
-const Neetcode150Table: React.FC<ProblemsTableProps> = ({ setLoadingProblems,filter }) => {
+const Neetcode150Table: React.FC<ProblemsTableProps> = ({ setLoadingProblems, filter, patternFilter = "all" }) => {
 
   const [youtubePlayer, setYoutubePlayer] = useState({
     isOpen: false,
@@ -29,6 +33,9 @@ const Neetcode150Table: React.FC<ProblemsTableProps> = ({ setLoadingProblems,fil
 
   const problems = useGetProblems(setLoadingProblems);
   const solvedProblems = useGetSolvedProblems();
+  const { logs } = usePatternTrack();
+  // Done = solved in CodeOmen's editor, or logged in Pattern Track (e.g. solved on LeetCode).
+  const isDone = (p: { id: string; link?: string }) => solvedProblems.includes(p.id) || isLoggedListProblem(p, logs);
 
   const closeModal = () => {
     setYoutubePlayer({ isOpen: false, videoId: "" });
@@ -47,8 +54,9 @@ const Neetcode150Table: React.FC<ProblemsTableProps> = ({ setLoadingProblems,fil
   }, []);
 
   const filteredProblems = problems.filter((problem) => {
-    if (filter === "solved") {return solvedProblems.includes(problem.id)};
-    if (filter === "unsolved") {return !solvedProblems.includes(problem.id)};
+    if (!matchesPattern(problem, patternFilter)) return false;
+    if (filter === "solved") {return isDone(problem)};
+    if (filter === "unsolved") {return !isDone(problem)};
     return true; // 'all'
   });
 
@@ -71,7 +79,7 @@ const Neetcode150Table: React.FC<ProblemsTableProps> = ({ setLoadingProblems,fil
               key={problem.id}
             >
               <th className="px-2 py-4 font-medium whitespace-nowrap text-dark-green-s">
-                {solvedProblems.includes(problem.id) && (
+                {isDone(problem) && (
                   <FaRegCheckCircle fontSize={"18"} width={"18"} />
                 )}
               </th>
@@ -97,6 +105,7 @@ const Neetcode150Table: React.FC<ProblemsTableProps> = ({ setLoadingProblems,fil
                 {problem.difficulty}
               </td>
               <td className={`px-6 py-4`}>{problem.category}</td>
+              <PatternCell problem={problem} />
               <td className={`px-6 py-4`}>
                 {problem.videoId ? (
                   <IoLogoYoutube

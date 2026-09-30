@@ -72,7 +72,7 @@ export const JAVA_PROBLEMS: Record<string, JavaProblem> = {
       t(3, true, () -> s.isPalindrome(" "));
       t(4, false, () -> s.isPalindrome("0P"));`,
   },
-  "two-sum-two-input-array-is-sorted": {
+  "two-sum-ii-input-array-is-sorted": {
     starter: sol(`    public int[] twoSum(int[] numbers, int target) {\n        // Return 1-indexed positions\n        return new int[0];\n    }`),
     tests: `
       t(1, new int[]{1, 2}, () -> s.twoSum(new int[]{2, 7, 11, 15}, 9));
@@ -119,14 +119,14 @@ export const JAVA_PROBLEMS: Record<string, JavaProblem> = {
       t(2, false, () -> s.canJump(new int[]{3, 2, 1, 0, 4}));
       t(3, true, () -> s.canJump(new int[]{0}));`,
   },
-  "kadane's algorithm": {
+  "maximum-subarray": {
     starter: sol(`    public int maxSubArray(int[] nums) {\n        // Write your code here\n        return 0;\n    }`),
     tests: `
       t(1, 6, () -> s.maxSubArray(new int[]{-2, 1, -3, 4, -1, 2, 1, -5, 4}));
       t(2, 1, () -> s.maxSubArray(new int[]{1}));
       t(3, -1, () -> s.maxSubArray(new int[]{-3, -1, -2}));`,
   },
-  "stock-buy-and-sell": {
+  "best-time-to-buy-and-sell-stock": {
     starter: sol(`    public int maxProfit(int[] prices) {\n        // Write your code here\n        return 0;\n    }`),
     tests: `
       t(1, 5, () -> s.maxProfit(new int[]{7, 1, 5, 3, 6, 4}));
@@ -140,7 +140,7 @@ export const JAVA_PROBLEMS: Record<string, JavaProblem> = {
       t(2, false, () -> s.searchMatrix(m, 13));
       t(3, true, () -> s.searchMatrix(m, 60));`,
   },
-  "pascal's-triangle": {
+  "pascals-triangle": {
     starter: sol(
       `    public List<List<Integer>> generate(int numRows) {\n        // Write your code here\n        return new ArrayList<>();\n    }`,
       "import java.util.*;\n\n",
@@ -149,7 +149,7 @@ export const JAVA_PROBLEMS: Record<string, JavaProblem> = {
       t(1, "[[1], [1, 1], [1, 2, 1], [1, 3, 3, 1], [1, 4, 6, 4, 1]]", () -> String.valueOf(s.generate(5)));
       t(2, "[[1]]", () -> String.valueOf(s.generate(1)));`,
   },
-  "spiral-on-a-matrix": {
+  "spiral-matrix": {
     starter: sol(
       `    public List<Integer> spiralOrder(int[][] matrix) {\n        // Write your code here\n        return new ArrayList<>();\n    }`,
       "import java.util.*;\n\n",

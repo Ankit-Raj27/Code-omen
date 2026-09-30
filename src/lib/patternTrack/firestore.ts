@@ -49,6 +49,8 @@ export async function addLog(uid: string, input: NewLog): Promise<void> {
     createdAt: serverTimestamp(),
   };
   if (input.bankSlug) data.bankSlug = input.bankSlug;
+  if (typeof input.hintsUsed === "number") data.hintsUsed = Math.max(0, Math.min(3, Math.round(input.hintsUsed)));
+  if (input.language === "js" || input.language === "java") data.language = input.language;
   await addDoc(logsCol(uid), data);
 }
 

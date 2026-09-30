@@ -1,69 +1,66 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { FiRefreshCcw } from "react-icons/fi";
+import {
+  EXTENSION_MIN, TIMEBOX_MIN, timeboxPhase, useWorkspaceSession,
+} from "@/components/workspace/WorkspaceSession";
 
+const formatTime = (s: number): string => {
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
+  return h > 0 ? `${pad(h)}:${pad(m)}:${pad(sec)}` : `${pad(m)}:${pad(sec)}`;
+};
+
+const PHASE_STYLE = {
+  "on-track": "bg-dark-fill-3 text-dark-label-2",
+  extended: "bg-dark-yellow/15 text-dark-yellow",
+  over: "bg-dark-yellow/15 text-dark-yellow",
+  "read-solution": "bg-dark-pink/15 text-dark-pink",
+  idle: "",
+} as const;
+
+/** Problem timer with the Method's timebox: 25 min, then an optional +10, then read the solution. */
 const Timer: React.FC = () => {
-  const [showTimer, setShowTimer] = useState<boolean>(false);
-  const [time, setTime] = useState<number>(0);
-  const [isRunning, setIsRunning] = useState<boolean>(false);
+  const session = useWorkspaceSession();
+  if (!session) return null;
+  const { elapsed, running, extended, startTimer, resetTimer, extendTimer } = session;
+  const phase = timeboxPhase(elapsed, running, extended);
 
-  const formatTime = (time: number): string => {
-    const hours = Math.floor(time / 3600);
-    const minutes = Math.floor((time % 3600) / 60);
-    const seconds = time % 60;
+  if (phase === "idle") {
+    return (
+      <button
+        className="flex h-8 items-center gap-1.5 rounded p-1 text-sm hover:bg-dark-fill-3"
+        onClick={startTimer}
+        title={`Start a ${TIMEBOX_MIN}-minute timebox`}
+        aria-label="Start timer"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6" aria-hidden="true">
+          <path fillRule="evenodd" clipRule="evenodd" d="M12 4a9 9 0 110 18 9 9 0 010-18zm0 2a7 7 0 100 14 7 7 0 000-14zm0 1.634a1 1 0 01.993.883l.007.117-.001 3.774 2.111 1.162a1 1 0 01.445 1.253l-.05.105a1 1 0 01-1.254.445l-.105-.05-2.628-1.447a1 1 0 01-.51-.756L11 13V8.634a1 1 0 011-1zM16.235 2.4a1 1 0 011.296-.269l.105.07 4 3 .095.08a1 1 0 01-1.19 1.588l-.105-.069-4-3-.096-.081a1 1 0 01-.105-1.319zM7.8 2.4a1 1 0 01-.104 1.319L7.6 3.8l-4 3a1 1 0 01-1.296-1.518L2.4 5.2l4-3a1 1 0 011.4.2z" />
+        </svg>
+      </button>
+    );
+  }
 
-    return `${hours < 10 ? "0" + hours : hours}:${
-      minutes < 10 ? "0" + minutes : minutes
-    }:${seconds < 10 ? "0" + seconds : seconds}`;
-  };
-
-  useEffect(() => {
-    let intervalId: number;
-
-    if (isRunning) {
-      intervalId = window.setInterval(() => {
-        setTime((time) => time + 1);
-      }, 1000);
-    }
-
-    return () => clearInterval(intervalId);
-  }, [isRunning]);
+  const note =
+    phase === "over" ? "Timebox up: take a hint, then +10 min"
+      : phase === "extended" ? `+${EXTENSION_MIN} min`
+      : phase === "read-solution" ? "Read the solution, then rewrite it from memory"
+      : null;
 
   return (
-    <div>
-      {showTimer ? (
-        <div className="flex items-center space-x-2 bg-dark-fill-3 p-1.5 cursor-pointer rounded hover:bg-dark-fill-2 ">
-          <div className=""> {formatTime(time)}</div>
-          <FiRefreshCcw
-            onClick={() => {
-              setIsRunning(false);
-              setTime(0);
-              setShowTimer(false);
-            }}
-          />
-        </div>
-      ) : (
-        <div
-          className="flex items-center p-1 h-8 hover:bg-dark-fill-3 rounded cursor-pointer"
-          onClick={() => {
-            setShowTimer(true);
-            setIsRunning(true);
-          }}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            width="1em"
-            height="1em"
-            fill="currentColor"
-            className="h-6 w-6"
-          >
-            <path
-              fillRule="evenodd"
-              d="M12 4a9 9 0 110 18 9 9 0 010-18zm0 2a7 7 0 100 14 7 7 0 000-14zm0 1.634a1 1 0 01.993.883l.007.117-.001 3.774 2.111 1.162a1 1 0 01.445 1.253l-.05.105a1 1 0 01-1.254.445l-.105-.05-2.628-1.447a1 1 0 01-.51-.756L11 13V8.634a1 1 0 011-1zM16.235 2.4a1 1 0 011.296-.269l.105.07 4 3 .095.08a1 1 0 01-1.19 1.588l-.105-.069-4-3-.096-.081a1 1 0 01-.105-1.319zM7.8 2.4a1 1 0 01-.104 1.319L7.6 3.8l-4 3a1 1 0 01-1.296-1.518L2.4 5.2l4-3a1 1 0 011.4.2z"
-              clipRule="evenodd"
-            ></path>
-          </svg>
-        </div>
+    <div className="flex items-center gap-2">
+      <div className={`flex items-center gap-2 rounded p-1.5 text-sm ${PHASE_STYLE[phase]}`} aria-live="polite">
+        <span className="tabular-nums">{formatTime(elapsed)}</span>
+        {note && <span className="hidden text-xs lg:inline">{note}</span>}
+        <button onClick={resetTimer} aria-label="Reset timer" className="hover:text-white">
+          <FiRefreshCcw />
+        </button>
+      </div>
+      {phase === "over" && (
+        <button onClick={extendTimer} className="rounded bg-dark-fill-3 px-2 py-1 text-xs hover:bg-dark-fill-2">
+          +{EXTENSION_MIN} min
+        </button>
       )}
     </div>
   );
