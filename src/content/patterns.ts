@@ -17,6 +17,8 @@ export interface Pattern {
   commonMistakes: string;
   realWorld: string;
   problems: PatternProblem[];
+  /** Extra practice shown under the core set; never counted in progress. */
+  stretch?: PatternProblem[];
 }
 
 export const TOTAL_WEEKS = 22;
@@ -57,6 +59,7 @@ export const PATTERNS: Pattern[] = [
       [238, "Product of Array Except Self", "product-of-array-except-self", "M"],
       [128, "Longest Consecutive Sequence", "longest-consecutive-sequence", "M"],
     ],
+    stretch: [[36, "Valid Sudoku", "valid-sudoku", "M"], [271, "Encode and Decode Strings", "encode-and-decode-strings", "M"], [73, "Set Matrix Zeroes", "set-matrix-zeroes", "M"]] as PatternProblem[],
   },
   {
     id: "two-pointers",
@@ -87,6 +90,7 @@ export const PATTERNS: Pattern[] = [
       [11, "Container With Most Water", "container-with-most-water", "M"],
       [42, "Trapping Rain Water", "trapping-rain-water", "H"],
     ],
+    stretch: [[977, "Squares of a Sorted Array", "squares-of-a-sorted-array", "E"], [881, "Boats to Save People", "boats-to-save-people", "M"], [16, "3Sum Closest", "3sum-closest", "M"]] as PatternProblem[],
   },
   {
     id: "sliding-window",
@@ -115,6 +119,7 @@ export const PATTERNS: Pattern[] = [
       [567, "Permutation in String", "permutation-in-string", "M"],
       [76, "Minimum Window Substring", "minimum-window-substring", "H"],
     ],
+    stretch: [[209, "Minimum Size Subarray Sum", "minimum-size-subarray-sum", "M"], [1004, "Max Consecutive Ones III", "max-consecutive-ones-iii", "M"], [239, "Sliding Window Maximum", "sliding-window-maximum", "H"]] as PatternProblem[],
   },
   {
     id: "stack",
@@ -144,6 +149,7 @@ export const PATTERNS: Pattern[] = [
       [853, "Car Fleet", "car-fleet", "M"],
       [84, "Largest Rectangle in Histogram", "largest-rectangle-in-histogram", "H"],
     ],
+    stretch: [[496, "Next Greater Element I", "next-greater-element-i", "E"], [22, "Generate Parentheses", "generate-parentheses", "M"], [402, "Remove K Digits", "remove-k-digits", "M"]] as PatternProblem[],
   },
   {
     id: "binary-search",
@@ -172,6 +178,7 @@ export const PATTERNS: Pattern[] = [
       [33, "Search in Rotated Sorted Array", "search-in-rotated-sorted-array", "M"],
       [981, "Time Based Key-Value Store", "time-based-key-value-store", "M"],
     ],
+    stretch: [[35, "Search Insert Position", "search-insert-position", "E"], [34, "Find First and Last Position of Element in Sorted Array", "find-first-and-last-position-of-element-in-sorted-array", "M"], [1011, "Capacity To Ship Packages Within D Days", "capacity-to-ship-packages-within-d-days", "M"]] as PatternProblem[],
   },
   {
     id: "linked-list",

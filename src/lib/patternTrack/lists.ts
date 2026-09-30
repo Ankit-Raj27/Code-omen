@@ -17,7 +17,7 @@ export function listProblemSlug(p: ListProblemLike): string {
 /** The roadmap pattern this list problem belongs to, if any. */
 export function patternForListProblem(p: ListProblemLike): Pattern | undefined {
   const slug = listProblemSlug(p);
-  const onRoadmap = PATTERNS.find((pt) => pt.problems.some(([, , s]) => s === slug));
+  const onRoadmap = PATTERNS.find((pt) => [...pt.problems, ...(pt.stretch ?? [])].some(([, , s]) => s === slug));
   return onRoadmap ?? PATTERN_BY_ID[patternIdForBank(slug) ?? ""];
 }
 
