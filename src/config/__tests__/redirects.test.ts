@@ -1,7 +1,14 @@
 import fs from "fs";
 import path from "path";
 import { describe, expect, it } from "vitest";
-import { redirects } from "../redirects.mjs";
+import { PROBLEM_KEY_RENAMES, redirects } from "../redirects.mjs";
+import { problems } from "@/utils/problems";
+import { JAVA_PROBLEMS } from "@/utils/problems/java";
+
+type Redirect = { source: string; destination: string; has?: { value: string }[] };
+const all = redirects as Redirect[];
+const tabRules = all.filter((r) => r.source === "/pattern-track");
+const problemRules = all.filter((r) => r.source.startsWith("/problems/"));
 
 const pagesDir = path.resolve(__dirname, "../../pages");
 const pageExists = (route: string) => {
@@ -11,16 +18,32 @@ const pageExists = (route: string) => {
   );
 };
 
-describe("redirects", () => {
-  it("covers every old Pattern Track tab plus the bare route", () => {
-    const tabs = redirects.flatMap((r) => r.has?.map((h) => h.value) ?? ["(none)"]);
+describe("Pattern Track redirects", () => {
+  it("covers every old tab plus the bare route, catch-all last", () => {
+    const tabs = tabRules.flatMap((r) => r.has?.map((h) => h.value) ?? ["(none)"]);
     expect(tabs.sort()).toEqual(["(none)", "log", "method", "roadmap", "today"]);
-  });
-  it("puts the catch-all last so ?tab= rules win", () => {
-    expect(redirects.at(-1)?.has).toBeUndefined();
+    expect(tabRules.at(-1)?.has).toBeUndefined();
   });
   it("points only at pages that exist, and the old page is gone", () => {
-    for (const r of redirects) expect(pageExists(r.destination), r.destination).toBe(true);
+    for (const r of tabRules) expect(pageExists(r.destination), r.destination).toBe(true);
     expect(pageExists("/pattern-track")).toBe(false);
+  });
+});
+
+describe("problem key renames", () => {
+  const renames = PROBLEM_KEY_RENAMES as Record<string, string>;
+  it("every new key is a bank problem, every old key is gone", () => {
+    for (const [oldKey, newKey] of Object.entries(renames)) {
+      expect(problems[newKey], newKey).toBeTruthy();
+      expect(problems[oldKey], oldKey).toBeUndefined();
+    }
+  });
+  it("redirects raw and percent-encoded old URLs", () => {
+    expect(problemRules.map((r) => r.source)).toContain("/problems/kadane's%20algorithm".replace("'", "%27"));
+    expect(problemRules.map((r) => r.source)).toContain("/problems/stock-buy-and-sell");
+    for (const r of problemRules) expect(Object.values(renames)).toContain(r.destination.replace("/problems/", ""));
+  });
+  it("Java tests are keyed by current bank keys", () => {
+    for (const key of Object.keys(JAVA_PROBLEMS)) expect(problems[key], key).toBeTruthy();
   });
 });

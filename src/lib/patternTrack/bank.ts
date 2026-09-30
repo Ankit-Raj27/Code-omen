@@ -1,32 +1,27 @@
-// Maps code-omen's local problem bank (src/utils/problems) to LeetCode slugs.
+// CodeOmen's local problem bank (src/utils/problems) is keyed by LeetCode slug.
 import { PATTERNS, LEETCODE_URL, type Difficulty } from "@/content/patterns";
+import { PROBLEM_KEY_RENAMES } from "@/config/redirects.mjs";
 import { problems } from "@/utils/problems";
 
-// Bank keys that differ from the LeetCode slug.
-const BANK_TO_LC: Record<string, string> = {
-  "two-sum-two-input-array-is-sorted": "two-sum-ii-input-array-is-sorted",
-  "implementing-trie-prefix-tree": "implement-trie-prefix-tree",
-  "design-add-adn-search-words-data-structure": "design-add-and-search-words-data-structure",
-  "words-search-II": "word-search-ii",
-  "kadane's algorithm": "maximum-subarray",
-  "stock-buy-and-sell": "best-time-to-buy-and-sell-stock",
-};
-const LC_TO_BANK: Record<string, string> = Object.fromEntries(
-  Object.entries(BANK_TO_LC).map(([bank, lc]) => [lc, bank]),
-);
+const RENAMES = PROBLEM_KEY_RENAMES as Record<string, string>;
 
-export function lcSlugForBank(bankKey: string): string {
-  return BANK_TO_LC[bankKey] ?? bankKey;
+/** Current bank key for a key saved before the Phase 2 rename (old logs). */
+export function currentBankKey(key: string): string {
+  return RENAMES[key] ?? key;
 }
 
-/** code-omen bank key for a LeetCode slug, if the problem exists in the bank. */
+/** LeetCode slug for a bank key (they're the same since Phase 2; old keys are mapped). */
+export function lcSlugForBank(bankKey: string): string {
+  return currentBankKey(bankKey);
+}
+
+/** Bank key for a LeetCode slug, if that problem runs in CodeOmen. */
 export function bankKeyForLc(lcSlug: string): string | undefined {
-  const key = LC_TO_BANK[lcSlug] ?? lcSlug;
-  return problems[key] ? key : undefined;
+  return problems[lcSlug] ? lcSlug : undefined;
 }
 
 export function resolveUrl(bankKey: string): string {
-  return `/problems/${encodeURIComponent(bankKey)}?fresh=1`;
+  return `/problems/${encodeURIComponent(currentBankKey(bankKey))}?fresh=1`;
 }
 
 export interface LogPrefill {
@@ -35,26 +30,6 @@ export interface LogPrefill {
   patternId: string;
   difficulty: Difficulty;
   bankSlug: string;
-}
-
-/** Prefill values for logging a bank problem from its page. */
-export function prefillForBank(bankKey: string): LogPrefill | undefined {
-  const p = problems[bankKey];
-  if (!p) return undefined;
-  const lc = lcSlugForBank(bankKey);
-  for (const pattern of PATTERNS) {
-    const hit = pattern.problems.find(([, , slug]) => slug === lc);
-    if (hit) {
-      return { name: hit[1], url: LEETCODE_URL(lc), patternId: pattern.id, difficulty: hit[3], bankSlug: bankKey };
-    }
-  }
-  return {
-    name: p.title.replace(/^\d+\.\s*/, ""),
-    url: LEETCODE_URL(lc),
-    patternId: PATTERNS[0].id,
-    difficulty: "M",
-    bankSlug: bankKey,
-  };
 }
 
 /** Prefill for a roadmap problem by LeetCode slug (used by /log?slug=...). */
@@ -72,4 +47,35 @@ export function prefillForLc(lcSlug: string): LogPrefill | undefined {
     }
   }
   return undefined;
+}
+
+/** Bank problems that aren't on the roadmap: their pattern and difficulty. */
+const OFF_ROADMAP: Record<string, [patternId: string, difficulty: Difficulty]> = {
+  "valid-sudoku": ["arrays-hashing", "M"],
+  "encode-and-decode-strings": ["arrays-hashing", "M"],
+  "set-matrix-zeroes": ["arrays-hashing", "M"],
+  "spiral-matrix": ["arrays-hashing", "M"],
+  "pascals-triangle": ["dp-1d", "E"],
+};
+
+/** Pattern id for any bank problem (roadmap or not). */
+export function patternIdForBank(bankKey: string): string | undefined {
+  const key = currentBankKey(bankKey);
+  return prefillForLc(key)?.patternId ?? OFF_ROADMAP[key]?.[0];
+}
+
+/** Prefill for logging a bank problem from its page. */
+export function prefillForBank(bankKey: string): LogPrefill | undefined {
+  const key = currentBankKey(bankKey);
+  const p = problems[key];
+  if (!p) return undefined;
+  return (
+    prefillForLc(key) ?? {
+      name: p.title.replace(/^\d+\.\s*/, ""),
+      url: LEETCODE_URL(key),
+      patternId: OFF_ROADMAP[key]?.[0] ?? PATTERNS[0].id,
+      difficulty: OFF_ROADMAP[key]?.[1] ?? "M",
+      bankSlug: key,
+    }
+  );
 }
