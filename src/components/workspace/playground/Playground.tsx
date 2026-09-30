@@ -14,6 +14,10 @@ import { auth, firestore } from "@/Firebase/firebase";
 import { useRouter } from "next/router";
 import { arrayUnion, doc, setDoc, updateDoc } from "firebase/firestore";
 import useLocalStorage from "@/components/hooks/useLocalStorage";
+import { JAVA_PROBLEMS } from "@/utils/problems/java";
+import type { JavaRunResult } from "@/lib/javaRunner";
+
+export type EditorLanguage = "javascript" | "java";
 
 type PlaygroundProps = {
   problem: Problem;
@@ -42,10 +46,59 @@ const Playground: React.FC<PlaygroundProps> = ({
   })
   const [user] = useAuthState(auth);
 
+  const router = useRouter();
   const {
-    query: { pid },
-  } = useRouter();
+    query: { pid, fresh },
+  } = router;
+
+  const javaProblem = JAVA_PROBLEMS[problem.id];
+  const [langPref, setLangPref] = useLocalStorage("cd-language", "javascript");
+  const language: EditorLanguage = langPref === "java" && javaProblem ? "java" : "javascript";
+  const starterFor = (lang: EditorLanguage) => (lang === "java" && javaProblem ? javaProblem.starter : problem.starterCode);
+  const storageKey = (lang: EditorLanguage) => (lang === "java" ? `code-java-${pid}` : `code-${pid}`);
+  const [javaResult, setJavaResult] = useState<JavaRunResult | null>(null);
+  const [running, setRunning] = useState(false);
+
+  const markSolved = async () => {
+    if (!user) return;
+    toast.success("Congrats! All tests passed!", { position: "top-center", autoClose: 3000, theme: "dark" });
+    setSuccess(true);
+    setTimeout(() => setSuccess(false), 4000);
+    await setDoc(doc(firestore, "users", user.uid), { solvedProblems: arrayUnion(pid) }, { merge: true });
+    setSolved(true);
+  };
+
+  const runJava = async () => {
+    if (!user) return;
+    setRunning(true);
+    setJavaResult(null);
+    try {
+      const token = await user.getIdToken();
+      const r = await fetch("/api/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ problemId: problem.id, code: userCode }),
+      });
+      const data = await r.json();
+      if (!r.ok) {
+        toast.error(data.error || "Run failed", { position: "top-center", theme: "dark" });
+        return;
+      }
+      setJavaResult(data as JavaRunResult);
+      if (data.status === "accepted") await markSolved();
+      else if (data.status === "wrong_answer")
+        toast.error(`${data.passed}/${data.total} tests passed`, { position: "top-right", autoClose: 2000, theme: "dark" });
+      else toast.error(data.status === "compile_error" ? "Compilation error" : "Run failed", { position: "top-right", theme: "dark" });
+    } catch (e) {
+      console.error(e);
+      toast.error("Couldn't reach the code runner", { position: "top-center", theme: "dark" });
+    } finally {
+      setRunning(false);
+    }
+  };
+
   const handleSubmit = async () => {
+    if (user && language === "java") return runJava();
     if (!user) {
       toast.error("Please login to submit!", {
         position: "top-center",
@@ -60,24 +113,7 @@ const Playground: React.FC<PlaygroundProps> = ({
       const handler = problems[pid as string].handlerFunction;
       if (typeof handler === "function") {
         const success = handler(cb);
-        if (success) {
-          toast.success("Congrats! All tests passed!", {
-            position: "top-center",
-            autoClose: 3000,
-            theme: "dark",
-          });
-          setSuccess(true);
-          setTimeout(() => {
-            setSuccess(false);
-          }, 4000);
-  
-          const userRef = doc(firestore, "users", user.uid);
-          await setDoc(userRef, {
-            solvedProblems: arrayUnion(pid),
-          }, { merge: true });
-  
-          setSolved(true);
-        }
+        if (success) await markSolved();
       }
     } catch (error: any) {
       console.error(error.message);
@@ -99,21 +135,33 @@ const Playground: React.FC<PlaygroundProps> = ({
   
 
   useEffect(() => {
-    const code = localStorage.getItem(`code-${pid}`);
-    if (user) {
-      setUserCode(code ? JSON.parse(code) : problem.starterCode);
-    } else {
-      setUserCode(problem.starterCode);
+    // Pattern Track "Re-solve": start from a blank editor, discarding saved code.
+    if (fresh === "1") {
+      localStorage.removeItem(storageKey("javascript"));
+      localStorage.removeItem(storageKey("java"));
+      setUserCode(starterFor(language));
+      const { fresh: _f, ...rest } = router.query;
+      router.replace({ pathname: router.pathname, query: rest }, undefined, { shallow: true });
+      return;
     }
-  }, [pid, user, problem.starterCode]);
+    const code = localStorage.getItem(storageKey(language));
+    if (user) {
+      setUserCode(code ? JSON.parse(code) : starterFor(language));
+    } else {
+      setUserCode(starterFor(language));
+    }
+    setJavaResult(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pid, user, problem.starterCode, fresh, language]);
   const onChange = (value: string) => {
     setUserCode(value);
-    localStorage.setItem(`code-${pid}`, JSON.stringify(value));
+    localStorage.setItem(storageKey(language), JSON.stringify(value));
   };
 
   return (
     <div className="flex flex-col bg-dark-layer-1 relative overflow-x-hidden">
-      <PreferenceNav setting={setting} setSetting ={setSetting}/>
+      <PreferenceNav setting={setting} setSetting ={setSetting}
+        language={language} javaAvailable={!!javaProblem} onLanguageChange={(l) => setLangPref(l)} />
 
       <Split
         className=" h-[calc(100vh-94px)]"
@@ -125,7 +173,7 @@ const Playground: React.FC<PlaygroundProps> = ({
           <CodeMirror
             value={userCode}
             theme={vscodeDark}
-            extensions={[javascript(),java()]}
+            extensions={[language === "java" ? java() : javascript()]}
             style={{ fontSize: setting.fontSize }}
             onChange={onChange}
           />
@@ -179,6 +227,20 @@ const Playground: React.FC<PlaygroundProps> = ({
           </div>
         </div>
       </Split>
+      {language === "java" && (running || javaResult) && (
+        <div className="absolute bottom-14 left-0 right-0 z-10 mx-5 max-h-48 overflow-auto rounded-lg bg-dark-layer-2 p-3 text-xs text-dark-label-2 shadow-lg">
+          {running && <p>Running on Java 13…</p>}
+          {javaResult && (
+            <>
+              <p className={javaResult.status === "accepted" ? "text-dark-green-s" : "text-dark-pink"}>
+                {javaResult.status.replace("_", " ")} · {javaResult.passed}/{javaResult.total} passed
+              </p>
+              {javaResult.lines.filter((l) => !l.startsWith("PASS")).map((l) => <p key={l} className="mt-1 font-mono">{l}</p>)}
+              {javaResult.message && <pre className="mt-2 whitespace-pre-wrap font-mono">{javaResult.message}</pre>}
+            </>
+          )}
+        </div>
+      )}
       <EditorFooter handleSubmit={handleSubmit} />
     </div>
   );

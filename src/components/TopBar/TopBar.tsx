@@ -81,6 +81,11 @@ const TopBar: React.FC<TopBarProps> = ({ problemPage }) => {
         )}
 
         <div className="flex items-center space-x-4 flex-1 justify-end">
+          {!problemPage && (
+            <Link href="/pattern-track" className="text-sm text-dark-gray-7 hover:text-white">
+              Pattern Track
+            </Link>
+          )}
           {/* <div>
             <a
               href=""

@@ -1,4 +1,5 @@
 import { auth, firestore } from "@/Firebase/firebase";
+import LogProblemButton from "@/components/patternTrack/LogProblemButton";
 import CircleSkeleton from "@/components/skeletons/CircleSkeleton";
 import RectangleSkeleton from "@/components/skeletons/RectangleSkeleton";
 import { DBProblem, Problem } from "@/utils/types/problems";
@@ -268,6 +269,7 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({
               <div className="flex-1 mr-2 text-lg text-white font-medium">
                 {problem?.title}
               </div>
+              <LogProblemButton bankKey={problem.id} />
             </div>
             {!loading && currentProblem && (
               <div className="flex items-center mt-3">

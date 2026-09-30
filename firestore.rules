@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isOwner(userId) { return signedIn() && request.auth.uid == userId; }
+
+    match /problems/{problemId} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+
+    // Problem lists read by the NeetCode / Striver / GFG tables and the profile page.
+    // Public read, no client writes (seed via console/admin).
+    match /neetcode150/{problemId} { allow read: if true; allow write: if false; }
+    match /striver150/{problemId}  { allow read: if true; allow write: if false; }
+    match /gfg150/{problemId}      { allow read: if true; allow write: if false; }
+
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      match /solvedProblems/{problemId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Pattern Track problem log
+      match /logs/{logId} {
+        function validLog(d) {
+          return d.name is string && d.name.size() > 0 && d.name.size() <= 200
+            && d.insight is string && d.insight.size() > 0 && d.insight.size() <= 300
+            && d.patternId is string
+            && d.difficulty in ['E', 'M', 'H']
+            && d.solvedSolo is bool
+            && d.minutes is int && d.minutes >= 0 && d.minutes <= 600
+            && d.dateSolved is string && d.dateSolved.matches('^\\d{4}-\\d{2}-\\d{2}$')
+            && d.nextDue is string && d.nextDue.matches('^\\d{4}-\\d{2}-\\d{2}$')
+            && d.stage is int && d.stage >= 0 && d.stage <= 5
+            && d.reviews is list && d.reviews.size() <= 200;
+        }
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId) && validLog(request.resource.data);
+      }
+    }
+  }
+}
