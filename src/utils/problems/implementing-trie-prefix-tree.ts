@@ -39,30 +39,11 @@ const handlerImplementTrie = (TrieConstructor: any) => {
 export const implementTrie: Problem = {
   id: "implement-trie",
   title: "Implement Trie (Prefix Tree)",
-  problemStatement: `<p class='mt-3'>
-    A <strong>trie</strong> (pronounced as "try") or prefix tree is a tree data structure used to efficiently store and retrieve keys in a dataset of strings. 
-    There are various applications of this data structure, such as autocomplete and spellchecker.
-  </p>
-  <p class='mt-3'>
-    Implement the Trie class:
-    <ul class="list-disc pl-5">
-      <li><code>Trie()</code> Initializes the trie object.</li>
-      <li><code>void insert(String word)</code> Inserts the string <code>word</code> into the trie.</li>
-      <li><code>boolean search(String word)</code> Returns <code>true</code> if the string <code>word</code> is in the trie (i.e., was inserted before), and <code>false</code> otherwise.</li>
-      <li><code>boolean startsWith(String prefix)</code> Returns <code>true</code> if there is a previously inserted string <code>word</code> that has the prefix <code>prefix</code>, and <code>false</code> otherwise.</li>
-    </ul>
-  </p>`,
+  problemStatement: `<p class='mt-3'>Build a <code>Trie</code> class for storing words and answering prefix questions:</p><p class='mt-3'><code>insert(word)</code> stores a word. <code>search(word)</code> returns <code>true</code> if that exact word was stored. <code>startsWith(prefix)</code> returns <code>true</code> if any stored word begins with <code>prefix</code>.</p>`,
   examples: [
-    {
-      id: 1,
-      inputText: 'trie = new Trie();\ntrie.insert("apple");\ntrie.search("apple");\ntrie.search("app");\ntrie.startsWith("app");\ntrie.insert("app");\ntrie.search("app");',
-      outputText: "true, false, true, true",
-      explanation: "The trie supports insertion and prefix matching correctly.",
-    },
+    { id: 1, inputText: "insert(\"code\"), search(\"code\"), search(\"cod\"), startsWith(\"cod\")", outputText: "true, false, true", explanation: "\"cod\" was never inserted as a word, but it is a prefix of \"code\"." },
   ],
-  constraints: `<li class='mt-2'><code>1 ≤ word.length, prefix.length ≤ 2000</code></li>
-<li class='mt-2'><code>word</code> and <code>prefix</code> consist only of lowercase English letters.</li>
-<li class='mt-2'>At most <code>3 * 10<sup>4</sup></code> calls will be made to <code>insert</code>, <code>search</code>, and <code>startsWith</code>.</li>`,
+  constraints: `<li class='mt-2'><code>1 ≤ word.length, prefix.length ≤ 2000</code></li><li class='mt-2'>Lowercase English letters only.</li><li class='mt-2'>At most 3 × 10<sup>4</sup> calls in total.</li>`,
   handlerFunction: handlerImplementTrie,
   starterCode: starterCodeImplementTrie,
   order: 17,

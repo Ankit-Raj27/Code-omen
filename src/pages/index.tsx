@@ -21,9 +21,18 @@ import { auth, firestore } from "@/Firebase/firebase"
 import { getUserData } from "@/Firebase/firebase"
 import { useAuthState } from "react-firebase-hooks/auth"
 import { useRouter } from "next/navigation"
-import { collection, getDocs, query, orderBy, limit, where } from "firebase/firestore"
+import { collection, doc, getDoc, getDocs, query, orderBy, limit, where } from "firebase/firestore"
 import UserActivityComponent from "@/components/features/UserActivityComponent"
 import Loading from "@/components/features/loading"
+import { problems as bankProblems } from "@/utils/problems"
+
+const LIST_PAGES = new Set(["neetcode150", "striver150", "gfg150"])
+
+/** Runnable in CodeOmen → its workspace; otherwise the list it came from. */
+function problemHref(p: { id: string; source: string }): string {
+  if (bankProblems[p.id]) return `/problems/${encodeURIComponent(p.id)}`
+  return LIST_PAGES.has(p.source) ? `/problems/${p.source}` : "/pattern-track"
+}
 
 
 const Dashboard = () => {
@@ -133,9 +142,9 @@ const Dashboard = () => {
       const solvedIds = new Set();
       
       if (user) {
-        const solvedProblemsRef = collection(firestore, "users", user.uid, "solvedProblems");
-        const solvedProblemsSnap = await getDocs(solvedProblemsRef);
-        solvedProblemsSnap.docs.forEach(doc => solvedIds.add(doc.id));
+        const userSnap = await getDoc(doc(firestore, "users", user.uid));
+        const ids: unknown = userSnap.data()?.solvedProblems;
+        if (Array.isArray(ids)) ids.forEach((id) => solvedIds.add(id));
       }
       
       // Get problems from all collections
@@ -172,21 +181,21 @@ const Dashboard = () => {
       title: "NeetCode 150",
       button: "Code here!",
       src: "/neetcode150.jpg",
-      redirectPath: "problems/neetcode150",
+      redirectPath: "/problems/neetcode150",
     },
     {
       id: "2",
       title: "Striver 150",
       button: "Code here!",
       src: "/striver150.png",
-      redirectPath: "problems/striver150",
+      redirectPath: "/problems/striver150",
     },
     {
       id: "3",
       title: "GFG 100",
       button: "Code here!",
       src: "/gfg150.png",
-      redirectPath: "problems/gfg150",
+      redirectPath: "/problems/gfg150",
     },
   ]
 
@@ -338,7 +347,7 @@ const Dashboard = () => {
                     <Button 
                       variant="outline" 
                       className="border-gray-700 hover:border-gray-500"
-                      onClick={() => router.push('/progress')}
+                      onClick={() => router.push('/profile')}
                     >
                       View Detailed Progress <ArrowRight size={16} className="ml-2" />
                     </Button>
@@ -372,7 +381,7 @@ const Dashboard = () => {
                           key={index}
                           className="p-4 hover:bg-gray-800/30 transition-colors cursor-pointer"
                           whileHover={{ x: 5 }}
-                          onClick={() => router.push(`/problem/${problem.source}/${problem.id}`)}
+                          onClick={() => router.push(problemHref(problem))}
                         >
                           <div className="flex justify-between items-start mb-2">
                             <p className="font-medium">{problem.name}</p>
@@ -403,7 +412,7 @@ const Dashboard = () => {
                   <div className="p-4 border-t border-gray-800">
                     <Button 
                       className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                      onClick={() => router.push('/problems/all')}
+                      onClick={() => router.push('/pattern-track')}
                     >
                       Start Solving
                     </Button>

@@ -10,7 +10,6 @@ import {
   doc,
   getDoc,
 } from "firebase/firestore";
-import { formatDistanceToNow } from "date-fns";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -57,12 +56,9 @@ export async function getProblemsByDifficulty(difficulty: string, collectionName
 
 export async function getUserSolvedProblems(userId: string) {
   try {
-    const solvedRef = collection(firestore, "users", userId, "solvedProblems");
-    const querySnapshot = await getDocs(solvedRef);
-    return querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const snap = await getDoc(doc(firestore, "users", userId));
+    const ids: unknown = snap.data()?.solvedProblems;
+    return Array.isArray(ids) ? Array.from(new Set(ids as string[])).map((id) => ({ id })) : [];
   } catch (error) {
     console.error("Error fetching solved problems:", error);
     throw error;
@@ -122,42 +118,18 @@ export async function getUserData(userId: string) {
       problems: allProblems.filter(p => p.source === "problems").length,
     };
 
-    // Fetch user's solved problems
-    const solvedSnap = await getDocs(
-      collection(firestore, "users", userId, "solvedProblems")
-    );
-
-    const solvedProblems = solvedSnap.docs.map((doc) => ({
-      id: doc.id,
-      ...(doc.data() as {
-        difficulty: "easy" | "medium" | "hard";
-        solvedAt: string;
-        source?: string;
-      }),
+    // Solved problems: the editor records them in users/{uid}.solvedProblems
+    // (an array of problem ids, in solve order). The old subcollection was never written.
+    const userSnap = await getDoc(doc(firestore, "users", userId));
+    const solvedIds: string[] = Array.isArray(userSnap.data()?.solvedProblems)
+      ? Array.from(new Set(userSnap.data()!.solvedProblems as string[]))
+      : [];
+    const byId = new Map(allProblems.map((p) => [p.id, p]));
+    const solvedProblems = solvedIds.map((id) => ({
+      id,
+      difficulty: (byId.get(id)?.difficulty ?? "") as "easy" | "medium" | "hard",
+      source: byId.get(id)?.source ?? "problems",
     }));
-
-    // For each solved problem, find its source collection if not already specified
-    for (let i = 0; i < solvedProblems.length; i++) {
-      if (!solvedProblems[i].source) {
-        // Find which collection this problem belongs to
-        for (const collectionName of collections) {
-          try {
-            const problemDoc = await getDoc(doc(firestore, collectionName, solvedProblems[i].id));
-            if (problemDoc.exists()) {
-              solvedProblems[i].source = collectionName;
-              break;
-            }
-          } catch (err) {
-            // Skip if error
-          }
-        }
-        
-        // Default to "problems" if not found
-        if (!solvedProblems[i].source) {
-          solvedProblems[i].source = "problems";
-        }
-      }
-    }
 
     // Calculate solved totals by difficulty
     const totalSolved = solvedProblems.length;
@@ -184,39 +156,17 @@ export async function getUserData(userId: string) {
         (solvedByCollection.gfg150 / totalByCollection.gfg150) * 100 : 0,
     };
 
-    // Recent activity
-    const recent = solvedProblems
-      .sort(
-        (a, b) =>
-          new Date(b.solvedAt).getTime() - new Date(a.solvedAt).getTime()
-      )
-      .slice(0, 5);
-
-    const recentActivity = await Promise.all(
-      recent.map(async (item) => {
-        // Try to find problem details from its source collection
-        let problemName = "Unknown";
-        let source = item.source || "problems";
-        
-        try {
-          const problemDoc = await getDoc(doc(firestore, source, item.id));
-          if (problemDoc.exists()) {
-            problemName = problemDoc.data()?.title || "Unknown";
-          }
-        } catch (err) {
-          console.warn(`Error fetching problem details from ${source}:`, err);
-        }
-        
-        return {
-          problemId: item.id,
-          problemName,
-          source,
-          timestamp: formatDistanceToNow(new Date(item.solvedAt), {
-            addSuffix: true,
-          }),
-        };
-      })
-    );
+    // Recent activity: the last 5 solves, newest first. No timestamps are stored
+    // with the array, so none are invented.
+    const recentActivity = solvedProblems
+      .slice(-5)
+      .reverse()
+      .map((item) => ({
+        problemId: item.id,
+        problemName: (byId.get(item.id) as { title?: string } | undefined)?.title ?? item.id,
+        source: item.source,
+        timestamp: "",
+      }));
 
     return {
       // Overall stats
@@ -276,8 +226,9 @@ export async function getUserCollectionProgress(userId: string, collectionName: 
     }));
     
     // Get user's solved problems
-    const solvedSnap = await getDocs(collection(firestore, "users", userId, "solvedProblems"));
-    const solvedIds = solvedSnap.docs.map(doc => doc.id);
+    const userSnap = await getDoc(doc(firestore, "users", userId));
+    const rawIds: unknown = userSnap.data()?.solvedProblems;
+    const solvedIds: string[] = Array.isArray(rawIds) ? (rawIds as string[]) : [];
     
     // Mark problems as solved/unsolved
     const progressData = problems.map(problem => ({

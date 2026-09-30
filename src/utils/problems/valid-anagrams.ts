@@ -29,36 +29,12 @@ const handlerValidAnagram = (fn: any) => {
 export const validAnagram: Problem = {
   id: "valid-anagram",
   title: "Valid Anagram",
-  problemStatement: `<p class='mt-3'>
-  Given two strings <code>s</code> and <code>t</code>, return <code>true</code> if <code>t</code> is an anagram of <code>s</code>, and <code>false</code> otherwise.
-</p>
-<p class='mt-3'>
-  An <strong>Anagram</strong> is a word or phrase formed by rearranging the letters of a different word or phrase, typically using all the original letters exactly once.
-</p>`,
+  problemStatement: `<p class='mt-3'>Given two lowercase strings <code>s</code> and <code>t</code>, decide whether <code>t</code> uses exactly the same letters as <code>s</code>, each the same number of times, just possibly rearranged.</p>`,
   examples: [
-    {
-      id: 1,
-      inputText: "s = \"anagram\", t = \"nagaram\"",
-      outputText: "true",
-      explanation: "All characters match in frequency and content.",
-    },
-    {
-      id: 2,
-      inputText: "s = \"rat\", t = \"car\"",
-      outputText: "false",
-      explanation: "Different characters present.",
-    },
-    {
-      id: 3,
-      inputText: "s = \"a\", t = \"ab\"",
-      outputText: "false",
-    },
+    { id: 1, inputText: "s = \"stone\", t = \"notes\"", outputText: "true" },
+    { id: 2, inputText: "s = \"hello\", t = \"hallo\"", outputText: "false", explanation: "s has two l's and an e; t has two l's and an a." },
   ],
-  constraints: `<li class='mt-2'>
-  <code>1 ≤ s.length, t.length ≤ 5 * 10^4</code>
-</li> <li class='mt-2'>
-<code>s</code> and <code>t</code> consist of lowercase English letters.
-</li>`,
+  constraints: `<li class='mt-2'><code>1 ≤ s.length, t.length ≤ 5 × 10<sup>4</sup></code></li><li class='mt-2'>Both strings contain only lowercase English letters.</li>`,
   handlerFunction: handlerValidAnagram,
   starterCode: starterCodeValidAnagram,
   order: 3,

@@ -31,28 +31,12 @@ const handlerLongestConsecutive = (fn: any) => {
 export const longestConsecutive: Problem = {
   id: "longest-consecutive-sequence",
   title: "Longest Consecutive Sequence",
-  problemStatement: `<p class='mt-3'>
-  Given an unsorted array of integers <code>nums</code>, return the length of the longest consecutive elements sequence.
-</p>
-<p class='mt-3'>
-  You must write an algorithm that runs in <strong>O(n)</strong> time.
-</p>`,
+  problemStatement: `<p class='mt-3'>Given an unsorted integer array <code>nums</code>, return the length of the longest run of values that follow one another with no gaps (like 3, 4, 5, 6). The values don't need to be next to each other in the array.</p><p class='mt-3'>Your solution should run in O(n) time.</p>`,
   examples: [
-    {
-      id: 1,
-      inputText: "nums = [100,4,200,1,3,2]",
-      outputText: "4",
-      explanation: "The longest consecutive sequence is [1,2,3,4].",
-    },
-    {
-      id: 2,
-      inputText: "nums = [0,3,7,2,5,8,4,6,0,1]",
-      outputText: "9",
-      explanation: "The longest consecutive sequence is [0,1,2,3,4,5,6,7,8].",
-    },
+    { id: 1, inputText: "nums = [10,5,12,3,4,11,6]", outputText: "4", explanation: "3, 4, 5, 6 is the longest run; 10, 11, 12 has only 3." },
+    { id: 2, inputText: "nums = []", outputText: "0" },
   ],
-  constraints: `<li class='mt-2'><code>0 ≤ nums.length ≤ 10⁵</code></li>
-<li class='mt-2'><code>-10⁹ ≤ nums[i] ≤ 10⁹</code></li>`,
+  constraints: `<li class='mt-2'><code>0 ≤ nums.length ≤ 10<sup>5</sup></code></li><li class='mt-2'><code>-10<sup>9</sup> ≤ nums[i] ≤ 10<sup>9</sup></code></li>`,
   handlerFunction: handlerLongestConsecutive,
   starterCode: starterCodeLongestConsecutive,
   order: 6,

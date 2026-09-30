@@ -45,19 +45,19 @@ const AuthPage: React.FC<AuthPageProps> = () => {
       title: "NeetCode 150",
       button: "Code here!",
       src: "/neetcode150.jpg",
-      redirectPath: "problems/neetcode150",
+      redirectPath: "/problems/neetcode150",
     },
     {
       title: "Striver 150",
       button: "Code here!",
       src: "/striver150.png",
-      redirectPath: "problems/striver150",
+      redirectPath: "/problems/striver150",
     },
     {
       title: "GFG 100",
       button: "Code here!",
       src: "/gfg150.png",
-      redirectPath: "problems/gfg150",
+      redirectPath: "/problems/gfg150",
     },
 
   ];

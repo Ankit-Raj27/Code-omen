@@ -44,31 +44,12 @@ const handlerSpiralMatrix = (fn: any) => {
 export const spiralMatrix: Problem = {
   id: "spiral-matrix",
   title: "Spiral Matrix",
-  problemStatement: `<p class='mt-3'>
-    Given an <code>m x n</code> matrix, return all elements of the matrix in spiral order.
-  </p>`,
+  problemStatement: `<p class='mt-3'>Given an <code>m × n</code> matrix, return all of its values in spiral order: across the top row, down the right column, back along the bottom row, up the left column, then repeat on the inner layer.</p>`,
   examples: [
-    {
-      id: 1,
-      inputText: "matrix = [[1,2,3],[4,5,6],[7,8,9]]",
-      outputText: "[1,2,3,6,9,8,7,4,5]",
-      explanation: "The spiral order starts from top-left and goes clockwise inward.",
-    },
-    {
-      id: 2,
-      inputText: "matrix = [[1,2,3,4],[5,6,7,8],[9,10,11,12]]",
-      outputText: "[1,2,3,4,8,12,11,10,9,5,6,7]",
-    },
-    {
-      id: 3,
-      inputText: "matrix = [[7]]",
-      outputText: "[7]",
-    },
+    { id: 1, inputText: "matrix = [[1,2],[3,4]]", outputText: "[1,2,4,3]" },
+    { id: 2, inputText: "matrix = [[1,2,3],[4,5,6]]", outputText: "[1,2,3,6,5,4]" },
   ],
-  constraints: `<li class='mt-2'><code>m == matrix.length</code></li>
-<li class='mt-2'><code>n == matrix[i].length</code></li>
-<li class='mt-2'><code>1 ≤ m, n ≤ 10</code></li>
-<li class='mt-2'><code>-100 ≤ matrix[i][j] ≤ 100</code></li>`,
+  constraints: `<li class='mt-2'><code>1 ≤ m, n ≤ 10</code></li><li class='mt-2'><code>-100 ≤ matrix[i][j] ≤ 100</code></li>`,
   handlerFunction: handlerSpiralMatrix,
   starterCode: starterCodeSpiralMatrix,
   order: 12,

@@ -37,32 +37,12 @@ const handlerThreeSum = (fn: any) => {
 export const threeSum: Problem = {
   id: "3sum",
   title: "3Sum",
-  problemStatement: `<p class='mt-3'>
-    Given an integer array <code>nums</code>, return all the triplets <code>[nums[i], nums[j], nums[k]]</code> such that <code>i != j</code>, <code>i != k</code>, and <code>j != k</code>, and <code>nums[i] + nums[j] + nums[k] == 0</code>.
-  </p>
-  <p class='mt-3'>Notice that the solution set must not contain duplicate triplets.</p>`,
+  problemStatement: `<p class='mt-3'>Given an integer array <code>nums</code>, return every distinct triplet of values from three different positions that adds up to <code>0</code>.</p><p class='mt-3'>No triplet may appear twice in the answer. Triplets, and the order inside each, may be in any order.</p>`,
   examples: [
-    {
-      id: 1,
-      inputText: "nums = [-1,0,1,2,-1,-4]",
-      outputText: "[[-1,-1,2],[-1,0,1]]",
-      explanation: "Triplets that sum to zero are [-1,-1,2] and [-1,0,1].",
-    },
-    {
-      id: 2,
-      inputText: "nums = [0,1,1]",
-      outputText: "[]",
-      explanation: "No three numbers sum to zero.",
-    },
-    {
-      id: 3,
-      inputText: "nums = [0,0,0]",
-      outputText: "[[0,0,0]]",
-      explanation: "Only one triplet sums to zero.",
-    },
+    { id: 1, inputText: "nums = [-2,0,1,1,2]", outputText: "[[-2,0,2],[-2,1,1]]" },
+    { id: 2, inputText: "nums = [1,2,3]", outputText: "[]", explanation: "No three values sum to 0." },
   ],
-  constraints: `<li class='mt-2'><code>3 ≤ nums.length ≤ 3000</code></li>
-<li class='mt-2'><code>-10<sup>5</sup> ≤ nums[i] ≤ 10<sup>5</sup></code></li>`,
+  constraints: `<li class='mt-2'><code>3 ≤ nums.length ≤ 3000</code></li><li class='mt-2'><code>-10<sup>5</sup> ≤ nums[i] ≤ 10<sup>5</sup></code></li>`,
   handlerFunction: handlerThreeSum,
   starterCode: starterCodeThreeSum,
   order: 14,

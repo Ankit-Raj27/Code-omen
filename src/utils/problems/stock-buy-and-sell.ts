@@ -31,31 +31,12 @@ const handlerMaxProfit = (fn: any) => {
 export const stockBuyAndSell: Problem = {
   id: "best-time-to-buy-and-sell-stock",
   title: "Best Time to Buy and Sell Stock",
-  problemStatement: `<p class='mt-3'>
-  You are given an array <code>prices</code> where <code>prices[i]</code> is the price of a given stock on the <code>i<sup>th</sup></code> day.
-</p>
-<p class='mt-3'>
-  You want to maximize your profit by choosing a **single day** to buy one stock and choosing a different day in the future to sell that stock.
-</p>
-<p class='mt-3'>
-  Return the maximum profit you can achieve from this transaction. If you cannot achieve any profit, return <code>0</code>.
-</p>`,
+  problemStatement: `<p class='mt-3'><code>prices[i]</code> is a stock's price on day <code>i</code>. You may buy once and then sell once on a later day. Return the most profit you can make, or <code>0</code> if no trade makes money.</p>`,
   examples: [
-    {
-      id: 1,
-      inputText: "prices = [7,1,5,3,6,4]",
-      outputText: "5",
-      explanation: "Buy on day 2 (price = 1) and sell on day 5 (price = 6), profit = 6 - 1 = 5.",
-    },
-    {
-      id: 2,
-      inputText: "prices = [7,6,4,3,1]",
-      outputText: "0",
-      explanation: "No profit can be made since prices are in descending order.",
-    },
+    { id: 1, inputText: "prices = [9,2,6,1,5]", outputText: "4", explanation: "Buy at 2 and sell at 6 (buying at 1 and selling at 5 also gives 4)." },
+    { id: 2, inputText: "prices = [5,4,3]", outputText: "0", explanation: "Prices only fall, so don't trade." },
   ],
-  constraints: `<li class='mt-2'><code>1 ≤ prices.length ≤ 10⁵</code></li>
-<li class='mt-2'><code>0 ≤ prices[i] ≤ 10⁴</code></li>`,
+  constraints: `<li class='mt-2'><code>1 ≤ prices.length ≤ 10<sup>5</sup></code></li><li class='mt-2'><code>0 ≤ prices[i] ≤ 10<sup>4</sup></code></li>`,
   handlerFunction: handlerMaxProfit,
   starterCode: starterCodeMaxProfit,
   order: 9,

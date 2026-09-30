@@ -30,33 +30,12 @@ const handlerContainerWithMostWater = (fn: any) => {
 export const containerWithMostWater: Problem = {
   id: "container-with-most-water",
   title: "Container With Most Water",
-  problemStatement: `<p class='mt-3'>
-    You are given an integer array <code>height</code> of length <code>n</code>. There are <code>n</code> vertical lines drawn such that the two endpoints of the <code>i<sup>th</sup></code> line are <code>(i, 0)</code> and <code>(i, height[i])</code>.
-  </p>
-  <p class='mt-3'>
-    Find two lines that together with the x-axis form a container that holds the most water. Return the maximum amount of water a container can store.
-  </p>
-  <p class='mt-3'>
-    <strong>Notice</strong> that you may not slant the container.
-  </p>`,
+  problemStatement: `<p class='mt-3'><code>height[i]</code> is the height of a vertical wall at position <code>i</code>. Pick two walls; together with the ground they hold water up to the shorter wall's height, across the distance between them.</p><p class='mt-3'>Return the largest amount of water any pair of walls can hold.</p>`,
   examples: [
-    {
-      id: 1,
-      inputText: "height = [1,8,6,2,5,4,8,3,7]",
-      outputText: "49",
-      explanation:
-        "The lines at index 1 and 8 form a container with max area: min(8,7) * (8-1) = 49.",
-    },
-    {
-      id: 2,
-      inputText: "height = [1,1]",
-      outputText: "1",
-      explanation: "Only one container can be formed: min(1,1) * 1 = 1.",
-    },
+    { id: 1, inputText: "height = [2,5,4,3]", outputText: "6", explanation: "Walls 0 and 3 hold 2 × 3; walls 1 and 3 hold 3 × 2." },
+    { id: 2, inputText: "height = [3,3]", outputText: "3" },
   ],
-  constraints: `<li class='mt-2'><code>n == height.length</code></li>
-<li class='mt-2'><code>2 ≤ n ≤ 10<sup>5</sup></code></li>
-<li class='mt-2'><code>0 ≤ height[i] ≤ 10<sup>4</sup></code></li>`,
+  constraints: `<li class='mt-2'><code>2 ≤ height.length ≤ 10<sup>5</sup></code></li><li class='mt-2'><code>0 ≤ height[i] ≤ 10<sup>4</sup></code></li>`,
   handlerFunction: handlerContainerWithMostWater,
   starterCode: starterCodeContainerWithMostWater,
   order: 15,
