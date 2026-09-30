@@ -5,10 +5,13 @@ import SettingsModal from "@/components/Modals/SettingsModal";
 import EditorFooter from "./EditorFooter";
 type PreferenceNavProps = {
   setting : ISettings,
-  setSetting : React.Dispatch<React.SetStateAction<ISettings>>
+  setSetting : React.Dispatch<React.SetStateAction<ISettings>>,
+  language?: "javascript" | "java",
+  javaAvailable?: boolean,
+  onLanguageChange?: (l: "javascript" | "java") => void,
 };
 
-const PreferenceNav: React.FC<PreferenceNavProps> = ({setSetting,setting}) => {
+const PreferenceNav: React.FC<PreferenceNavProps> = ({setSetting,setting,language = "javascript",javaAvailable = false,onLanguageChange}) => {
   const[isFullScreen,setIsFullScreen] = useState(false)
   const handleFullScreen = ()=>{
     if(isFullScreen){
@@ -38,13 +41,15 @@ const PreferenceNav: React.FC<PreferenceNavProps> = ({setSetting,setting}) => {
   return (
     <div className="flex items-center justify-between bg-dark-layer-2 h-11 w-full">
       <div className="flex items-center text-white">
-        <button className="flex cursor-pointer items-center rounded focus:outline-none bg-dark-fill-3 text-dark-label-2 hover:bg-dark-fill-2  px-2 py-1.5 font-medium">
-          <div className="flex items-center px-1">
-            <div className="text-xs text-label-2 dark:text-dark-label-2">
-              JavaScript
-            </div>
-          </div>
-        </button>
+        <select
+          aria-label="Language"
+          value={language}
+          onChange={(e) => onLanguageChange?.(e.target.value as "javascript" | "java")}
+          className="cursor-pointer rounded focus:outline-none bg-dark-fill-3 text-dark-label-2 hover:bg-dark-fill-2 px-2 py-1.5 text-xs font-medium"
+        >
+          <option value="javascript">JavaScript</option>
+          <option value="java" disabled={!javaAvailable}>{javaAvailable ? "Java" : "Java (tests coming soon)"}</option>
+        </select>
       </div>
 
       <div className="flex items-center m-2">
