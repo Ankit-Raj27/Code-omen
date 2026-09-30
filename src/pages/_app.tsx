@@ -4,6 +4,7 @@ import Head from "next/head";
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import { RecoilRoot } from "recoil";
+import { PatternTrackProvider } from "@/context/PatternTrackContext";
 
 export default function App({ Component, pageProps }: AppProps) {
   return(
@@ -16,7 +17,9 @@ export default function App({ Component, pageProps }: AppProps) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <ToastContainer />
-      <Component {...pageProps} />
+      <PatternTrackProvider>
+        <Component {...pageProps} />
+      </PatternTrackProvider>
     </RecoilRoot>
   )
 }

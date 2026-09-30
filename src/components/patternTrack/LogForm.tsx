@@ -16,6 +16,7 @@ type Props = {
 };
 
 const empty = (today: Ymd, prefill: Partial<LogPrefill> = {}, patternId?: string) => ({
+  bankSlug: prefill.bankSlug ?? "",
   name: prefill.name ?? "",
   url: prefill.url ?? "",
   patternId: prefill.patternId ?? patternId ?? PATTERNS[0].id,
@@ -49,7 +50,7 @@ const LogForm: React.FC<Props> = ({ uid, today, prefill, defaultPatternId, onSav
         insight: f.insight,
         stuckOn: f.stuckOn,
         complexity: f.complexity,
-        bankSlug: prefill?.bankSlug,
+        bankSlug: f.bankSlug || undefined,
       });
       toast.success("Logged. First review is tomorrow.", { theme: "dark", position: "top-center", autoClose: 2000 });
       setF(empty(today, {}, f.patternId));

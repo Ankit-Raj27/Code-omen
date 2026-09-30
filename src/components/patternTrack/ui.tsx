@@ -39,3 +39,25 @@ export const btnGhost = `${btn} bg-dark-fill-3 text-dark-label-2 hover:bg-dark-f
 export const btnPrimary = `${btn} bg-dark-green-s text-white hover:opacity-90`;
 export const inputCls =
   "w-full rounded-lg border border-dark-divider-border-2 bg-dark-layer-2 px-3 py-2 text-sm text-dark-gray-8 placeholder:text-dark-gray-6 focus:outline-none focus:ring-2 focus:ring-dark-blue-s";
+
+export const StatTile: React.FC<{ label: string; value: React.ReactNode; hint?: string }> = ({ label, value, hint }) => (
+  <Panel>
+    <div className="text-2xl font-semibold text-dark-gray-8">{value}</div>
+    <div className="text-xs text-dark-gray-6">{label}</div>
+    {hint && <div className="mt-1 text-[11px] text-dark-gray-6">{hint}</div>}
+  </Panel>
+);
+
+export const PatternChip: React.FC<{ week: number; name: string; className?: string }> = ({ week, name, className = "" }) => (
+  <span className={`inline-flex items-center gap-1 rounded bg-dark-fill-3 px-2 py-0.5 text-xs text-dark-label-2 ${className}`}>
+    <span className="text-dark-gray-6">{week === 18 ? "Wk 18+" : `Wk ${week}`}</span>
+    {name}
+  </span>
+);
+
+export const EmptyState: React.FC<{ children: React.ReactNode; action?: React.ReactNode }> = ({ children, action }) => (
+  <Panel>
+    <p className="text-sm text-dark-label-2">{children}</p>
+    {action && <div className="mt-3">{action}</div>}
+  </Panel>
+);

@@ -6,6 +6,7 @@ import { isMastered, isOverdue } from "@/lib/patternTrack/srs";
 import { filterLogs, logsToCsv, sortNewestFirst, type LogEntry, type LogFilter } from "@/lib/patternTrack/stats";
 import { safeHttpUrl, type Ymd } from "@/lib/patternTrack/dates";
 import LogForm from "./LogForm";
+import type { LogPrefill } from "@/lib/patternTrack/bank";
 import { DifficultyChip, Panel, StageDots, btnGhost, inputCls } from "./ui";
 
 /** Two-click delete: first click arms, second confirms. Auto-disarms after 3s. */
@@ -36,9 +37,13 @@ function downloadCsv(logs: LogEntry[], today: Ymd) {
   URL.revokeObjectURL(a.href);
 }
 
-const LogView: React.FC<{ uid: string; logs: LogEntry[]; today: Ymd; currentPatternId?: string }> = ({
-  uid, logs, today, currentPatternId,
-}) => {
+const LogView: React.FC<{
+  uid: string;
+  logs: LogEntry[];
+  today: Ymd;
+  currentPatternId?: string;
+  prefill?: LogPrefill;
+}> = ({ uid, logs, today, currentPatternId, prefill }) => {
   const [filter, setFilter] = useState<LogFilter>({ patternId: "", solo: "all", text: "" });
   const rows = useMemo(() => sortNewestFirst(filterLogs(logs, filter)), [logs, filter]);
 
@@ -55,7 +60,7 @@ const LogView: React.FC<{ uid: string; logs: LogEntry[]; today: Ymd; currentPatt
     <div className="space-y-6">
       <Panel>
         <h2 className="mb-3 text-lg font-medium text-dark-gray-8">Log a problem</h2>
-        <LogForm uid={uid} today={today} defaultPatternId={currentPatternId} />
+        <LogForm key={prefill?.url ?? "blank"} uid={uid} today={today} defaultPatternId={currentPatternId} prefill={prefill} />
       </Panel>
 
       <div className="flex flex-wrap items-center gap-2">
