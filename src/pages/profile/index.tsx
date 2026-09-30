@@ -72,7 +72,7 @@ export default function ProfilePage() {
 
         <motion.section variants={fade}>
           <SectionTitle icon={<CalendarDays size={22} className="text-green-400" />}>Activity</SectionTitle>
-          <ActivityHeatmap days={dailyActivity(logs, today, 26)} today={today} />
+          <ActivityHeatmap days={dailyActivity(logs, today, 52)} today={today} />
         </motion.section>
 
         <motion.section variants={fade}>
