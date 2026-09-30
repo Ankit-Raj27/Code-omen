@@ -115,3 +115,19 @@ describe("safeHttpUrl", () => {
     expect(safeHttpUrl(undefined)).toBe("");
   });
 });
+
+import { nextUp, weekLabel } from "../stats";
+describe("nextUp / weekLabel", () => {
+  it("returns the first unlogged problems in sheet order", () => {
+    const p = PATTERN_BY_ID["arrays-hashing"];
+    const logged = [log({ url: `https://leetcode.com/problems/${p.problems[0][2]}/` })];
+    expect(nextUp(p, logged, 2).map((x) => x.slug)).toEqual([p.problems[1][2], p.problems[2][2]]);
+    expect(nextUp(PATTERN_BY_ID["mixed-mocks"], [], 2)).toEqual([]);
+    expect(nextUp(undefined, [], 2)).toEqual([]);
+  });
+  it("labels the week", () => {
+    expect(weekLabel("2026-10-05", "2026-09-30")).toBe("Starts 5 Oct");
+    expect(weekLabel("2026-10-05", "2026-10-19")).toBe("Wk 3 · Sliding Window");
+    expect(weekLabel("2026-10-05", "2027-02-20")).toBe("Wk 20 · Mixed Mocks");
+  });
+});

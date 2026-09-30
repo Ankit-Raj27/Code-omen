@@ -12,6 +12,7 @@ import {
   FaList,
 } from "react-icons/fa";
 import Timer from "../timer/Timer";
+import AppNav from "../navbar/AppNav";
 import { useRouter } from "next/router";
 import { problems } from "@/utils/problems";
 import { Problem } from "@/utils/types/problems";
@@ -80,12 +81,8 @@ const TopBar: React.FC<TopBarProps> = ({ problemPage }) => {
           </div>
         )}
 
-        <div className="flex items-center space-x-4 flex-1 justify-end">
-          {!problemPage && (
-            <Link href="/pattern-track" className="text-sm text-dark-gray-7 hover:text-white">
-              Pattern Track
-            </Link>
-          )}
+        <div className={`flex items-center space-x-4 justify-end ${problemPage ? "flex-1" : "flex-[3]"}`}>
+          {!problemPage && <AppNav />}
           {/* <div>
             <a
               href=""

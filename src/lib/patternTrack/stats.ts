@@ -139,3 +139,32 @@ export function logsToCsv(logs: LogEntry[]): string {
   const rows = sortNewestFirst(logs).map((l) => CSV_COLUMNS.map((c) => csvCell(l[c])).join(","));
   return [CSV_COLUMNS.join(","), ...rows].join("\r\n");
 }
+
+/** The first `n` problems of a pattern with no matching log entry, in sheet order. */
+export function nextUp(pattern: Pattern | undefined, logs: LogEntry[], n = 2): PatternProblemRef[] {
+  if (!pattern) return [];
+  const { done } = patternProgress(pattern, logs);
+  return pattern.problems
+    .filter(([, , slug]) => !done.has(slug))
+    .slice(0, n)
+    .map(([lc, title, slug, difficulty]) => ({ lc, title, slug, difficulty, patternId: pattern.id }));
+}
+
+export interface PatternProblemRef {
+  lc: number;
+  title: string;
+  slug: string;
+  difficulty: LogDifficulty;
+  patternId: string;
+}
+
+/** Short label for the nav chip, e.g. "Wk 3 · Sliding Window"; "Starts 5 Oct" before week 1. */
+export function weekLabel(startDate: Ymd, today: Ymd): string {
+  const week = currentWeek(startDate, today);
+  if (week === 0) {
+    const [, m, d] = startDate.split("-").map(Number);
+    const month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][m - 1];
+    return `Starts ${d} ${month}`;
+  }
+  return `Wk ${week} · ${patternForWeek(week)?.name ?? ""}`;
+}

@@ -5,9 +5,12 @@ import { LEETCODE_URL, PATTERN_BY_ID } from "@/content/patterns";
 import { gradeLog } from "@/lib/patternTrack/firestore";
 import { dueQueue, isOverdue, type ReviewResult } from "@/lib/patternTrack/srs";
 import { bankKeyForLc, resolveUrl } from "@/lib/patternTrack/bank";
-import { currentWeek, patternForWeek, patternProgress, streak, todayStats, type LogEntry } from "@/lib/patternTrack/stats";
+import {
+  currentWeek, nextUp, patternForWeek, patternProgress, streak, todayStats,
+  type LogEntry, type PatternProblemRef,
+} from "@/lib/patternTrack/stats";
 import { daysBetween, safeHttpUrl, type Ymd } from "@/lib/patternTrack/dates";
-import { Bar, DifficultyChip, Panel, StageDots, btnGhost, inputCls } from "./ui";
+import { Bar, DifficultyChip, EmptyState, Panel, StageDots, StatTile, btnGhost, inputCls } from "./ui";
 
 type Props = {
   uid: string;
@@ -15,7 +18,6 @@ type Props = {
   today: Ymd;
   startDate: Ymd;
   onStartDateChange: (d: Ymd) => void;
-  goTo: (tab: "roadmap" | "log") => void;
 };
 
 const GRADES: { result: ReviewResult; label: string; cls: string }[] = [
@@ -100,7 +102,39 @@ const ReviewCard: React.FC<{
   );
 };
 
-const TodayView: React.FC<Props> = ({ uid, logs, today, startDate, onStartDateChange, goTo }) => {
+/** Solve target for a roadmap problem: CodeOmen's workspace if it's in the bank, else LeetCode. */
+function solveTarget(slug: string): { href: string; internal: boolean } {
+  const bank = bankKeyForLc(slug);
+  return bank ? { href: `/problems/${encodeURIComponent(bank)}`, internal: true } : { href: LEETCODE_URL(slug), internal: false };
+}
+
+const NextUp: React.FC<{ items: PatternProblemRef[] }> = ({ items }) => {
+  if (items.length === 0) return null;
+  return (
+    <div className="mt-4 border-t border-dark-divider-border-2 pt-3">
+      <div className="mb-2 text-xs uppercase text-dark-gray-6">Next up</div>
+      <ul className="space-y-2">
+        {items.map((p) => {
+          const t = solveTarget(p.slug);
+          return (
+            <li key={p.slug} className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="flex-1 text-dark-gray-8">{p.lc}. {p.title}</span>
+              <DifficultyChip d={p.difficulty} />
+              {t.internal ? (
+                <Link href={t.href} className={btnGhost}>Solve</Link>
+              ) : (
+                <a href={t.href} target="_blank" rel="noreferrer" className={btnGhost}>Solve ↗</a>
+              )}
+              <Link href={`/log?slug=${encodeURIComponent(p.slug)}`} className={btnGhost}>Log</Link>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+};
+
+const TodayView: React.FC<Props> = ({ uid, logs, today, startDate, onStartDateChange }) => {
   // Graded this session → shown in "Just reviewed" with the insight revealed.
   const [graded, setGraded] = useState<Record<string, ReviewResult>>({});
   const onGraded = (id: string, r: ReviewResult) => setGraded((g) => ({ ...g, [id]: r }));
@@ -112,37 +146,35 @@ const TodayView: React.FC<Props> = ({ uid, logs, today, startDate, onStartDateCh
   const pattern = patternForWeek(week);
   const progress = pattern ? patternProgress(pattern, logs) : null;
   const days = streak(logs, today);
+  // Before the track starts, "next up" previews week 1.
+  const upcoming = nextUp(pattern ?? patternForWeek(1), logs, 2);
+  const firstProblem = patternForWeek(1)?.problems[0];
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-        {[
-          ["Due today", stats.dueToday],
-          ["Total logged", stats.totalLogged],
-          ["Mediums solved solo", stats.mediumSoloPct === null ? "—" : `${stats.mediumSoloPct}%`, "goal 60% by week 10"],
-          ["Mastered", stats.mastered],
-          ["Streak", `${days} day${days === 1 ? "" : "s"}`],
-        ].map(([label, value, hint]) => (
-          <Panel key={label as string}>
-            <div className="text-2xl font-semibold text-dark-gray-8">{value}</div>
-            <div className="text-xs text-dark-gray-6">{label}</div>
-            {hint && <div className="mt-1 text-[11px] text-dark-gray-6">{hint}</div>}
-          </Panel>
-        ))}
+        <StatTile label="Due today" value={stats.dueToday} />
+        <StatTile label="Total logged" value={stats.totalLogged} />
+        <StatTile label="Mediums solved solo" value={stats.mediumSoloPct === null ? "—" : `${stats.mediumSoloPct}%`}
+          hint="goal 60% by week 10" />
+        <StatTile label="Mastered" value={stats.mastered} />
+        <StatTile label="Streak" value={`${days} day${days === 1 ? "" : "s"}`} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
         <section>
-          <h2 className="mb-3 text-lg font-medium text-dark-gray-8">Revisions</h2>
+          <h2 className="mb-3 text-lg font-medium text-dark-gray-8">Revise first</h2>
           {logs.length === 0 ? (
-            <Panel>
-              <p className="text-sm text-dark-label-2">No problems logged yet.</p>
-              <button className={`${btnGhost} mt-3`} onClick={() => goTo("log")}>Go to Problem log</button>
-            </Panel>
+            <EmptyState
+              action={firstProblem && (
+                <Link href={solveTarget(firstProblem[2]).href} className={btnGhost}>
+                  Start with {firstProblem[1]}
+                </Link>
+              )}>
+              No problems logged yet. Solve one from week 1 and log it; reviews appear here from the next day.
+            </EmptyState>
           ) : queue.length === 0 ? (
-            <Panel>
-              <p className="text-sm text-dark-label-2">Nothing due. Learn 2 new problems from this week&apos;s pattern.</p>
-            </Panel>
+            <EmptyState>Nothing due. Learn 2 new problems from this week&apos;s pattern.</EmptyState>
           ) : (
             <ul className="space-y-2">
               {queue.map((l) => <ReviewCard key={l.id} uid={uid} log={l} today={today} onGraded={onGraded} />)}
@@ -165,7 +197,7 @@ const TodayView: React.FC<Props> = ({ uid, logs, today, startDate, onStartDateCh
           <Panel>
             {week === 0 || !pattern ? (
               <p className="text-sm text-dark-label-2">
-                Starts {startDate}. Week 1 is {patternForWeek(1)?.name}.
+                The track starts {startDate}. Week 1 is {patternForWeek(1)?.name}.
               </p>
             ) : (
               <>
@@ -182,10 +214,11 @@ const TodayView: React.FC<Props> = ({ uid, logs, today, startDate, onStartDateCh
                     </div>
                   </div>
                 )}
-                <button className={`${btnGhost} mt-3`} onClick={() => goTo("roadmap")}>Open pattern sheet</button>
+                <Link href={`/patterns/${pattern.id}`} className={`${btnGhost} mt-3`}>Open pattern sheet</Link>
               </>
             )}
-            <label className="mt-4 block text-xs text-dark-gray-6">
+            <NextUp items={upcoming} />
+            <label className="mt-4 block border-t border-dark-divider-border-2 pt-3 text-xs text-dark-gray-6">
               Track start date
               <input type="date" className={`${inputCls} mt-1`} value={startDate}
                 onChange={(e) => e.target.value && onStartDateChange(e.target.value)} />
