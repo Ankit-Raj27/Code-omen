@@ -180,6 +180,9 @@ export interface WeekActivity {
   reviews: number; // reviews graded that week
   clean: number; // of which "clean"
   recallPct: number | null; // clean / reviews, null when no reviews
+  mediums: number; // medium problems logged that week
+  mediumsSolo: number; // of which solved solo
+  mediumSoloPct: number | null; // null when no mediums that week
 }
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -198,12 +201,21 @@ export function weeklyActivity(logs: LogEntry[], today: Ymd, weeks = 8): WeekAct
   for (let i = weeks - 1; i >= 0; i--) {
     const ws = addDays(last, -7 * i);
     const [, m, d] = ws.split("-").map(Number);
-    out.push({ weekStart: ws, label: `${d} ${MONTHS[m - 1]}`, logged: 0, reviews: 0, clean: 0, recallPct: null });
+    out.push({
+      weekStart: ws, label: `${d} ${MONTHS[m - 1]}`, logged: 0, reviews: 0, clean: 0, recallPct: null,
+      mediums: 0, mediumsSolo: 0, mediumSoloPct: null,
+    });
   }
   const idx = new Map(out.map((w, i) => [w.weekStart, i]));
   for (const l of logs) {
     const i = idx.get(weekStartOf(l.dateSolved));
-    if (i !== undefined) out[i].logged++;
+    if (i !== undefined) {
+      out[i].logged++;
+      if (l.difficulty === "M") {
+        out[i].mediums++;
+        if (l.solvedSolo) out[i].mediumsSolo++;
+      }
+    }
     for (const r of l.reviews ?? []) {
       const j = idx.get(weekStartOf(r.date));
       if (j === undefined) continue;
@@ -211,7 +223,10 @@ export function weeklyActivity(logs: LogEntry[], today: Ymd, weeks = 8): WeekAct
       if (r.result === "clean") out[j].clean++;
     }
   }
-  for (const w of out) w.recallPct = w.reviews ? Math.round((100 * w.clean) / w.reviews) : null;
+  for (const w of out) {
+    w.recallPct = w.reviews ? Math.round((100 * w.clean) / w.reviews) : null;
+    w.mediumSoloPct = w.mediums ? Math.round((100 * w.mediumsSolo) / w.mediums) : null;
+  }
   return out;
 }
 
@@ -253,4 +268,31 @@ export function questionOfTheDay(
   const choice = tiers.find((t) => t.length > 0);
   if (!choice) return null;
   return choice[hash(`${today}|${seed}`) % choice.length];
+}
+
+export interface DayActivity {
+  date: Ymd;
+  logged: number;
+  reviews: number;
+}
+
+/** Activity per day for the `weeks` full weeks ending with the current one (Monday-start), oldest first. */
+export function dailyActivity(logs: LogEntry[], today: Ymd, weeks = 26): DayActivity[] {
+  const first = addDays(weekStartOf(today), -7 * (weeks - 1));
+  const days: DayActivity[] = Array.from({ length: weeks * 7 }, (_, i) => ({ date: addDays(first, i), logged: 0, reviews: 0 }));
+  const idx = new Map(days.map((d, i) => [d.date, i]));
+  for (const l of logs) {
+    const i = idx.get(l.dateSolved);
+    if (i !== undefined) days[i].logged++;
+    for (const r of l.reviews ?? []) {
+      const j = idx.get(r.date);
+      if (j !== undefined) days[j].reviews++;
+    }
+  }
+  return days;
+}
+
+/** Heatmap level 0–4 for a day's total activity (problems logged + reviews). */
+export function activityLevel(total: number): 0 | 1 | 2 | 3 | 4 {
+  return total <= 0 ? 0 : total === 1 ? 1 : total <= 3 ? 2 : total <= 5 ? 3 : 4;
 }

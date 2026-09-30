@@ -4,7 +4,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "@/Firebase/firebase";
 import { DEFAULT_START_DATE } from "@/content/patterns";
 import { todayLocal, type Ymd } from "@/lib/patternTrack/dates";
-import { getStartDate, subscribeLogs } from "@/lib/patternTrack/firestore";
+import { getSettings, subscribeLogs, type EditorLanguagePref } from "@/lib/patternTrack/firestore";
 import type { LogEntry } from "@/lib/patternTrack/stats";
 
 interface PatternTrackState {
@@ -13,6 +13,9 @@ interface PatternTrackState {
   startDate: Ymd;
   setStartDateState: (d: Ymd) => void;
   today: Ymd;
+  /** Saved default editor language (null = never set). */
+  preferredLanguage: EditorLanguagePref | null;
+  setPreferredLanguageState: (l: EditorLanguagePref) => void;
   /** True until Firebase Auth has resolved the session. */
   authLoading: boolean;
   loading: boolean;
@@ -41,6 +44,7 @@ export function PatternTrackProvider({ children }: { children: React.ReactNode }
   const [user, authLoading] = useAuthState(auth);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [startDate, setStartDateState] = useState<Ymd>(DEFAULT_START_DATE);
+  const [preferredLanguage, setPreferredLanguageState] = useState<EditorLanguagePref | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const today = useTodayClock();
@@ -50,12 +54,27 @@ export function PatternTrackProvider({ children }: { children: React.ReactNode }
     if (!user) {
       setLogs([]);
       setStartDateState(DEFAULT_START_DATE);
+      setPreferredLanguageState(null);
       setLoading(false);
       return;
     }
     setLoading(true);
     setError(null);
-    getStartDate(user.uid).then(setStartDateState).catch(() => {});
+    getSettings(user.uid)
+      .then((s) => {
+        setStartDateState(s.startDate);
+        setPreferredLanguageState(s.preferredLanguage);
+        // The editor reads its language from localStorage ("cd-language"); seed it from
+        // the saved preference so it follows the user across devices.
+        if (s.preferredLanguage) {
+          try {
+            window.localStorage.setItem("cd-language", JSON.stringify(s.preferredLanguage));
+          } catch {
+            /* storage unavailable */
+          }
+        }
+      })
+      .catch(() => {});
     return subscribeLogs(
       user.uid,
       (l) => {
@@ -70,8 +89,11 @@ export function PatternTrackProvider({ children }: { children: React.ReactNode }
   }, [user, authLoading]);
 
   const value = useMemo(
-    () => ({ user, logs, startDate, setStartDateState, today, authLoading, loading: authLoading || loading, error }),
-    [user, logs, startDate, today, authLoading, loading, error],
+    () => ({
+      user, logs, startDate, setStartDateState, today, preferredLanguage, setPreferredLanguageState,
+      authLoading, loading: authLoading || loading, error,
+    }),
+    [user, logs, startDate, today, preferredLanguage, authLoading, loading, error],
   );
   return <PatternTrackContext.Provider value={value}>{children}</PatternTrackContext.Provider>;
 }
