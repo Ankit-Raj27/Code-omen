@@ -4,7 +4,7 @@ import { authModalState } from "@/atoms/authModalAtom";
 import AuthModals from "@/components/Modals/AuthModals";
 import { LandingPage } from "@/components/home/LandingPage";
 import TrophySection from "@/components/home/TrophySection";
-import Navbar from "@/components/navbar/Navbar";
+import TopBar from "@/components/TopBar/TopBar";
 import BlurFade from "@/components/ui/blur-fade";
 import { Carousel } from "@/components/ui/carousel";
 import { NeonGradientCard } from "@/components/ui/neon-gradient-card";
@@ -20,7 +20,7 @@ const PublicHome: React.FC = () => {
   const authModal = useRecoilValue(authModalState);
   return (
     <>
-      <Navbar />
+      <TopBar />
       <main id="main" tabIndex={-1} className="outline-none bg-black min-h-screen text-white overflow-hidden">
         <section className="relative pt-20 pb-32 px-4 md:px-8">
           <div className="max-w-7xl mx-auto relative z-10">
