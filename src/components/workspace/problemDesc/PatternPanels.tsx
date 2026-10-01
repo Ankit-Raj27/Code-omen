@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { KEY_INSIGHTS } from "@/content/insights";
+import { GUIDES } from "@/content/guides";
 import { PATTERN_BY_ID } from "@/content/patterns";
 import { usePatternTrack } from "@/context/PatternTrackContext";
 import { currentBankKey, patternIdForBank } from "@/lib/patternTrack/bank";
@@ -10,75 +11,101 @@ import { DifficultyChip, StageDots } from "@/components/patternTrack/ui";
 import { useWorkspaceSession } from "../WorkspaceSession";
 
 const HINTS = [
-  { n: 1, title: "Which pattern?", help: "The recognition signal. Try naming the approach before opening the next hint." },
-  { n: 2, title: "The template", help: "The pattern's core template and its invariant." },
-  { n: 3, title: "Key insight", help: "The one idea that cracks this problem." },
+  { n: 1, title: "Nudge", help: "A question to ask yourself about this problem." },
+  { n: 2, title: "Direction", help: "The approach and what it needs to track here." },
+  { n: 3, title: "Key idea", help: "The idea that cracks it, with the rule to maintain." },
 ];
 
-/** Pattern tab: what pattern this is, and a 3-step hint ladder (hints mark the attempt as 'needed help'). */
+/**
+ * Pattern tab: how to think about this specific question, then a 3-step hint ladder
+ * written for it. Anything past the open framing marks the attempt as "needed help".
+ */
 export const PatternPanel: React.FC<{ bankKey: string }> = ({ bankKey }) => {
   const session = useWorkspaceSession();
   const key = currentBankKey(bankKey);
   const pattern = PATTERN_BY_ID[patternIdForBank(key) ?? ""];
+  const guide = GUIDES[key];
   const used = session?.hintsUsed ?? 0;
-  const content = [pattern?.signal, pattern?.memorize[0], KEY_INSIGHTS[key]];
+  // Problems without a written guide fall back to the pattern's signal and template.
+  const content = guide?.hints ?? [pattern?.signal, pattern?.memorize[0], KEY_INSIGHTS[key]];
+  const framing = guide?.approach.slice(0, 2) ?? [];
+  const unlock = guide?.approach.slice(2) ?? [];
+  const [showUnlock, setShowUnlock] = useState(false);
+  const unlockOpen = showUnlock || used >= 2;
 
   return (
-    <div className="space-y-5 px-5 text-sm text-dark-label-2">
-      <div>
-        <p className="text-xs uppercase tracking-wide text-dark-gray-6">Before you code</p>
-        <p className="mt-1">
-          Spend 5 minutes on paper: restate the problem, write 2 edge cases, and the brute force with its Big-O. Then open hints only if you&apos;re stuck.
+    <div className="space-y-6 px-5 text-sm text-dark-label-2">
+      <section aria-labelledby="think-heading">
+        <h2 id="think-heading" className="text-base font-semibold text-white">How to think about it</h2>
+        <p className="mt-1 text-dark-gray-6">
+          Spend 5 minutes on paper first: restate it, write two edge cases, and the brute force with its cost.
         </p>
-      </div>
+        {framing.length > 0 && (
+          <ul className="mt-3 space-y-2 leading-relaxed text-dark-gray-8">
+            {framing.map((t) => <li key={t} className="border-l-2 border-white/10 pl-3">{t}</li>)}
+          </ul>
+        )}
+        {unlock.length > 0 && (
+          unlockOpen ? (
+            <ul className="mt-2 space-y-2 leading-relaxed text-dark-gray-8">
+              {unlock.map((t) => <li key={t} className="border-l-2 border-purple-500/50 pl-3">{t}</li>)}
+            </ul>
+          ) : (
+            <button type="button" disabled={!session}
+              onClick={() => { setShowUnlock(true); session?.revealHint(2); }}
+              className="mt-3 inline-flex min-h-[36px] items-center rounded-lg bg-dark-fill-3 px-3 text-xs font-medium text-dark-label-2 hover:bg-dark-fill-2 disabled:opacity-40">
+              Show the key observation (counts as 2 hints)
+            </button>
+          )
+        )}
+      </section>
 
-      <ol className="space-y-3">
-        {HINTS.map((h) => {
-          const open = used >= h.n;
-          const locked = h.n > used + 1;
-          const body = content[h.n - 1];
-          return (
-            <li key={h.n} className={`rounded-lg border p-3 ${open ? "border-gray-700 bg-gray-900/60" : "border-gray-800"}`}>
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="font-medium text-white">Hint {h.n} · {h.title}</div>
-                  {!open && <div className="text-xs text-dark-gray-6">{h.help}</div>}
+      <section aria-labelledby="hints-heading">
+        <h2 id="hints-heading" className="text-base font-semibold text-white">Hints</h2>
+        <ol className="mt-3 space-y-3">
+          {HINTS.map((h) => {
+            const open = used >= h.n;
+            const locked = h.n > used + 1;
+            const body = content[h.n - 1];
+            return (
+              <li key={h.n} className={`rounded-lg border p-3 ${open ? "border-gray-700 bg-gray-900/60" : "border-gray-800"}`}>
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="font-medium text-white">Hint {h.n}: {h.title}</div>
+                    {!open && <div className="text-xs text-dark-gray-6">{h.help}</div>}
+                  </div>
+                  {!open && (
+                    <button
+                      type="button"
+                      disabled={locked || !body || !session}
+                      onClick={() => session?.revealHint(h.n)}
+                      className="min-h-[32px] shrink-0 rounded-lg bg-dark-fill-3 px-3 text-xs font-medium text-dark-label-2 hover:bg-dark-fill-2 disabled:opacity-40"
+                      title={locked ? "Open the previous hint first" : undefined}
+                    >
+                      Show
+                    </button>
+                  )}
                 </div>
-                {!open && (
-                  <button
-                    disabled={locked || !body || !session}
-                    onClick={() => session?.revealHint(h.n)}
-                    className="shrink-0 rounded-lg bg-dark-fill-3 px-3 py-1.5 text-xs font-medium text-dark-label-2 hover:bg-dark-fill-2 disabled:opacity-40"
-                    title={locked ? "Open the previous hint first" : undefined}
-                  >
-                    Show
-                  </button>
-                )}
-              </div>
-              {open && (
-                <p className="mt-2 leading-relaxed text-dark-gray-8">
-                  {h.n === 1 && pattern && <span className="mr-1 font-medium text-dark-green-s">{pattern.name}.</span>}
-                  {body}
-                </p>
-              )}
-            </li>
-          );
-        })}
-      </ol>
+                {open && <p className="mt-2 leading-relaxed text-dark-gray-8">{body}</p>}
+              </li>
+            );
+          })}
+        </ol>
+      </section>
 
       {used > 0 && (
         <p className="text-xs text-dark-yellow">Hints used: {used}. This attempt will be logged as &ldquo;needed help&rdquo;.</p>
       )}
       {pattern && (
         <Link href={`/patterns/${pattern.id}`} className="inline-flex min-h-[32px] items-center text-xs text-dark-blue-s hover:underline">
-          Open the full {pattern.name} sheet →
+          Review the {pattern.name} pattern sheet
         </Link>
       )}
     </div>
   );
 };
 
-/** My log tab: your log entries for this problem (insight stays hidden: recall it first). */
+/** My log tab: your log entries for this problem. Notes start folded so you try to recall the insight first. */
 export const MyLogPanel: React.FC<{ bankKey: string }> = ({ bankKey }) => {
   const { user, logs } = usePatternTrack();
   const key = currentBankKey(bankKey);
@@ -102,6 +129,17 @@ export const MyLogPanel: React.FC<{ bankKey: string }> = ({ bankKey }) => {
             {l.language && ` · ${l.language === "java" ? "Java" : "JavaScript"}`}
             {" · "}{isMastered(l) ? "mastered" : `next review ${l.nextDue}`}
           </div>
+          <details className="group mt-2">
+            <summary className="inline-flex min-h-[32px] cursor-pointer list-none items-center rounded px-1 text-xs font-medium text-dark-blue-s hover:underline [&::-webkit-details-marker]:hidden">
+              <span className="group-open:hidden">Show my notes</span>
+              <span className="hidden group-open:inline">Hide my notes</span>
+            </summary>
+            <dl className="mt-1 space-y-1.5 text-sm">
+              <div><dt className="text-xs text-dark-gray-6">Insight</dt><dd className="text-dark-gray-8">{l.insight}</dd></div>
+              {l.stuckOn && <div><dt className="text-xs text-dark-gray-6">Stuck on</dt><dd className="text-dark-gray-7">{l.stuckOn}</dd></div>}
+              {l.complexity && <div><dt className="text-xs text-dark-gray-6">Complexity</dt><dd className="text-dark-gray-7">{l.complexity}</dd></div>}
+            </dl>
+          </details>
         </li>
       ))}
     </ul>
