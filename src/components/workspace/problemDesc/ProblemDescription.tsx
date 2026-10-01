@@ -1,6 +1,12 @@
 import { auth, firestore } from "@/Firebase/firebase";
 import LogProblemButton from "@/components/patternTrack/LogProblemButton";
-import { bankMeta, patternIdForBank } from "@/lib/patternTrack/bank";
+import { bankMeta, currentBankKey, patternIdForBank } from "@/lib/patternTrack/bank";
+import Link from "next/link";
+import { PATTERN_BY_ID } from "@/content/patterns";
+import { usePatternTrack } from "@/context/PatternTrackContext";
+import { patternProgress } from "@/lib/patternTrack/stats";
+import { rowState, type ProblemRow } from "@/lib/problemList";
+import { StageDots } from "@/components/patternTrack/ui";
 import { useWorkspaceSession } from "../WorkspaceSession";
 import { MyLogPanel, PatternPanel } from "./PatternPanels";
 import CircleSkeleton from "@/components/skeletons/CircleSkeleton";
@@ -275,22 +281,84 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({
     setUpdating(false);
   };
   
+  const { logs, today } = usePatternTrack();
+  const difficulty = (currentProblem?.difficulty ?? bankMeta(bankKey)?.difficulty) as "Easy" | "Medium" | "Hard" | undefined;
+  const state = rowState({ key: currentBankKey(bankKey) } as ProblemRow, logs, solved || _solved ? [currentBankKey(bankKey)] : [], today);
+  const pattern = PATTERN_BY_ID[patternIdForBank(bankKey) ?? ""];
+  const progress = pattern ? patternProgress(pattern, logs) : undefined;
+  const pct = progress?.total ? Math.round((100 * progress.logged) / progress.total) : 0;
+  const DIFF: Record<string, string> = { Easy: "text-[#2cbb5d] bg-[#2cbb5d]/10", Medium: "text-dark-yellow bg-dark-yellow/10", Hard: "text-dark-pink bg-dark-pink/10" };
+  const metaBtn = "inline-flex min-h-[32px] items-center gap-1.5 rounded-md px-2 text-sm text-dark-gray-6 hover:bg-white/10 hover:text-white disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-blue-s";
+  const panel = "min-h-0 flex-1 overflow-y-auto";
+
   return (
-    <div className="bg-dark-layer-1">
-      {/* TABS: Pattern first, so you name the pattern before reading details. */}
+    <div className="flex h-[calc(100dvh-106px)] flex-col bg-dark-layer-1 md:h-[calc(100vh-50px)]">
+      {/* Header: where this problem sits on the track, then the problem itself. */}
+      <header className="shrink-0 border-b border-white/[0.06] px-5 pb-3 pt-4">
+        {pattern && (
+          <Link href={`/patterns/${pattern.id}`} className="group mb-2 inline-flex items-center gap-2 rounded-md text-sm text-dark-gray-6 hover:text-white">
+            <span aria-hidden="true" className="grid h-6 w-6 place-items-center rounded-full"
+              style={{ background: `conic-gradient(#2cbb5d ${pct}%, rgba(255,255,255,0.14) 0)` }}>
+              <span className="grid h-[18px] w-[18px] place-items-center rounded-full bg-dark-layer-1 text-[10px] font-semibold text-white">
+                {pattern.week >= 18 ? "18" : pattern.week}
+              </span>
+            </span>
+            Week {pattern.week}, {pattern.name}
+            {progress && progress.total > 0 && <span className="tabular-nums">({progress.logged}/{progress.total} logged)</span>}
+          </Link>
+        )}
+        <div className="flex items-start gap-3">
+          <h1 className="flex-1 text-xl font-semibold leading-snug text-white">{problem?.title}</h1>
+          <LogProblemButton bankKey={bankKey} />
+        </div>
+        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+          {difficulty && <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${DIFF[difficulty]}`}>{difficulty}</span>}
+          {(state.status === "review" || state.status === "due") && (
+            <span className="inline-flex items-center gap-2 px-1 text-sm">
+              <StageDots stage={state.stage ?? 0} />
+              <span className={state.status === "due" ? "text-dark-pink" : "text-dark-gray-6"}>
+                {state.status === "due" ? "Review due" : `Next review ${state.nextDue}`}
+              </span>
+            </span>
+          )}
+          {state.status === "mastered" && <span className="px-1 text-sm text-[#2cbb5d]">Mastered</span>}
+          {state.status === "solved" && (
+            <span className="inline-flex items-center gap-1 px-1 text-sm text-[#2cbb5d]"><BsCheck2Circle aria-hidden="true" /> Solved</span>
+          )}
+          {!loading && currentProblem && (
+            <span className="ml-auto flex items-center">
+              <button type="button" aria-pressed={liked} aria-label={`Like (${currentProblem.likes})`} disabled={updating} onClick={handleLike} className={metaBtn}>
+                {updating ? <AiOutlineLoading3Quarters className="animate-spin" aria-hidden="true" /> : <AiFillLike className={liked ? "text-dark-blue-s" : ""} aria-hidden="true" />}
+                <span className="tabular-nums">{currentProblem.likes}</span>
+              </button>
+              <button type="button" aria-pressed={disliked} aria-label={`Dislike (${currentProblem.dislikes})`} disabled={updating} onClick={handleDislike} className={metaBtn}>
+                {updating ? <AiOutlineLoading3Quarters className="animate-spin" aria-hidden="true" /> : <AiFillDislike className={disliked ? "text-dark-blue-s" : ""} aria-hidden="true" />}
+                <span className="tabular-nums">{currentProblem.dislikes}</span>
+              </button>
+              <button type="button" aria-pressed={starred} aria-label="Star" disabled={updating} onClick={handleStar} className={metaBtn}>
+                {starred ? <AiFillStar className="text-dark-yellow" aria-hidden="true" /> : <TiStarOutline aria-hidden="true" />}
+              </button>
+            </span>
+          )}
+          {loading && <span className="ml-auto flex gap-2"><RectangleSkeleton /><CircleSkeleton /></span>}
+        </div>
+      </header>
+
+      {/* Tabs: Pattern first, so you name the pattern before reading details. */}
       <div role="tablist" aria-label="Problem panels" onKeyDown={onTabKey}
-        className="flex h-11 w-full items-center pt-2 bg-dark-layer-2 text-white overflow-x-hidden">
+        className="flex h-10 shrink-0 items-end gap-5 border-b border-white/[0.06] px-5">
         {visibleTabs.map((t) => (
           <button
             key={t.id}
             id={`tab-${t.id}`}
             role="tab"
+            type="button"
             aria-selected={tab === t.id}
             aria-controls={`panel-${t.id}`}
             tabIndex={tab === t.id ? 0 : -1}
             onClick={() => setTab(t.id)}
-            className={`rounded-t-[5px] px-5 py-[10px] text-xs ${
-              tab === t.id ? "bg-dark-layer-1 text-white" : "text-dark-gray-6 hover:text-white"
+            className={`-mb-px border-b-2 pb-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-blue-s ${
+              tab === t.id ? "border-white text-white" : "border-transparent text-dark-gray-6 hover:text-white"
             }`}
           >
             {t.label}
@@ -299,137 +367,47 @@ const ProblemDescription: React.FC<ProblemDescriptionProps> = ({
       </div>
 
       {tab === "pattern" && (
-        <div id="panel-pattern" role="tabpanel" aria-labelledby="tab-pattern" tabIndex={0} className="h-[calc(100vh-94px)] overflow-y-auto py-4">
-          <p className="mb-4 px-5 text-lg font-medium text-white">{problem?.title}</p>
+        <div id="panel-pattern" role="tabpanel" aria-labelledby="tab-pattern" tabIndex={0} className={`${panel} py-4`}>
           <PatternPanel bankKey={bankKey} />
         </div>
       )}
       {tab === "mylog" && (
-        <div id="panel-mylog" role="tabpanel" aria-labelledby="tab-mylog" tabIndex={0} className="h-[calc(100vh-94px)] overflow-y-auto py-4">
+        <div id="panel-mylog" role="tabpanel" aria-labelledby="tab-mylog" tabIndex={0} className={`${panel} py-4`}>
           <MyLogPanel bankKey={bankKey} />
         </div>
       )}
 
-      <div id="panel-description" role="tabpanel" aria-labelledby="tab-description" tabIndex={0}
-        className={tab === "description" ? "flex px-0 py-4 h-[calc(100vh-94px)] overflow-y-auto" : "hidden"}>
-        <div className="px-5">
-          {/* Problem heading */}
-          <div className="w-full">
-            <div className="flex space-x-4">
-              <div className="flex-1 mr-2 text-lg text-white font-medium">
-                {problem?.title}
-              </div>
-              <LogProblemButton bankKey={bankKey} />
-            </div>
-            {!loading && currentProblem && (
-              <div className="flex items-center mt-3">
-                <div
-                  className={`${problemDifficultyClass} inline-block rounded-[21px] bg-opacity-[.15] px-2.5 py-1 text-xs font-medium capitalize `}
-                >
-                  {currentProblem.difficulty}
-                </div>
-                {(solved || _solved) && (
-                  <div className="rounded p-[3px] ml-4 text-lg transition-colors duration-200 text-green-s text-dark-green-s">
-                    <BsCheck2Circle />
-                  </div>
-                )}
-                <button
-                  type="button"
-                  aria-pressed={liked}
-                  aria-label={`Like (${currentProblem.likes})`}
-                  disabled={updating}
-                  className="ml-4 flex min-h-[32px] items-center space-x-1 rounded p-[3px] text-lg text-dark-gray-6 transition-colors duration-200 hover:bg-dark-fill-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-blue-s"
-                  onClick={handleLike}
-                >
-                  {updating ? <AiOutlineLoading3Quarters className="animate-spin" aria-hidden="true" /> : <AiFillLike className={liked ? "text-dark-blue-s" : ""} aria-hidden="true" />}
-                  <span className="text-xs">{currentProblem.likes}</span>
-                </button>
-                <button
-                  type="button"
-                  aria-pressed={disliked}
-                  aria-label={`Dislike (${currentProblem.dislikes})`}
-                  disabled={updating}
-                  className="ml-4 flex min-h-[32px] items-center space-x-1 rounded p-[3px] text-lg text-dark-gray-6 transition-colors duration-200 hover:bg-dark-fill-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-blue-s"
-                  onClick={handleDislike}
-                >
-                  {updating ? <AiOutlineLoading3Quarters className="animate-spin" aria-hidden="true" /> : <AiFillDislike className={disliked ? "text-dark-blue-s" : ""} aria-hidden="true" />}
-                  <span className="text-xs">{currentProblem.dislikes}</span>
-                </button>
-                <button
-                  type="button"
-                  aria-pressed={starred}
-                  aria-label="Star"
-                  disabled={updating}
-                  className="ml-4 flex min-h-[32px] items-center rounded p-[3px] text-xl text-dark-gray-6 transition-colors duration-200 hover:bg-dark-fill-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-blue-s"
-                  onClick={handleStar}
-                >
-                  {updating ? <AiOutlineLoading3Quarters aria-hidden="true" /> : starred ? <AiFillStar className="text-dark-yellow" aria-hidden="true" /> : <TiStarOutline aria-hidden="true" />}
-                </button>
-              </div>
-            )}
+      {/* Kept mounted (hidden) so the statement is in the server render for fast first paint. */}
+      <div id="panel-description" role="tabpanel" aria-labelledby="tab-description" tabIndex={0} hidden={tab !== "description"} className={panel}>
+        <article className="mx-auto max-w-[68ch] px-5 py-5">
+          <div className="problem-statement text-[15px] leading-7 text-dark-gray-8" dangerouslySetInnerHTML={{ __html: problem.problemStatement }} />
 
-            {loading && (
-              <div className="mt-3 flex space-x-2">
-                <RectangleSkeleton />
-                <CircleSkeleton />
-                <RectangleSkeleton />
-                <RectangleSkeleton />
-                <CircleSkeleton />
-              </div>
-            )}
-
-            {/* Problem Statement(paragraphs) */}
-            <div className="text-white text-sm">
-              <div
-                dangerouslySetInnerHTML={{ __html: problem.problemStatement }}
-              />
-            </div>
-
-            {/* Examples */}
-            <div className="mt-4">
-              {problem.examples.map((example, index) => (
-                <div key={example.id}>
-                  <p className="font-medium text-white ">
-                    Example {index + 1}:{" "}
-                  </p>
-                  {example.img && (
-                    <Image
-                      src={example.img}
-                      alt=""
-                      className="mt-3"
-                      width={100}
-                      height={100}
-                    />
+          <div className="mt-6 space-y-3">
+            {problem.examples.map((example, index) => (
+              <section key={example.id} aria-labelledby={`ex-${index}`} className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
+                <h2 id={`ex-${index}`} className="mb-3 text-sm font-medium text-white">Example {index + 1}</h2>
+                {example.img && <Image src={example.img} alt="" className="mb-3" width={100} height={100} />}
+                <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
+                  <dt className="text-dark-gray-6">Input</dt>
+                  <dd className="break-all font-mono text-[13px] text-dark-gray-8">{example.inputText}</dd>
+                  <dt className="text-dark-gray-6">Output</dt>
+                  <dd className="break-all font-mono text-[13px] text-dark-gray-8">{example.outputText}</dd>
+                  {example.explanation && (
+                    <>
+                      <dt className="text-dark-gray-6">Why</dt>
+                      <dd className="text-dark-gray-7">{example.explanation}</dd>
+                    </>
                   )}
-                  <div className="example-card">
-                    <pre>
-                      <strong className="text-white">Input: </strong>{" "}
-                      {example.inputText}
-                      <br />
-                      <strong>Output:</strong>
-                      {example.outputText} <br />
-                      {example.explanation && (
-                        <>
-                          <strong>Explanation:</strong> {example.explanation}
-                        </>
-                      )}
-                    </pre>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Constraints */}
-            <div className="my-8 pb-4">
-              <div className="text-white text-sm font-medium">Constraints:</div>
-              <ul className="text-white ml-5 list-disc ">
-                <div
-                  dangerouslySetInnerHTML={{ __html: problem.constraints }}
-                />
-              </ul>
-            </div>
+                </dl>
+              </section>
+            ))}
           </div>
-        </div>
+
+          <section aria-labelledby="constraints" className="mt-6 pb-8">
+            <h2 id="constraints" className="mb-2 text-sm font-medium text-white">Constraints</h2>
+            <ul className="problem-constraints ml-5 list-disc space-y-1 text-sm text-dark-gray-7" dangerouslySetInnerHTML={{ __html: problem.constraints }} />
+          </section>
+        </article>
       </div>
     </div>
   );

@@ -4,6 +4,7 @@
 
 import type { Example, Problem } from "@/utils/types/problems";
 import type { Difficulty } from "@/content/patterns";
+import { showValue, type CaseResult } from "@/lib/runResults";
 
 export type JType =
   | "int" | "long" | "double" | "boolean" | "String" | "char"
@@ -222,42 +223,65 @@ function fromJs(v: unknown, t: JType | "void", compare: Compare, input?: unknown
   return v;
 }
 
-/** Error text the editor recognises as a failed test (vs a syntax error). */
-function fail(i: number, expected: unknown, got: unknown): never {
-  throw new Error(
-    `AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal: case ${i + 1} expected ${JSON.stringify(expected)} got ${JSON.stringify(got)}`,
-  );
-}
-
-function jsHandler(spec: ProblemSpec): (fn: any) => boolean {
+/** Runs every test and reports each one, catching errors per case. */
+function jsCases(spec: ProblemSpec): (fn: any) => (CaseResult & { error?: unknown })[] {
+  const run = (i: number, input: string, expected: unknown, body: () => unknown): CaseResult & { error?: unknown } => {
+    try {
+      const got = body();
+      return same(got, expected) ? { index: i + 1, status: "pass", input } : { index: i + 1, status: "fail", input, expected: showValue(expected), got: showValue(got) };
+    } catch (error) {
+      return { index: i + 1, status: "error", input, message: error instanceof Error ? error.message : String(error), error };
+    }
+  };
   if (spec.kind === "function") {
     const compare = spec.compare ?? "exact";
     return (fn: any) => {
       installNodeClasses();
-      spec.tests.forEach((t, i) => {
-        const args = clone(t.args);
-        const built: unknown[] = [];
-        spec.params.forEach((p, k) => built.push(toJsArg(args[k], p.type, built, spec.params)));
-        const ret = fn(...built);
-        const got = spec.returns === "void" && spec.mutates !== undefined
-          ? fromJs(built[spec.mutates], spec.params[spec.mutates].type, compare)
-          : fromJs(ret, spec.returns, compare, built[spec.params.findIndex((p) => p.type === "Graph")]);
-        if (!same(canon(got, compare), canon(t.expected, compare))) fail(i, t.expected, got);
+      return spec.tests.map((t, i) => {
+        const input = spec.params.map((p, k) => `${p.name} = ${showValue(p.type === "CycleList" ? (t.args[k] as unknown[])[0] : t.args[k])}`).join(", ");
+        let shown: unknown;
+        const r = run(i, input, canon(t.expected, compare), () => {
+          const args = clone(t.args);
+          const built: unknown[] = [];
+          spec.params.forEach((p, k) => built.push(toJsArg(args[k], p.type, built, spec.params)));
+          const ret = fn(...built);
+          shown = spec.returns === "void" && spec.mutates !== undefined
+            ? fromJs(built[spec.mutates], spec.params[spec.mutates].type, compare)
+            : fromJs(ret, spec.returns, compare, built[spec.params.findIndex((p) => p.type === "Graph")]);
+          return canon(shown, compare);
+        });
+        // Show the answer as returned (not its order-insensitive canonical form).
+        return r.status === "fail" ? { ...r, expected: showValue(t.expected), got: showValue(shown) } : r;
       });
-      return true;
     };
   }
-  return (Cls: any) => {
-    spec.tests.forEach((t, i) => {
-      const obj = new Cls(...clone(t.args[0] ?? []));
-      const out: unknown[] = [null];
-      for (let k = 1; k < t.ops.length; k++) {
-        const r = obj[t.ops[k]](...clone(t.args[k] ?? []));
-        out.push(r === undefined ? null : r);
-      }
-      if (!same(out, t.expected)) fail(i, t.expected, out);
+  return (Cls: any) =>
+    spec.tests.map((t, i) => {
+      const input = t.ops.slice(1).map((op, k) => `${op}(${(t.args[k + 1] ?? []).map(showValue).join(", ")})`).join(", ");
+      return run(i, input, t.expected, () => {
+        const obj = new Cls(...clone(t.args[0] ?? []));
+        const out: unknown[] = [null];
+        for (let k = 1; k < t.ops.length; k++) {
+          const r = obj[t.ops[k]](...clone(t.args[k] ?? []));
+          out.push(r === undefined ? null : r);
+        }
+        return out;
+      });
     });
-    return true;
+}
+
+/** Editor contract: true when every test passes; otherwise throws for the first failing case. */
+function jsHandler(spec: ProblemSpec): (fn: any) => boolean {
+  const cases = jsCases(spec);
+  return (fn: any) => {
+    const results = cases(fn);
+    const bad = results.find((r) => r.status !== "pass");
+    if (!bad) return true;
+    if (bad.status === "error") throw bad.error;
+    const t = spec.tests[bad.index - 1];
+    throw new Error(
+      `AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal: case ${bad.index} expected ${JSON.stringify(t.expected)} got ${bad.got}`,
+    );
   };
 }
 
@@ -304,6 +328,7 @@ export function toProblem(spec: ProblemSpec, order: number): Problem {
     order,
     starterCode: jsStarter(spec),
     handlerFunction: jsHandler(spec),
+    runCases: (fn: any) => jsCases(spec)(fn).map(({ error: _e, ...r }) => r),
     starterFunctionName: spec.kind === "function" ? `function ${spec.fn}(` : `class ${spec.className}`,
   };
 }

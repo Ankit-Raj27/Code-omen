@@ -20,7 +20,8 @@ const CodeEditor: React.FC<Props> = ({ value, language, fontSize, onChange }) =>
     value={value}
     theme={vscodeDark}
     extensions={[language === "java" ? java() : javascript(), EDITOR_LABEL]}
-    style={{ fontSize }}
+    height="100%"
+    style={{ fontSize, height: "100%" }}
     onChange={onChange}
   />
 );
