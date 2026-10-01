@@ -6,6 +6,7 @@ import type { LogPrefill } from "@/lib/patternTrack/bank";
 import type { LogDifficulty } from "@/lib/patternTrack/stats";
 import type { Ymd } from "@/lib/patternTrack/dates";
 import { btnPrimary, inputCls } from "./ui";
+import { save } from "./save";
 
 type Props = {
   uid: string;
@@ -48,7 +49,7 @@ const LogForm: React.FC<Props> = ({ uid, today, prefill, defaultPatternId, onSav
     if (!f.name.trim() || !f.insight.trim()) return;
     setSaving(true);
     try {
-      await addLog(uid, {
+      await save(addLog(uid, {
         name: f.name,
         url: f.url,
         patternId: f.patternId,
@@ -61,8 +62,7 @@ const LogForm: React.FC<Props> = ({ uid, today, prefill, defaultPatternId, onSav
         complexity: f.complexity,
         bankSlug: f.bankSlug || undefined,
         ...extra,
-      });
-      toast.success("Logged. First review is tomorrow.", { theme: "dark", position: "top-center", autoClose: 2000 });
+      }), "log entry", "Logged. First review is tomorrow.");
       setF(empty(today, {}, f.patternId));
       onSaved?.();
     } catch (err) {

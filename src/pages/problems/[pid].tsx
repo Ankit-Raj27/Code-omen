@@ -4,7 +4,6 @@ import { WorkspaceSessionProvider } from "@/components/workspace/WorkspaceSessio
 import LogSlideOver from "@/components/workspace/LogSlideOver";
 import { problems } from "@/utils/problems";
 import { Problem } from "@/utils/types/problems";
-import useHasMounted from "@/components/hooks/useHasMounted";
 import TopBar from "@/components/TopBar/TopBar";
 
 type ProblemPageProps = {
@@ -13,13 +12,11 @@ type ProblemPageProps = {
 };
 
 const ProblemPage: React.FC<ProblemPageProps> = ({ problem, bankKey }) => {
-  const hasMounted = useHasMounted();
-  if (!hasMounted) {
-    return null;
-  }
+  // Rendered on the server so the statement shows before JavaScript loads; the
+  // editor (which reads saved code and settings from the browser) is client-only.
   return (
     <WorkspaceSessionProvider bankKey={bankKey}>
-      <div>
+      <div id="main" tabIndex={-1} className="outline-none">
         <TopBar problemPage />
         <Workspace problem={problem} />
         <LogSlideOver />

@@ -4,7 +4,13 @@ import { BookOpen, LineChart, RotateCcw, Star, Target } from "lucide-react";
 import BlurFade from "@/components/ui/blur-fade";
 import { Carousel } from "@/components/ui/miniCarousel";
 import { NeonGradientCard } from "@/components/ui/neon-gradient-card";
-import TrackCharts from "./TrackCharts";
+import dynamic from "next/dynamic";
+
+// Charts (recharts) load on demand; the rest of the page doesn't wait for them.
+const TrackCharts = dynamic(() => import("./TrackCharts"), {
+  ssr: false,
+  loading: () => <div className="h-56 animate-pulse rounded-xl bg-gray-900/50" aria-label="Loading charts" />,
+});
 import Link from "next/link";
 import { toast } from "react-toastify";
 import { LEETCODE_URL, PATTERN_BY_ID } from "@/content/patterns";
@@ -16,6 +22,7 @@ import {
   type LogEntry, type PatternProblemRef,
 } from "@/lib/patternTrack/stats";
 import { daysBetween, safeHttpUrl, type Ymd } from "@/lib/patternTrack/dates";
+import { save } from "./save";
 import {
   Bar, DifficultyChip, EmptyState, Panel, PatternChip, SectionTitle, StageDots, StatTile, btnGhost, btnGradient,
 } from "./ui";
@@ -57,7 +64,7 @@ const ReviewCard: React.FC<{
   const grade = async (r: ReviewResult) => {
     setBusy(true);
     try {
-      await gradeLog(uid, log, r, today);
+      await save(gradeLog(uid, log, r, today), "review");
       onGraded(log.id, r);
     } catch (e) {
       console.error(e);

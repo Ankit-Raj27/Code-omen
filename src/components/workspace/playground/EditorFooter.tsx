@@ -22,7 +22,7 @@ const EditorFooter: React.FC<EditorFooterProps> = ({handleSubmit}) => {
           onClick={handleSubmit}>
             Run
           </button>
-          <button className="px-3 py-1.5 font-medium items-center transition-all focus:outline-none inline-flex text-sm text-white bg-dark-green-s hover:bg-green-3 rounded-lg" 
+          <button className="px-3 py-1.5 font-medium items-center transition-all focus:outline-none inline-flex text-sm text-white bg-green-700 hover:bg-green-600 rounded-lg" 
           onClick={handleSubmit}>
             Submit
           </button>

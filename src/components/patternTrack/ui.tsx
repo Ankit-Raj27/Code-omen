@@ -36,7 +36,7 @@ export const Panel: React.FC<{ children: React.ReactNode; className?: string }> 
 export const btn =
   "inline-flex items-center justify-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-dark-blue-s disabled:opacity-50";
 export const btnGhost = `${btn} bg-dark-fill-3 text-dark-label-2 hover:bg-dark-fill-2`;
-export const btnPrimary = `${btn} bg-dark-green-s text-white hover:opacity-90`;
+export const btnPrimary = `${btn} bg-green-700 text-white hover:bg-green-600`;
 /** The old dashboard's gradient call-to-action. */
 export const btnGradient = `${btn} bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700`;
 export const inputCls =
@@ -73,4 +73,16 @@ export const SectionTitle: React.FC<{ icon: React.ReactNode; children: React.Rea
     </h2>
     {action}
   </div>
+);
+
+/** A load failure with a way out. */
+export const ErrorState: React.FC<{ what?: string; onRetry?: () => void }> = ({ what = "your log", onRetry }) => (
+  <Panel>
+    <div role="alert" className="flex flex-wrap items-center justify-between gap-3">
+      <p className="text-sm text-dark-label-2">
+        Couldn&apos;t load {what}. Check your connection{onRetry ? " and try again" : ", then refresh"}.
+      </p>
+      {onRetry && <button className={btnGhost} onClick={onRetry}>Try again</button>}
+    </div>
+  </Panel>
 );

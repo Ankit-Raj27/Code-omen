@@ -1,5 +1,6 @@
 import { Problem } from "../types/problems";
 import { GENERATED_PROBLEMS } from "@/content/problems";
+import { PATTERNS } from "@/content/patterns";
 import { threeSum } from "./3sum";
 import { containerWithMostWater } from "./container-with-most-water";
 import { containsDuplicate } from "./contains-duplicate";
@@ -30,7 +31,7 @@ import { wordSearchII } from "./words-search-II";
 interface ProblemMap{
     [key:string]:Problem;
 }
-export const problems:ProblemMap = {
+const RAW: ProblemMap = {
     // Spec-generated problems (src/content/problems); hand-written ones below.
     ...GENERATED_PROBLEMS,
     "two-sum":twoSum,
@@ -58,12 +59,33 @@ export const problems:ProblemMap = {
     "trapping-rain-water": trappingRainWater,
     "implement-trie-prefix-tree":implementTrie,
     "design-add-and-search-words-data-structure":wordDictionary,
-    "word-search-ii":wordSearchII
+    "word-search-ii":wordSearchII,
+};
 
+/** LeetCode numbers for bank problems that aren't on a pattern sheet. */
+const OFF_SHEET_LC: Record<string, number> = { "spiral-matrix": 54, "pascals-triangle": 118, "top-k-frequent-elements": 347 };
 
-
-
-    
-
-
+/**
+ * The bank in roadmap order: pattern by pattern, core then stretch, then anything
+ * off the sheets. `order` is 1..N with no gaps (the problem page's previous/next
+ * arrows walk it) and every title is "<LeetCode number>. <name>".
+ */
+function normalise(raw: ProblemMap): ProblemMap {
+  const lcOf: Record<string, number> = { ...OFF_SHEET_LC };
+  const keys: string[] = [];
+  for (const p of PATTERNS) {
+    for (const [lc, , slug] of [...p.problems, ...(p.stretch ?? [])]) {
+      lcOf[slug] = lc;
+      if (raw[slug] && !keys.includes(slug)) keys.push(slug);
+    }
+  }
+  const rest = Object.keys(raw).filter((k) => !keys.includes(k)).sort((a, b) => raw[a].order - raw[b].order);
+  return Object.fromEntries(
+    [...keys, ...rest].map((k, i) => {
+      const name = raw[k].title.replace(/^\d+\.\s*/, "");
+      return [k, { ...raw[k], order: i + 1, title: lcOf[k] ? `${lcOf[k]}. ${name}` : name }];
+    }),
+  );
 }
+
+export const problems: ProblemMap = normalise(RAW);

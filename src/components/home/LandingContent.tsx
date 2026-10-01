@@ -33,13 +33,10 @@ const LandingContent = (props: Props) => {
                 Solve <RoughNotation type="box" show={true} color="purple"> 500+ Problems  </RoughNotation> with video solutions asked in various companies here and crack coding interviews at your dream companies<RoughNotation type="highlight" show={true} color="green"> completely FREE.</RoughNotation>
             </p>
 
-            <button onClick={handleClick} >
-                <RainbowButton className=" rounded-[7px] mt-3 text-lg text-black font-semibold hover:animate-color-change" style={{ padding: "10px 20px", background: "#d3dbd5" }}>
-                    {/* <Button ></Button> */}
-                    {props.ButtonText}
-                    {/* </Button> */}
-                </RainbowButton>
-            </button>
+            {/* One button: RainbowButton renders a <button> itself, so it takes the click directly. */}
+            <RainbowButton onClick={handleClick} className=" rounded-[7px] mt-3 text-lg text-black font-semibold hover:animate-color-change" style={{ padding: "10px 20px", background: "#d3dbd5" }}>
+                {props.ButtonText}
+            </RainbowButton>
         </div>
     );
 };

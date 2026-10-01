@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+
+const CodeEditor = dynamic(() => import("./CodeEditor"), {
+  ssr: false,
+  loading: () => <div className="h-40 animate-pulse bg-[#1e1e1e]" aria-label="Loading editor" />,
+});
 import PreferenceNav from "./PreferenceNav";
 import Split from "react-split";
-import CodeMirror from "@uiw/react-codemirror";
-import { javascript } from "@codemirror/lang-javascript";
-import {java} from "@codemirror/lang-java";
-import { vscodeDark } from "@uiw/codemirror-theme-vscode";
 import EditorFooter from "./EditorFooter";
 import { Problem } from "@/utils/types/problems";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -17,6 +19,7 @@ import useLocalStorage from "@/components/hooks/useLocalStorage";
 import { JAVA_PROBLEMS } from "@/utils/problems/java";
 import type { JavaRunResult } from "@/lib/javaRunner";
 import { useWorkspaceSession } from "../WorkspaceSession";
+
 
 export type EditorLanguage = "javascript" | "java";
 
@@ -175,13 +178,7 @@ const Playground: React.FC<PlaygroundProps> = ({
         minSize={60}
       >
         <div className="w-full overflow-auto">
-          <CodeMirror
-            value={userCode}
-            theme={vscodeDark}
-            extensions={[language === "java" ? java() : javascript()]}
-            style={{ fontSize: setting.fontSize }}
-            onChange={onChange}
-          />
+          <CodeEditor value={userCode} language={language} fontSize={setting.fontSize} onChange={onChange} />
         </div>
         {/* Test Case Heading */}
         <div className="w-full px-5 overflow-auto">

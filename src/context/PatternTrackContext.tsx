@@ -20,6 +20,8 @@ interface PatternTrackState {
   authLoading: boolean;
   loading: boolean;
   error: Error | null;
+  /** Re-subscribe after an error. */
+  retry: () => void;
 }
 
 const PatternTrackContext = createContext<PatternTrackState | null>(null);
@@ -47,6 +49,7 @@ export function PatternTrackProvider({ children }: { children: React.ReactNode }
   const [preferredLanguage, setPreferredLanguageState] = useState<EditorLanguagePref | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [attempt, setAttempt] = useState(0);
   const today = useTodayClock();
 
   useEffect(() => {
@@ -86,12 +89,12 @@ export function PatternTrackProvider({ children }: { children: React.ReactNode }
         setLoading(false);
       },
     );
-  }, [user, authLoading]);
+  }, [user, authLoading, attempt]);
 
   const value = useMemo(
     () => ({
       user, logs, startDate, setStartDateState, today, preferredLanguage, setPreferredLanguageState,
-      authLoading, loading: authLoading || loading, error,
+      authLoading, loading: authLoading || loading, error, retry: () => setAttempt((n) => n + 1),
     }),
     [user, logs, startDate, today, preferredLanguage, authLoading, loading, error],
   );

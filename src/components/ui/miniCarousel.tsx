@@ -36,11 +36,13 @@ export function Carousel({ slides, isLoading = false }: CarouselProps) {
     setCurrentIndex(newIndex)
   }
 
-  // Auto-advance slides every 5 seconds
+  // Auto-advance every 5 seconds (restarting after a manual move), unless the user
+  // prefers reduced motion.
   useEffect(() => {
     if (slides.length <= 1) { return }
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) { return }
 
-    const slideInterval = setInterval(goToNext, 5000)
+    const slideInterval = setInterval(() => setCurrentIndex((i) => (i + 1) % slides.length), 5000)
     return () => clearInterval(slideInterval)
   }, [currentIndex, slides.length])
 

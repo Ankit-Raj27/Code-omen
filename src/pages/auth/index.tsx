@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "@/Firebase/firebase";
 import PublicHome from "@/components/home/PublicHome";
-import { SparklesCore } from "@/components/features/SparkleCore";
+import PageLoader from "@/components/layout/PageLoader";
 
 /** Sign-in entry point: signed-in users go to Today. */
 const AuthPage: React.FC = () => {
@@ -14,7 +14,7 @@ const AuthPage: React.FC = () => {
     if (user) router.replace("/");
   }, [user, router]);
 
-  if (loading || user) return <SparklesCore />;
+  if (loading || user) return <PageLoader />;
   if (error) return <div>Error: {error.message}</div>;
   return <PublicHome />;
 };

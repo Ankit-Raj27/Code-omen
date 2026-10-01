@@ -14,3 +14,12 @@ describe("bank metadata (seeds Firestore problems/{slug})", () => {
     expect(bankMeta("nope")).toBeUndefined();
   });
 });
+
+describe("problem bank ordering", () => {
+  it("numbers problems 1..N in roadmap order, with LeetCode-numbered titles", () => {
+    const list = Object.values(problems).sort((a, b) => a.order - b.order);
+    expect(list.map((p) => p.order)).toEqual(list.map((_, i) => i + 1));
+    expect(list[0].id).toBe("contains-duplicate");
+    for (const p of list) expect(p.title, p.id).toMatch(/^\d+\. \S/);
+  });
+});

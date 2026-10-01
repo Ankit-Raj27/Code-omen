@@ -110,7 +110,7 @@ export default function AddProblem() {
               {LISTS.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
             </select>
             <button type="submit" disabled={saving}
-              className="rounded-lg bg-dark-green-s px-3 py-2 text-sm font-medium text-white disabled:opacity-50">
+              className="rounded-lg bg-green-700 px-3 py-2 text-sm font-medium text-white disabled:opacity-50">
               {saving ? "Saving…" : "Save"}
             </button>
           </form>

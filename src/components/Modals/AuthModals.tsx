@@ -5,12 +5,14 @@ import Signup from "./Signup";
 import ResetPassword from "./ResetPassword";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { authModalState } from "@/atoms/authModalAtom";
+import { useDialog } from "@/hooks/useDialog";
 
 type AuthModalsProps = {};
 
 const AuthModals: React.FC<AuthModalsProps> = () => {
   const authModal = useRecoilValue(authModalState);
   const closeModal = useCloseModal();
+  const dialogRef = useDialog<HTMLDivElement>(authModal.isOpen, closeModal);
 
   useEffect(() => {
     // Prevent background scrolling when modal is open
@@ -36,6 +38,10 @@ const AuthModals: React.FC<AuthModalsProps> = () => {
 
       {/* Modal */}
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={authModal.type === "login" ? "Sign in" : authModal.type === "register" ? "Create account" : "Reset password"}
         className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full sm:w-[450px] flex justify-center items-center"
       >
         <div className="relative w-full mx-6">
@@ -45,8 +51,9 @@ const AuthModals: React.FC<AuthModalsProps> = () => {
                 type="button"
                 className="bg-transparent rounded-lg text-sm p-1.5 ml-auto inline-flex items-center hover:bg-gray-800 hover:text-white text-white"
                 onClick={closeModal}
+                aria-label="Close"
               >
-                <IoCloseSharp className="h-5 w-5" />
+                <IoCloseSharp className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
             {authModal.type === "login" ? (
@@ -71,20 +78,6 @@ function useCloseModal() {
   const closeModal = useCallback(() => {
     setAuthModal((prev) => ({ ...prev, isOpen: false, type: "login" }));
   }, [setAuthModal]);
-
-  const handleEsc = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        closeModal();
-      }
-    },
-    [closeModal]
-  );
-
-  useEffect(() => {
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
-  }, [handleEsc]);
 
   return closeModal;
 }

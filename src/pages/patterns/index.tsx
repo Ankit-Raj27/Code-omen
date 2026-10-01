@@ -14,7 +14,7 @@ export default function PatternsPage() {
     <PageFrame
       title="Patterns"
       subtitle="18 weekly patterns, in order. Week 18 runs mixed mocks through week 22."
-      actions={<Link href="/method" className="text-sm text-dark-blue-s hover:underline">How to study →</Link>}>
+      actions={<Link href="/method" className="inline-flex min-h-[32px] items-center rounded px-2 hover:bg-dark-fill-3 text-sm text-dark-blue-s">How to study →</Link>}>
       <PatternList logs={logs} currentWeek={currentWeek(startDate, today)} />
     </PageFrame>
   );

@@ -1,4 +1,5 @@
-import React, { useEffect } from "react";
+import React from "react";
+import { useDialog } from "@/hooks/useDialog";
 import LogForm from "@/components/patternTrack/LogForm";
 import { usePatternTrack } from "@/context/PatternTrackContext";
 import { prefillForBank } from "@/lib/patternTrack/bank";
@@ -9,12 +10,8 @@ const LogSlideOver: React.FC = () => {
   const session = useWorkspaceSession();
   const { user, today } = usePatternTrack();
 
-  useEffect(() => {
-    if (!session?.logOpen) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && session.closeLog();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [session]);
+  const open = !!session?.logOpen && !!user;
+  const dialogRef = useDialog<HTMLElement>(open, () => session?.closeLog());
 
   if (!session?.logOpen || !user) return null;
   const prefill = prefillForBank(session.bankKey);
@@ -23,6 +20,7 @@ const LogSlideOver: React.FC = () => {
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/50" onClick={session.closeLog}>
       <aside
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-label="Log this problem"

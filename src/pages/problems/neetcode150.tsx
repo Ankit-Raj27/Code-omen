@@ -5,8 +5,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "@/Firebase/firebase"; // Firebase auth import
 import useHasMounted from "@/components/hooks/useHasMounted";
 import TopBar from "@/components/TopBar/TopBar";
-import { SparklesCore } from "@/components/features/SparkleCore"; // Optional loading spinner
-import Striver150Table from "@/components/ProblemsTable/StriverTable";
+import PageLoader from "@/components/layout/PageLoader";
 import Neetcode150Table from "@/components/ProblemsTable/NeetCodeTable";
 
 export default function Home() {
@@ -26,7 +25,7 @@ export default function Home() {
   }, [user, loading, router]);
 
   if (!hasMounted || loading) {
-    return <SparklesCore />; // Show a loading spinner while checking authentication
+    return <PageLoader />;
   }
 
   const LoadingSkeleton = () => {

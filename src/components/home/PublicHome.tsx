@@ -21,12 +21,12 @@ const PublicHome: React.FC = () => {
   return (
     <>
       <Navbar />
-      <main className="bg-black min-h-screen text-white overflow-hidden">
+      <main id="main" tabIndex={-1} className="outline-none bg-black min-h-screen text-white overflow-hidden">
         <section className="relative pt-20 pb-32 px-4 md:px-8">
           <div className="max-w-7xl mx-auto relative z-10">
             <LandingPage />
             <div className="bg-black relative bottom-16">
-              <BlurFade delay={0.25 * 5}>
+              <BlurFade delay={0.3}>
                 <NeonGradientCard
                   className="max-w-fit h-fit mx-auto"
                   borderSize={1}

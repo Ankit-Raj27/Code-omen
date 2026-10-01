@@ -8,7 +8,7 @@ import type { WeekActivity } from "@/lib/patternTrack/stats";
 const NEW = "#0A84FF"; // new problems
 const REVIEW = "#25A150"; // reviews
 const INK = "rgba(239,241,246,0.75)";
-const MUTED = "rgb(138,138,138)";
+const MUTED = "rgb(160,160,160)";
 const GRID = "rgba(255,255,255,0.06)";
 
 const axis = { stroke: MUTED, fontSize: 11, tickLine: false, axisLine: false } as const;

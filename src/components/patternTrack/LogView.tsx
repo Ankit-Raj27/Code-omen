@@ -8,6 +8,7 @@ import { safeHttpUrl, type Ymd } from "@/lib/patternTrack/dates";
 import LogForm from "./LogForm";
 import type { LogPrefill } from "@/lib/patternTrack/bank";
 import { DifficultyChip, Panel, StageDots, btnGhost, inputCls } from "./ui";
+import { save } from "./save";
 
 /** Two-click delete: first click arms, second confirms. Auto-disarms after 3s. */
 const DeleteButton: React.FC<{ onConfirm: () => Promise<void> }> = ({ onConfirm }) => {
@@ -49,7 +50,7 @@ const LogView: React.FC<{
 
   const remove = async (id: string) => {
     try {
-      await deleteLog(uid, id);
+      await save(deleteLog(uid, id), "deletion");
     } catch (e) {
       console.error(e);
       toast.error("Couldn't delete.", { theme: "dark", position: "top-center" });

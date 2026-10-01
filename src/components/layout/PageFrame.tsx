@@ -25,7 +25,7 @@ const PageFrame: React.FC<Props> = ({ title, documentTitle, subtitle, actions, c
         <div className="relative z-10">
           <TopBar />
         </div>
-        <main className="relative mx-auto max-w-[1200px] px-4 pt-10 sm:px-6">
+        <main id="main" tabIndex={-1} className="relative mx-auto outline-none max-w-[1200px] px-4 pt-10 sm:px-6">
           <motion.header
             initial={reduce ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
