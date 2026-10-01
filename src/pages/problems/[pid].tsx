@@ -47,7 +47,7 @@ export async function getStaticProps({ params }: { params: { pid: string } }) {
   return {
     props: {
       // Functions can't be serialized to props; the page looks up the handler by key.
-      problem: { ...problem, handlerFunction: problem.handlerFunction.toString() },
+      problem: { ...problem, handlerFunction: problem.handlerFunction.toString(), runCases: null },
       bankKey: pid,
     },
   };

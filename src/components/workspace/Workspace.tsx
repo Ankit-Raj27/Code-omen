@@ -10,6 +10,7 @@ const Playground = dynamic(() => import("./playground/Playground"), {
 });
 import { Problem } from "@/utils/types/problems";
 import Confetti from "react-confetti";
+import { useReducedMotion } from "framer-motion";
 import useWindowSize from "../hooks/useWindowSize";
 
 type WorkspaceProps = {
@@ -27,13 +28,14 @@ const Workspace: React.FC<WorkspaceProps> = ({ problem }) => {
   // plain CSS, so the server render already matches the screen and nothing shifts.
   const [desktop, setDesktop] = useState(false);
   const [pane, setPane] = useState<"problem" | "code">("problem");
+  const reduceMotion = useReducedMotion();
   useEffect(() => setDesktop(width >= NARROW), [width]);
 
   const description = <ProblemDescription problem={problem} _solved={solved} />;
   const editor = (
     <div>
       <Playground problem={problem} setSuccess={setSuccess} setSolved={setSolved} />
-      {success && <Confetti gravity={0.3} tweenDuration={2000} width={width - 1} height={height - 1} />}
+      {success && !reduceMotion && <Confetti gravity={0.3} tweenDuration={2000} width={width - 1} height={height - 1} />}
     </div>
   );
 

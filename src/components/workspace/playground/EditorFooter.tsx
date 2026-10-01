@@ -1,34 +1,30 @@
 import React from "react";
-import { BsChevronUp } from "react-icons/bs";
+import { Play, Send } from "lucide-react";
 
 type EditorFooterProps = {
-  handleSubmit:()=>void
+  onRun: () => void;
+  onSubmit: () => void;
+  running: boolean;
 };
 
-const EditorFooter: React.FC<EditorFooterProps> = ({handleSubmit}) => {
-  return (
-    <div className="flex bg-dark-layer-1 absolute bottom-0 z-10 w-full">
-      <div className="mx-5 my-[10px] flex justify-between w-full">
-        <div className="mr-2 flex flex-1 flex-nowrap items-center space-x-4">
-          <button className="px-3 py-1.5 font-medium items-center transition-all inline-flex bg-dark-fill-3 text-sm hover:bg-dark-fill-2 text-dark-label-2 rounded-lg pl-3 pr-2">
-            Console
-            <div className="ml-1 transform transition flex items-center">
-              <BsChevronUp className="fill-gray-6 mx-1 fill-dark-gray-6" />
-            </div>
-          </button>
-        </div>
-        <div className="ml-auto flex items-center space-x-4">
-          <button className="px-3 py-1.5 text-sm font-medium items-center whitespace-nowrap transition-all focus:outline-none inline-flex bg-dark-fill-3  hover:bg-dark-fill-2 text-dark-label-2 rounded-lg"
-          onClick={handleSubmit}>
-            Run
-          </button>
-          <button className="px-3 py-1.5 font-medium items-center transition-all focus:outline-none inline-flex text-sm text-white bg-green-700 hover:bg-green-600 rounded-lg" 
-          onClick={handleSubmit}>
-            Submit
-          </button>
-        </div>
-      </div>
+/** Run checks your code against the tests; Submit also records the solve. */
+const EditorFooter: React.FC<EditorFooterProps> = ({ onRun, onSubmit, running }) => (
+  <div className="flex h-14 shrink-0 items-center gap-3 border-t border-white/[0.06] bg-dark-layer-2 px-4">
+    <p className="hidden text-xs text-dark-gray-6 lg:block">
+      <kbd className="rounded bg-white/10 px-1">Ctrl</kbd>+<kbd className="rounded bg-white/10 px-1">Enter</kbd> run
+      <span className="mx-2 text-white/20">|</span>
+      <kbd className="rounded bg-white/10 px-1">Ctrl</kbd>+<kbd className="rounded bg-white/10 px-1">Shift</kbd>+<kbd className="rounded bg-white/10 px-1">Enter</kbd> submit
+    </p>
+    <div className="ml-auto flex items-center gap-2">
+      <button type="button" onClick={onRun} disabled={running}
+        className="inline-flex min-h-[40px] items-center gap-2 rounded-lg bg-white/10 px-4 text-sm font-medium text-white hover:bg-white/15 disabled:opacity-50">
+        <Play size={15} aria-hidden="true" /> Run
+      </button>
+      <button type="button" onClick={onSubmit} disabled={running}
+        className="inline-flex min-h-[40px] items-center gap-2 rounded-lg bg-green-700 px-4 text-sm font-medium text-white hover:bg-green-600 disabled:opacity-50">
+        <Send size={15} aria-hidden="true" /> Submit
+      </button>
     </div>
-  );
-};
+  </div>
+);
 export default EditorFooter;

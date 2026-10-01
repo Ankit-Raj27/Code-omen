@@ -14,6 +14,7 @@ const LISTS = [
 const MAIN = [
   { href: "/", label: "Today" },
   { href: "/patterns", label: "Patterns" },
+  { href: "/problems", label: "Problems" },
   { href: "/log", label: "Log" },
 ];
 

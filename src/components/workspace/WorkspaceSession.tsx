@@ -26,6 +26,8 @@ interface SessionState {
   logOpen: boolean;
   acceptedLanguage: EditorLang | null;
   closeLog: () => void;
+  /** Reopen the log form (e.g. from the result panel after closing it). */
+  openLog: () => void;
   alreadyLogged: boolean;
 }
 
@@ -95,6 +97,7 @@ export function WorkspaceSessionProvider({ bankKey, children }: { bankKey: strin
     logOpen,
     acceptedLanguage,
     closeLog: () => setLogOpen(false),
+    openLog: () => setLogOpen(true),
     alreadyLogged,
   };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

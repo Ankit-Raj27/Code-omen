@@ -16,6 +16,8 @@ export type Problem = {
 	order: number;
 	starterCode: string;
 	handlerFunction: ((fn: any) => boolean) | string;
+	/** Per-case results (spec-generated problems); hand-written ones only have the handler. */
+	runCases?: (fn: any) => import("@/lib/runResults").CaseResult[];
 	starterFunctionName: string;
 };
 

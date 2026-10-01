@@ -64,7 +64,7 @@ const TopBar: React.FC<TopBarProps> = ({ problemPage }) => {
               <FaChevronCircleLeft aria-hidden="true" />
             </button>
             <Link
-              href="/"
+              href="/problems"
               aria-label="Problem list"
               className="flex min-h-[32px] items-center gap-2 font-medium max-w-[170px] text-dark-gray-8 cursor-pointer"
             >
