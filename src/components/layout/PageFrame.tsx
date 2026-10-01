@@ -22,9 +22,7 @@ const PageFrame: React.FC<Props> = ({ title, documentTitle, subtitle, actions, c
       <Head><title>{`${tab} · CodeOmen`}</title></Head>
       <div className="relative min-h-screen bg-black pb-20 text-white">
         <AppBackground />
-        <div className="relative z-10">
-          <TopBar />
-        </div>
+        <TopBar />
         <main id="main" tabIndex={-1} className="relative mx-auto outline-none max-w-[1200px] px-4 pt-10 sm:px-6">
           <motion.header
             initial={reduce ? false : { opacity: 0, y: 16 }}

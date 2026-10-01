@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { Check, ChevronDown, ExternalLink, PlayCircle, Search, Shuffle, Sparkles } from "lucide-react";
 import YouTube from "react-youtube";
-import { PATTERNS, LEETCODE_URL } from "@/content/patterns";
+import { PATTERNS, PATTERN_BY_ID, LEETCODE_URL } from "@/content/patterns";
 import { usePatternTrack } from "@/context/PatternTrackContext";
 import { useDialog } from "@/hooks/useDialog";
 import { currentWeek, patternForWeek } from "@/lib/patternTrack/stats";
@@ -51,49 +51,69 @@ function filterFromQuery(q: Record<string, unknown>): ListFilter {
 // ------------------------------------------------------------------ pieces
 
 const SheetTabs: React.FC<{ active: string }> = ({ active }) => (
-  <nav aria-label="Problem sheets" className="mb-6 flex gap-1 overflow-x-auto rounded-xl border border-white/10 bg-white/[0.03] p-1">
-    {SHEETS.map((s) => (
-      <Link key={s.href} href={s.href} aria-current={active === s.href ? "page" : undefined}
-        className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-          active === s.href ? "bg-white/10 text-white" : "text-dark-gray-6 hover:text-white"
-        }`}>
-        {s.label}
-      </Link>
-    ))}
+  <nav aria-label="Problem sheets" className="mb-8 flex gap-6 overflow-x-auto border-b border-white/10">
+    {SHEETS.map((s) => {
+      const on = active === s.href;
+      return (
+        <Link key={s.href} href={s.href} aria-current={on ? "page" : undefined}
+          className={`relative -mb-px whitespace-nowrap pb-3 pt-1 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dark-blue-s ${
+            on ? "text-white" : "text-dark-gray-6 hover:text-white"
+          }`}>
+          {s.label}
+          {on && <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500" />}
+        </Link>
+      );
+    })}
   </nav>
 );
 
+/** Overall progress: one ring for the whole sheet, and a bar split by difficulty. */
 const Summary: React.FC<{ items: Item[]; onPick: () => void; canPick: boolean; signedIn: boolean }> = ({ items, onPick, canPick, signedIn }) => {
   const s = summarize(items);
+  const pct = s.total ? Math.round((100 * s.done) / s.total) : 0;
   return (
-    <section aria-label="Progress" className="mb-6 grid gap-3 sm:grid-cols-[1fr_auto]">
-      <div className="grid grid-cols-3 gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4">
-        {DIFFS.map((d) => {
-          const { done, total } = s.byDifficulty[d];
-          return (
-            <div key={d}>
-              <div className="flex items-baseline justify-between gap-2">
-                <span className={`text-sm font-medium ${DIFF_TEXT[d]}`}>{d}</span>
-                <span className="text-sm tabular-nums text-dark-gray-7">{done}<span className="text-dark-gray-6">/{total}</span></span>
-              </div>
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10" role="progressbar"
-                aria-label={`${d} solved`} aria-valuemin={0} aria-valuemax={total} aria-valuenow={done}>
-                <div className={`h-full rounded-full ${DIFF_BAR[d]}`} style={{ width: `${total ? (100 * done) / total : 0}%` }} />
-              </div>
+    <section aria-label="Progress"
+      className="relative mb-8 overflow-hidden rounded-2xl border border-white/10 bg-[radial-gradient(120%_140%_at_0%_0%,rgba(168,85,247,0.16),transparent_55%),radial-gradient(120%_140%_at_100%_100%,rgba(59,130,246,0.12),transparent_55%)] p-5 sm:p-6">
+      <div className="flex flex-wrap items-center gap-6">
+        <div className="relative grid h-24 w-24 shrink-0 place-items-center rounded-full" role="img" aria-label={`${s.done} of ${s.total} done`}
+          style={{ background: `conic-gradient(from -90deg, rgb(168 85 247), rgb(59 130 246) ${pct}%, rgba(255,255,255,0.1) 0)` }}>
+          <div className="grid h-[84px] w-[84px] place-items-center rounded-full bg-black/90 text-center">
+            <div>
+              <div className="text-2xl font-bold tabular-nums leading-none text-white">{s.done}</div>
+              <div className="mt-1 text-[11px] text-dark-gray-6">of {s.total}</div>
             </div>
-          );
-        })}
-      </div>
-      <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4">
-        {signedIn && (
-          <p className="text-sm text-dark-gray-7">
-            <span className="text-lg font-semibold tabular-nums text-white">{s.due}</span> due
-            <span className="mx-2 text-white/20">|</span>
-            <span className="text-lg font-semibold tabular-nums text-white">{s.mastered}</span> mastered
-          </p>
-        )}
+          </div>
+        </div>
+
+        <div className="min-w-[220px] flex-1">
+          <div className="flex h-2.5 w-full gap-1" aria-hidden="true">
+            {DIFFS.map((d) => {
+              const { done, total } = s.byDifficulty[d];
+              return (
+                <div key={d} className="h-full overflow-hidden rounded-full bg-white/10" style={{ flexGrow: total || 0.0001 }}>
+                  <div className={`h-full rounded-full ${DIFF_BAR[d]}`} style={{ width: `${total ? (100 * done) / total : 0}%` }} />
+                </div>
+              );
+            })}
+          </div>
+          <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm">
+            {DIFFS.map((d) => (
+              <div key={d} className="flex items-baseline gap-2">
+                <dt className={`font-medium ${DIFF_TEXT[d]}`}>{d}</dt>
+                <dd className="tabular-nums text-dark-gray-7">{s.byDifficulty[d].done}<span className="text-dark-gray-6">/{s.byDifficulty[d].total}</span></dd>
+              </div>
+            ))}
+            {signedIn && (
+              <>
+                <div className="flex items-baseline gap-2"><dt className="text-dark-gray-6">Due</dt><dd className={`tabular-nums ${s.due ? "text-dark-pink" : "text-dark-gray-7"}`}>{s.due}</dd></div>
+                <div className="flex items-baseline gap-2"><dt className="text-dark-gray-6">Mastered</dt><dd className="tabular-nums text-dark-gray-7">{s.mastered}</dd></div>
+              </>
+            )}
+          </dl>
+        </div>
+
         <button type="button" onClick={onPick} disabled={!canPick}
-          className={`${signedIn ? "ml-auto" : "w-full sm:ml-auto sm:w-auto"} inline-flex min-h-[40px] items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 px-4 text-sm font-medium text-white hover:from-purple-500 hover:to-blue-500 disabled:opacity-40`}>
+          className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-white px-5 text-sm font-semibold text-black shadow-[0_0_30px_rgba(168,85,247,0.35)] hover:bg-white/90 disabled:opacity-40 sm:w-auto">
           <Shuffle size={16} aria-hidden="true" /> Pick one for me
         </button>
       </div>
@@ -132,7 +152,8 @@ const Row: React.FC<{ item: Item; today: string; signedIn: boolean; onVideo: (id
   );
   const linkCls = "inline-block py-1.5 rounded outline-none focus-visible:ring-2 focus-visible:ring-dark-blue-s text-[15px] text-dark-gray-8 group-hover:text-white";
   return (
-    <li className="group grid grid-cols-[28px_1fr] items-center gap-x-3 gap-y-0 rounded-lg px-3 py-0.5 transition-colors hover:bg-white/[0.04] sm:grid-cols-[28px_1fr_auto]">
+    <li className="group relative grid grid-cols-[28px_1fr] items-center gap-x-3 gap-y-0 rounded-xl px-3 py-1 transition-colors hover:bg-white/[0.05] focus-within:bg-white/[0.05] sm:grid-cols-[28px_1fr_auto]">
+      <span aria-hidden="true" className={`absolute inset-y-2 left-0 w-0.5 rounded-full opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 ${DIFF_BAR[row.difficulty]}`} />
       <span className="flex justify-center"><StatusMark state={state} /></span>
       <span className="min-w-0">
         {row.external ? (
@@ -150,7 +171,9 @@ const Row: React.FC<{ item: Item; today: string; signedIn: boolean; onVideo: (id
         {row.languages.map((l) => (
           <span key={l} className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[11px] font-medium text-dark-gray-7">{l}</span>
         ))}
-        <span className={`w-14 font-medium ${DIFF_TEXT[row.difficulty]}`}>{row.difficulty}</span>
+        <span className={`inline-flex w-16 items-center gap-1.5 font-medium ${DIFF_TEXT[row.difficulty]}`}>
+          <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${DIFF_BAR[row.difficulty]}`} />{row.difficulty}
+        </span>
         <span className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
           {row.videoId && (
             <button type="button" onClick={() => onVideo(row.videoId!)} aria-label={`Watch a solution video for ${row.title}`}
@@ -182,12 +205,14 @@ const TrackGroup: React.FC<{
   open: boolean; onToggle: () => void; children: React.ReactNode;
 }> = ({ id, title, week, items, done, current, open, onToggle, children }) => {
   const pct = items.length ? Math.round((100 * done) / items.length) : 0;
+  const signal = PATTERN_BY_ID[id]?.signal;
   return (
-    <section aria-labelledby={`g-${id}`} className="relative pl-12">
+    <section aria-labelledby={`g-${id}`}
+      className={`relative rounded-2xl pl-14 pr-2 ${current ? "bg-purple-500/[0.05] ring-1 ring-purple-500/25" : ""}`}>
       {/* Rail: the line runs down the left edge, the marker sits on it. */}
-      <span aria-hidden="true" className="absolute bottom-0 left-[19px] top-0 w-px bg-gradient-to-b from-purple-500/40 via-white/10 to-white/10" />
+      <span aria-hidden="true" className="absolute bottom-0 left-[27px] top-0 w-px bg-gradient-to-b from-purple-500/50 via-white/10 to-white/5" />
       <span aria-hidden="true"
-        className={`absolute left-0 top-1 grid h-10 w-10 place-items-center rounded-full ${current ? "shadow-[0_0_24px_rgba(168,85,247,0.55)]" : ""}`}
+        className={`absolute left-2 top-3 grid h-10 w-10 place-items-center rounded-full ${current ? "shadow-[0_0_28px_rgba(168,85,247,0.6)]" : ""}`}
         style={{ background: `conic-gradient(#2cbb5d ${pct}%, rgba(255,255,255,0.12) 0)` }}>
         <span className="grid h-8 w-8 place-items-center rounded-full bg-black text-xs font-semibold tabular-nums text-white">
           {week ? (week >= 18 ? "18+" : week) : "·"}
@@ -195,14 +220,20 @@ const TrackGroup: React.FC<{
       </span>
       <h2 id={`g-${id}`} className="m-0">
         <button type="button" onClick={onToggle} aria-expanded={open} aria-controls={`gl-${id}`}
-          className="flex min-h-[48px] w-full items-center gap-3 rounded-lg pr-2 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-dark-blue-s">
-          <span className="text-lg font-semibold text-white">{title}</span>
-          {current && <span className="rounded-full bg-purple-500/20 px-2 py-0.5 text-xs font-medium text-purple-200">This week</span>}
-          <span className="ml-auto text-sm tabular-nums text-dark-gray-6">{done}/{items.length}</span>
-          <ChevronDown size={18} aria-hidden="true" className={`text-dark-gray-6 transition-transform ${open ? "" : "-rotate-90"}`} />
+          className="flex min-h-[64px] w-full items-center gap-3 rounded-lg py-2 pr-2 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-dark-blue-s">
+          <span className="min-w-0 flex-1">
+            <span className="flex flex-wrap items-center gap-2">
+              {week && <span className="text-xs font-medium text-dark-gray-6">Week {week >= 18 ? "18+" : week}</span>}
+              {current && <span className="rounded-full bg-purple-500/20 px-2 py-0.5 text-[11px] font-medium text-purple-200">This week</span>}
+            </span>
+            <span className="block text-lg font-semibold text-white">{title}</span>
+            {signal && <span className="mt-0.5 hidden text-sm font-normal text-dark-gray-6 sm:line-clamp-1">{signal}</span>}
+          </span>
+          <span className="shrink-0 text-sm tabular-nums text-dark-gray-7">{done}<span className="text-dark-gray-6">/{items.length}</span></span>
+          <ChevronDown size={18} aria-hidden="true" className={`shrink-0 text-dark-gray-6 transition-transform ${open ? "" : "-rotate-90"}`} />
         </button>
       </h2>
-      <div id={`gl-${id}`} hidden={!open} className="pb-6">{children}</div>
+      <div id={`gl-${id}`} hidden={!open} className="pb-5">{children}</div>
     </section>
   );
 };
@@ -318,7 +349,7 @@ const ProblemBrowser: React.FC<Props> = ({ sheetHref, rows, loading, error, onRe
       <Summary items={items} onPick={pick} canPick={items.some((i) => i.state.status === "todo")} signedIn={!!user} />
 
       {/* Toolbar */}
-      <div role="search" className="mb-6 flex flex-wrap items-center gap-2">
+      <div role="search" className="sticky top-[50px] z-30 -mx-4 mb-6 flex flex-wrap items-center gap-2 border-b border-white/[0.06] bg-black/70 px-4 py-3 backdrop-blur-md sm:-mx-6 sm:px-6">
         <label className="relative min-w-[220px] flex-1">
           <span className="sr-only">Search problems</span>
           <Search size={16} aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-dark-gray-6" />
@@ -392,7 +423,7 @@ const ProblemBrowser: React.FC<Props> = ({ sheetHref, rows, loading, error, onRe
         ) : flat || sort !== "default" ? (
           rowList(visible)
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {groups.map((g) => (
               <TrackGroup key={g.id} id={g.id} title={g.title} week={g.week} items={g.items} done={g.done} current={g.id === weekPattern && !!user}
                 open={!closed.has(g.id)} onToggle={() => setClosed((c) => { const n = new Set(c); if (n.has(g.id)) n.delete(g.id); else n.add(g.id); return n; })}>
