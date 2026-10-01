@@ -93,7 +93,7 @@ const Summary: React.FC<{ items: Item[]; onPick: () => void; canPick: boolean; s
           </p>
         )}
         <button type="button" onClick={onPick} disabled={!canPick}
-          className="ml-auto inline-flex min-h-[40px] items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 px-4 text-sm font-medium text-white hover:from-purple-500 hover:to-blue-500 disabled:opacity-40">
+          className={`${signedIn ? "ml-auto" : "w-full sm:ml-auto sm:w-auto"} inline-flex min-h-[40px] items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 px-4 text-sm font-medium text-white hover:from-purple-500 hover:to-blue-500 disabled:opacity-40`}>
           <Shuffle size={16} aria-hidden="true" /> Pick one for me
         </button>
       </div>
@@ -104,14 +104,14 @@ const Summary: React.FC<{ items: Item[]; onPick: () => void; canPick: boolean; s
 const StatusMark: React.FC<{ state: RowState }> = ({ state }) => {
   switch (state.status) {
     case "todo":
-      return <span className="block h-3.5 w-3.5 rounded-full border border-white/25" aria-label="Not done" />;
+      return <span role="img" className="block h-3.5 w-3.5 rounded-full border border-white/25" aria-label="Not done" />;
     case "solved":
-      return <Check size={16} className="text-[#2cbb5d]" aria-label="Solved" />;
+      return <Check size={16} role="img" className="text-[#2cbb5d]" aria-label="Solved" />;
     case "mastered":
-      return <Sparkles size={16} className="text-[#2cbb5d]" aria-label="Mastered" />;
+      return <Sparkles size={16} role="img" className="text-[#2cbb5d]" aria-label="Mastered" />;
     default:
       return (
-        <span className="flex gap-[3px]" aria-label={`Review stage ${state.stage} of ${MASTERED_STAGE}${state.status === "due" ? ", due" : ""}`}>
+        <span role="img" className="flex gap-[3px]" aria-label={`Review stage ${state.stage} of ${MASTERED_STAGE}${state.status === "due" ? ", due" : ""}`}>
           {Array.from({ length: MASTERED_STAGE }, (_, i) => (
             <span key={i} className={`h-1.5 w-1.5 rounded-full ${
               i < (state.stage ?? 0) ? (state.status === "due" ? "bg-dark-pink" : "bg-[#2cbb5d]") : "bg-white/15"
@@ -127,12 +127,12 @@ const Row: React.FC<{ item: Item; today: string; signedIn: boolean; onVideo: (id
     <>
       {row.number && <span className="mr-2 tabular-nums text-dark-gray-6">{row.number}.</span>}
       {row.title}
-      {row.external && <ExternalLink size={13} className="ml-1.5 inline-block -translate-y-px text-dark-gray-6" aria-label="(opens on LeetCode)" />}
+      {row.external && <ExternalLink size={13} className="ml-1.5 inline-block -translate-y-px text-dark-gray-6" role="img" aria-label="(opens on LeetCode)" />}
     </>
   );
-  const linkCls = "rounded outline-none focus-visible:ring-2 focus-visible:ring-dark-blue-s text-[15px] text-dark-gray-8 group-hover:text-white";
+  const linkCls = "inline-block py-1.5 rounded outline-none focus-visible:ring-2 focus-visible:ring-dark-blue-s text-[15px] text-dark-gray-8 group-hover:text-white";
   return (
-    <li className="group grid grid-cols-[28px_1fr] items-center gap-x-3 gap-y-1 rounded-lg px-3 py-1.5 transition-colors hover:bg-white/[0.04] sm:grid-cols-[28px_1fr_auto]">
+    <li className="group grid grid-cols-[28px_1fr] items-center gap-x-3 gap-y-0 rounded-lg px-3 py-0.5 transition-colors hover:bg-white/[0.04] sm:grid-cols-[28px_1fr_auto]">
       <span className="flex justify-center"><StatusMark state={state} /></span>
       <span className="min-w-0">
         {row.external ? (
