@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { KEY_INSIGHTS } from "@/content/insights";
 import { GUIDES } from "@/content/guides";
-import { PATTERN_BY_ID } from "@/content/patterns";
+import { LEETCODE_URL, PATTERN_BY_ID } from "@/content/patterns";
 import { usePatternTrack } from "@/context/PatternTrackContext";
 import { currentBankKey, patternIdForBank } from "@/lib/patternTrack/bank";
 import { isMastered } from "@/lib/patternTrack/srs";
@@ -96,11 +96,17 @@ export const PatternPanel: React.FC<{ bankKey: string }> = ({ bankKey }) => {
       {used > 0 && (
         <p className="text-xs text-dark-yellow">Hints used: {used}. This attempt will be logged as &ldquo;needed help&rdquo;.</p>
       )}
-      {pattern && (
-        <Link href={`/patterns/${pattern.id}`} className="inline-flex min-h-[32px] items-center text-xs text-dark-blue-s hover:underline">
-          Review the {pattern.name} pattern sheet
-        </Link>
-      )}
+      <div className="flex flex-wrap items-center gap-x-4">
+        {pattern && (
+          <Link href={`/patterns/${pattern.id}`} className="inline-flex min-h-[32px] items-center text-xs text-dark-blue-s hover:underline">
+            Review the {pattern.name} pattern sheet
+          </Link>
+        )}
+        <a href={LEETCODE_URL(key)} target="_blank" rel="noopener noreferrer"
+          className="inline-flex min-h-[32px] items-center text-xs text-dark-blue-s hover:underline">
+          Open on LeetCode ↗
+        </a>
+      </div>
     </div>
   );
 };
