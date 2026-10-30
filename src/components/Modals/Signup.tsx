@@ -2,12 +2,11 @@ import { auth, firestore } from "@/Firebase/firebase";
 import { authModalState } from "@/atoms/authModalAtom";
 import React, { useEffect, useState } from "react";
 import { useSetRecoilState } from "recoil";
-import {
-  useCreateUserWithEmailAndPassword,
-  useSignInWithGoogle,
-} from "react-firebase-hooks/auth";
+import { useCreateUserWithEmailAndPassword } from "react-firebase-hooks/auth";
+import { signInWithGoogle } from "@/lib/googleAuth";
+import { googleAuthErrorMessage, isSilentAuthError } from "@/lib/googleAuthErrors";
 import { useRouter } from "next/router";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
 
 type SignupProps = {};
@@ -27,8 +26,7 @@ const Signup: React.FC<SignupProps> = () => {
 
   const [createUserWithEmailAndPassword, user, loading, error] =
     useCreateUserWithEmailAndPassword(auth);
-  const [signInWithGoogle, googleUser, googleLoading, googleError] =
-    useSignInWithGoogle(auth);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -74,31 +72,17 @@ const Signup: React.FC<SignupProps> = () => {
   };
 
   const handleGoogleSignup = async () => {
+    setGoogleLoading(true);
     try {
-      const googleSignIn = await signInWithGoogle();
-      if (!googleSignIn) return;
-
-      const userDocRef = doc(firestore, "users", googleSignIn.user.uid);
-      const userDoc = await getDoc(userDocRef);
-
-      if (!userDoc.exists()) {
-        const userData = {
-          uid: googleSignIn.user.uid,
-          email: googleSignIn.user.email,
-          displayName: googleSignIn.user.displayName || "Anonymous",
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-          likedProblems: [],
-          dislikedProblems: [],
-          solvedProblems: [],
-          starredProblems: [],
-        };
-        await setDoc(userDocRef, userData);
-      }
-      router.push("/");
-    } catch (error) {
+      const googleUser = await signInWithGoogle();
+      if (googleUser) router.push("/");
+    } catch (error: any) {
       console.error("Error during Google sign-up:", error);
-      toast.error("Google sign-up failed!", { position: "top-center" });
+      if (!isSilentAuthError(error?.code)) {
+        toast.error(googleAuthErrorMessage(error?.code), { position: "top-center" });
+      }
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -107,11 +91,7 @@ const Signup: React.FC<SignupProps> = () => {
       console.error("Error during email registration:", error);
       toast.error("User already exists!", { position: "top-center" });
     }
-    if (googleError) {
-      console.error( googleError);
-      toast.error("Google sign-up error!", { position: "top-center" });
-    }
-  }, [error, googleError]);
+  }, [error]);
 
   return (
     <form className="space-y-6 px-6 py-4" onSubmit={handleRegister}>

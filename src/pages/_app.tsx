@@ -7,8 +7,20 @@ import { RecoilRoot } from "recoil";
 import { PatternTrackProvider } from "@/context/PatternTrackContext";
 import ErrorBoundary from "@/components/layout/ErrorBoundary";
 import OfflineBanner from "@/components/layout/OfflineBanner";
+import { useEffect } from "react";
+import { toast } from "react-toastify";
+import { finishGoogleRedirect } from "@/lib/googleAuth";
+import { googleAuthErrorMessage, isSilentAuthError } from "@/lib/googleAuthErrors";
 
 export default function App({ Component, pageProps }: AppProps) {
+  // Completes Google sign-in when the popup was blocked and we fell back to a redirect.
+  useEffect(() => {
+    finishGoogleRedirect().catch((error) => {
+      console.error("Google redirect sign-in failed:", error);
+      if (!isSilentAuthError(error?.code)) toast.error(googleAuthErrorMessage(error?.code), { position: "top-center" });
+    });
+  }, []);
+
   return(
 
     <RecoilRoot>
