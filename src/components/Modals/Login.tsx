@@ -2,7 +2,9 @@ import { auth } from "@/Firebase/firebase";
 import { authModalState } from "@/atoms/authModalAtom";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
-import { useSignInWithEmailAndPassword, useSignInWithGoogle } from "react-firebase-hooks/auth";
+import { useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
+import { signInWithGoogle } from "@/lib/googleAuth";
+import { googleAuthErrorMessage, isSilentAuthError } from "@/lib/googleAuthErrors";
 import { toast } from "react-toastify";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 
@@ -21,8 +23,7 @@ const Login: React.FC<LoginProps> = () => {
 
   const [signInWithEmailAndPassword, user, loading, error] =
     useSignInWithEmailAndPassword(auth);
-  const [signInWithGoogle, googleUser, googleLoading, googleError] =
-    useSignInWithGoogle(auth);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const router = useRouter();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,17 +49,21 @@ const Login: React.FC<LoginProps> = () => {
   };
 
   const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
     try {
-      const googleSignIn = await signInWithGoogle();
-      if (googleSignIn) {
-        router.push("/");
+      const googleUser = await signInWithGoogle();
+      if (googleUser) router.push("/");
+    } catch (error: any) {
+      console.error("Google sign-in failed:", error);
+      if (!isSilentAuthError(error?.code)) {
+        toast.error(googleAuthErrorMessage(error?.code), {
+          position: "top-center",
+          autoClose: 4000,
+          theme: "dark",
+        });
       }
-    } catch (error) {
-      toast.error("Google login failed!", {
-        position: "top-center",
-        autoClose: 2000,
-        theme: "dark",
-      });
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -70,14 +75,7 @@ const Login: React.FC<LoginProps> = () => {
         theme: "dark",
       });
     }
-    if (googleError) {
-      toast.error("Google login error", {
-        position: "top-center",
-        autoClose: 2000,
-        theme: "dark",
-      });
-    }
-  }, [error, googleError]);
+  }, [error]);
 
   return (
     <form className="space-y-6 px-6 py-4" onSubmit={handleLogin}>
