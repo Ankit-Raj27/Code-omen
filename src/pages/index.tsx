@@ -11,7 +11,7 @@ import { weekLabel } from "@/lib/patternTrack/stats";
 /** Home: Today for signed-in users, the landing page otherwise. */
 export default function Home() {
   const hasMounted = useHasMounted();
-  const { user, authLoading, logs, startDate, today, loading, error, retry } = usePatternTrack();
+  const { user, authLoading, logs, startDate, streakResetDate, today, loading, error, retry } = usePatternTrack();
 
   if (!hasMounted || authLoading) return <PageLoader />;
   if (!user) return <PublicHome />;
@@ -28,7 +28,7 @@ export default function Home() {
           {[0, 1, 2].map((i) => <div key={i} className="h-16 rounded-xl bg-gray-900/50" />)}
         </div>
       ) : (
-        <TodayView uid={user.uid} logs={logs} today={today} startDate={startDate} />
+        <TodayView uid={user.uid} logs={logs} today={today} startDate={startDate} streakResetDate={streakResetDate} />
       )}
     </PageFrame>
   );
