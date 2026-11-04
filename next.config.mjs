@@ -6,11 +6,15 @@ const nextConfig = {
   async redirects() {
     return redirects;
   },
-  // Serve Firebase's auth handler from our own domain, so redirect sign-in works in
-  // browsers that partition third-party storage (Safari, Firefox). Takes effect once
-  // NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN is set to this site's domain.
+  // Serve Firebase's auth handler (and the config it loads) from our own domain, so
+  // redirect sign-in survives browsers that block cross-site storage. Used by the
+  // same-origin authDomain in src/Firebase/firebase.ts.
   async rewrites() {
-    return [{ source: "/__/auth/:path*", destination: "https://codeomen-fc4b6.firebaseapp.com/__/auth/:path*" }];
+    const firebaseHosting = "https://codeomen-fc4b6.firebaseapp.com";
+    return [
+      { source: "/__/auth/:path*", destination: `${firebaseHosting}/__/auth/:path*` },
+      { source: "/__/firebase/:path*", destination: `${firebaseHosting}/__/firebase/:path*` },
+    ];
   },
 };
 
