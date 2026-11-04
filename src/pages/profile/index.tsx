@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "react-toastify";
 import { motion, useReducedMotion } from "framer-motion";
@@ -14,7 +14,7 @@ const TrackCharts = dynamic(() => import("@/components/patternTrack/TrackCharts"
   ssr: false,
   loading: () => <div className="h-56 animate-pulse rounded-xl bg-gray-900/50" aria-label="Loading charts" />,
 });
-import { ErrorState, EmptyState, Panel, SectionTitle, StatTile, btnGhost, inputCls } from "@/components/patternTrack/ui";
+import { ErrorState, EmptyState, Panel, SectionTitle, StatTile, btn, btnGhost, inputCls } from "@/components/patternTrack/ui";
 import { ActivityHeatmap, MasteryGrid } from "@/components/profile/ProfileViews";
 
 const SoloTrendChart = dynamic(() => import("@/components/profile/SoloTrendChart").then((m) => m.SoloTrendChart), {
@@ -22,11 +22,34 @@ const SoloTrendChart = dynamic(() => import("@/components/profile/SoloTrendChart
   loading: () => <div className="h-56 animate-pulse rounded-xl bg-gray-900/50" aria-label="Loading chart" />,
 });
 import { usePatternTrack } from "@/context/PatternTrackContext";
-import { setPreferredLanguage, setStartDate, type EditorLanguagePref } from "@/lib/patternTrack/firestore";
+import { setPreferredLanguage, setStartDate, setStreakResetDate, type EditorLanguagePref } from "@/lib/patternTrack/firestore";
 import { save } from "@/components/patternTrack/save";
 import {
   currentWeek, dailyActivity, streak, todayStats, weekLabel, weeklyActivity,
 } from "@/lib/patternTrack/stats";
+
+/** Two-click reset (same pattern as the log's Delete): first click arms, second confirms. */
+const ResetStreakButton: React.FC<{ disabled: boolean; onConfirm: () => void }> = ({ disabled, onConfirm }) => {
+  const [armed, setArmed] = useState(false);
+  useEffect(() => {
+    if (!armed) return;
+    const t = setTimeout(() => setArmed(false), 3000);
+    return () => clearTimeout(t);
+  }, [armed]);
+  return (
+    <button
+      className={armed ? `${btn} bg-dark-pink text-white` : btnGhost}
+      disabled={disabled}
+      onClick={() => {
+        if (!armed) return setArmed(true);
+        setArmed(false);
+        onConfirm();
+      }}
+    >
+      {armed ? "Click again to reset" : "Reset streak"}
+    </button>
+  );
+};
 
 const fail = (what: string) => toast.error(`Couldn't save the ${what}.`, { theme: "dark", position: "top-center" });
 
@@ -36,6 +59,7 @@ export default function ProfilePage() {
   const reduce = useReducedMotion();
   const {
     user, authLoading, logs, loading, error, retry, startDate, setStartDateState, today,
+    streakResetDate, setStreakResetDateState,
     preferredLanguage, setPreferredLanguageState,
   } = usePatternTrack();
 
@@ -55,7 +79,7 @@ export default function ProfilePage() {
     if (loading) return <div className="h-64 animate-pulse rounded-xl bg-gray-900/50" />;
 
     const stats = todayStats(logs, today);
-    const days = streak(logs, today);
+    const days = streak(logs, today, streakResetDate);
     const week = currentWeek(startDate, today);
     const reviews = logs.reduce((n, l) => n + (l.reviews?.length ?? 0), 0);
     const lang = preferredLanguage ?? "javascript";
@@ -63,6 +87,16 @@ export default function ProfilePage() {
     const changeStart = async (d: string) => {
       setStartDateState(d);
       try { await save(setStartDate(user.uid, d), "start date"); } catch { fail("start date"); }
+    };
+    const resetStreak = async () => {
+      const prev = streakResetDate;
+      setStreakResetDateState(today);
+      try {
+        await save(setStreakResetDate(user.uid, today), "streak reset", "Streak reset. Your next active day starts a new one.");
+      } catch {
+        setStreakResetDateState(prev);
+        fail("streak reset");
+      }
     };
     const changeLang = async (l: EditorLanguagePref) => {
       setPreferredLanguageState(l);
@@ -128,6 +162,15 @@ export default function ProfilePage() {
                 </button>
               </div>
               <span className="mt-1 block text-xs text-gray-500">{logs.length} entries, with review history.</span>
+            </div>
+            <div className="text-sm text-gray-300">
+              Streak
+              <div className="mt-1">
+                <ResetStreakButton disabled={days === 0} onConfirm={resetStreak} />
+              </div>
+              <span className="mt-1 block text-xs text-gray-500">
+                {streakResetDate ? `Counting from after ${streakResetDate}. ` : ""}Your log and activity history stay as they are.
+              </span>
             </div>
           </Panel>
         </motion.section>

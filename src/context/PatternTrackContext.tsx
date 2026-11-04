@@ -5,13 +5,16 @@ import { auth } from "@/Firebase/firebase";
 import { DEFAULT_START_DATE } from "@/content/patterns";
 import { todayLocal, type Ymd } from "@/lib/patternTrack/dates";
 import { getSettings, subscribeLogs, type EditorLanguagePref } from "@/lib/patternTrack/firestore";
-import type { LogEntry } from "@/lib/patternTrack/stats";
+import { defaultStartDate, type LogEntry } from "@/lib/patternTrack/stats";
 
 interface PatternTrackState {
   user: User | null | undefined;
   logs: LogEntry[];
   startDate: Ymd;
   setStartDateState: (d: Ymd) => void;
+  /** Streak counts only activity after this day (null = never reset). */
+  streakResetDate: Ymd | null;
+  setStreakResetDateState: (d: Ymd | null) => void;
   today: Ymd;
   /** Saved default editor language (null = never set). */
   preferredLanguage: EditorLanguagePref | null;
@@ -46,6 +49,7 @@ export function PatternTrackProvider({ children }: { children: React.ReactNode }
   const [user, authLoading] = useAuthState(auth);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [startDate, setStartDateState] = useState<Ymd>(DEFAULT_START_DATE);
+  const [streakResetDate, setStreakResetDateState] = useState<Ymd | null>(null);
   const [preferredLanguage, setPreferredLanguageState] = useState<EditorLanguagePref | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -57,15 +61,21 @@ export function PatternTrackProvider({ children }: { children: React.ReactNode }
     if (!user) {
       setLogs([]);
       setStartDateState(DEFAULT_START_DATE);
+      setStreakResetDateState(null);
       setPreferredLanguageState(null);
       setLoading(false);
       return;
     }
     setLoading(true);
     setError(null);
-    getSettings(user.uid)
+    // Until settings load (and when none is saved), each account starts on its creation day.
+    const accountStart = defaultStartDate(user.metadata.creationTime);
+    setStartDateState(accountStart);
+    setStreakResetDateState(null);
+    getSettings(user.uid, accountStart)
       .then((s) => {
         setStartDateState(s.startDate);
+        setStreakResetDateState(s.streakResetDate);
         setPreferredLanguageState(s.preferredLanguage);
         // The editor reads its language from localStorage ("cd-language"); seed it from
         // the saved preference so it follows the user across devices.
@@ -93,10 +103,11 @@ export function PatternTrackProvider({ children }: { children: React.ReactNode }
 
   const value = useMemo(
     () => ({
-      user, logs, startDate, setStartDateState, today, preferredLanguage, setPreferredLanguageState,
+      user, logs, startDate, setStartDateState, streakResetDate, setStreakResetDateState,
+      today, preferredLanguage, setPreferredLanguageState,
       authLoading, loading: authLoading || loading, error, retry: () => setAttempt((n) => n + 1),
     }),
-    [user, logs, startDate, today, preferredLanguage, authLoading, loading, error],
+    [user, logs, startDate, streakResetDate, today, preferredLanguage, authLoading, loading, error],
   );
   return <PatternTrackContext.Provider value={value}>{children}</PatternTrackContext.Provider>;
 }

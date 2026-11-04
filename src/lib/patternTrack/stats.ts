@@ -1,6 +1,6 @@
 // Pure derived stats for Pattern Track. No Firebase imports.
-import { PATTERNS, TOTAL_WEEKS, type Pattern } from "@/content/patterns";
-import { addDays, compareYmd, daysBetween, type Ymd } from "./dates";
+import { DEFAULT_START_DATE, PATTERNS, TOTAL_WEEKS, type Pattern } from "@/content/patterns";
+import { addDays, compareYmd, daysBetween, isYmd, todayLocal, type Ymd } from "./dates";
 import { MASTERED_STAGE, isDue, isMastered, type Review } from "./srs";
 
 export type LogDifficulty = "E" | "M" | "H";
@@ -26,6 +26,19 @@ export interface LogEntry {
   /** Editor language used when solved in CodeOmen. */
   language?: "js" | "java";
   createdAtMs?: number;
+}
+
+/**
+ * Track start when the user hasn't picked one: the day the account was created (local
+ * date). Accounts older than Pattern Track start on its launch date instead of jumping
+ * straight to Mixed Mocks.
+ */
+export function defaultStartDate(accountCreated: string | number | Date | undefined, timeZone?: string): Ymd {
+  if (accountCreated === undefined || accountCreated === "") return DEFAULT_START_DATE;
+  const created = new Date(accountCreated);
+  if (Number.isNaN(created.getTime())) return DEFAULT_START_DATE;
+  const day = todayLocal(created, timeZone);
+  return compareYmd(day, DEFAULT_START_DATE) > 0 ? day : DEFAULT_START_DATE;
 }
 
 /** 1-based week number for `today`; 0 if before start; capped at TOTAL_WEEKS. */
@@ -88,12 +101,16 @@ export function todayStats(logs: LogEntry[], today: Ymd): TodayStats {
   };
 }
 
-/** Consecutive active days (new log or review) ending today, or yesterday if today has none yet. */
-export function streak(logs: LogEntry[], today: Ymd): number {
+/**
+ * Consecutive active days (new log or review) ending today, or yesterday if today has none yet.
+ * Days on or before `resetDate` (the day the user reset their streak) don't count.
+ */
+export function streak(logs: LogEntry[], today: Ymd, resetDate?: Ymd | null): number {
   const active = new Set<Ymd>();
+  const counts = (d: Ymd) => !resetDate || compareYmd(d, resetDate) > 0;
   for (const l of logs) {
-    active.add(l.dateSolved);
-    for (const r of l.reviews ?? []) active.add(r.date);
+    if (counts(l.dateSolved)) active.add(l.dateSolved);
+    for (const r of l.reviews ?? []) if (counts(r.date)) active.add(r.date);
   }
   let day = active.has(today) ? today : addDays(today, -1);
   let n = 0;

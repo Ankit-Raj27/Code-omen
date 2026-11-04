@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { PATTERNS, PATTERN_BY_ID } from "@/content/patterns";
+import { DEFAULT_START_DATE, PATTERNS, PATTERN_BY_ID } from "@/content/patterns";
 import {
-  currentWeek, filterLogs, logsToCsv, patternForWeek, patternProgress,
+  currentWeek, defaultStartDate, filterLogs, logsToCsv, patternForWeek, patternProgress,
   sortNewestFirst, streak, todayStats, urlMatchesSlug, type LogEntry,
 } from "../stats";
 
@@ -193,5 +193,41 @@ describe("profile data", () => {
   });
   it("buckets activity into 5 levels", () => {
     expect([0, 1, 2, 3, 4, 5, 6, 20].map(activityLevel)).toEqual([0, 1, 2, 2, 3, 3, 4, 4]);
+  });
+});
+
+describe("defaultStartDate", () => {
+  it("starts on the account's creation day, in the user's time zone", () => {
+    expect(defaultStartDate("2026-11-04T10:00:00Z", "Asia/Kolkata")).toBe("2026-11-04");
+    // 20:00 UTC is already the next day in IST.
+    expect(defaultStartDate("2026-11-04T20:00:00Z", "Asia/Kolkata")).toBe("2026-11-05");
+    expect(defaultStartDate("Wed, 04 Nov 2026 10:00:00 GMT", "Asia/Kolkata")).toBe("2026-11-04");
+  });
+  it("starts older accounts on the Pattern Track launch date", () => {
+    expect(defaultStartDate("2024-12-23T10:00:00Z", "Asia/Kolkata")).toBe(DEFAULT_START_DATE);
+  });
+  it("falls back to the launch date when the creation time is missing or invalid", () => {
+    expect(defaultStartDate(undefined)).toBe(DEFAULT_START_DATE);
+    expect(defaultStartDate("not a date")).toBe(DEFAULT_START_DATE);
+  });
+  it("puts a brand-new account in week 1", () => {
+    expect(currentWeek(defaultStartDate("2026-11-04T10:00:00Z", "Asia/Kolkata"), "2026-11-04")).toBe(1);
+  });
+});
+
+describe("streak reset", () => {
+  const logs = [
+    log({ dateSolved: "2026-10-05" }),
+    log({ dateSolved: "2026-10-04", reviews: [{ date: "2026-10-06", result: "clean" }] }),
+  ];
+  it("ignores activity on or before the reset day", () => {
+    expect(streak(logs, "2026-10-06")).toBe(3);
+    expect(streak(logs, "2026-10-06", "2026-10-06")).toBe(0);
+    expect(streak(logs, "2026-10-06", "2026-10-05")).toBe(1);
+    expect(streak(logs, "2026-10-06", null)).toBe(3);
+  });
+  it("starts counting again from the next active day", () => {
+    const after = [...logs, log({ dateSolved: "2026-10-07" })];
+    expect(streak(after, "2026-10-07", "2026-10-06")).toBe(1);
   });
 });

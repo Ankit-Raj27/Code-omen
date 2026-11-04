@@ -32,6 +32,7 @@ type Props = {
   logs: LogEntry[];
   today: Ymd;
   startDate: Ymd;
+  streakResetDate?: Ymd | null;
 };
 
 const GRADES: { result: ReviewResult; label: string; cls: string }[] = [
@@ -185,7 +186,7 @@ const QuestionOfTheDay: React.FC<{ q: PatternProblemRef | null }> = ({ q }) => {
   );
 };
 
-const TodayView: React.FC<Props> = ({ uid, logs, today, startDate }) => {
+const TodayView: React.FC<Props> = ({ uid, logs, today, startDate, streakResetDate }) => {
   const reduce = useReducedMotion();
   // Graded this session → shown in "Just reviewed" with the insight revealed.
   const [graded, setGraded] = useState<Record<string, ReviewResult>>({});
@@ -197,7 +198,7 @@ const TodayView: React.FC<Props> = ({ uid, logs, today, startDate }) => {
   const week = currentWeek(startDate, today);
   const pattern = patternForWeek(week);
   const progress = pattern ? patternProgress(pattern, logs) : null;
-  const days = streak(logs, today);
+  const days = streak(logs, today, streakResetDate);
   // Before the track starts, "next up" previews week 1.
   const upcoming = nextUp(pattern ?? patternForWeek(1), logs, 2);
   const firstProblem = patternForWeek(1)?.problems[0];

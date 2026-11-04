@@ -68,14 +68,20 @@ export type EditorLanguagePref = "javascript" | "java";
 export interface TrackSettings {
   startDate: Ymd;
   preferredLanguage: EditorLanguagePref | null;
+  /** Streak counts only activity after this day (null = never reset). */
+  streakResetDate: Ymd | null;
 }
 
-/** Pattern Track settings from users/{uid}.patternTrack (defaults when missing). */
-export async function getSettings(uid: string): Promise<TrackSettings> {
+/**
+ * Pattern Track settings from users/{uid}.patternTrack. A missing start date falls back
+ * to `defaultStart` (the account's creation day; see defaultStartDate in stats.ts).
+ */
+export async function getSettings(uid: string, defaultStart: Ymd = DEFAULT_START_DATE): Promise<TrackSettings> {
   const snap = await getDoc(doc(firestore, "users", uid));
   const pt = snap.data()?.patternTrack ?? {};
   return {
-    startDate: typeof pt.startDate === "string" && isYmd(pt.startDate) ? pt.startDate : DEFAULT_START_DATE,
+    startDate: typeof pt.startDate === "string" && isYmd(pt.startDate) ? pt.startDate : defaultStart,
+    streakResetDate: typeof pt.streakResetDate === "string" && isYmd(pt.streakResetDate) ? pt.streakResetDate : null,
     preferredLanguage: pt.preferredLanguage === "java" || pt.preferredLanguage === "javascript" ? pt.preferredLanguage : null,
   };
 }
@@ -87,6 +93,11 @@ export async function getStartDate(uid: string): Promise<Ymd> {
 export async function setStartDate(uid: string, startDate: Ymd): Promise<void> {
   if (!isYmd(startDate)) throw new Error("Invalid date");
   await setDoc(doc(firestore, "users", uid), { patternTrack: { startDate } }, { merge: true });
+}
+
+export async function setStreakResetDate(uid: string, streakResetDate: Ymd): Promise<void> {
+  if (!isYmd(streakResetDate)) throw new Error("Invalid date");
+  await setDoc(doc(firestore, "users", uid), { patternTrack: { streakResetDate } }, { merge: true });
 }
 
 export async function setPreferredLanguage(uid: string, preferredLanguage: EditorLanguagePref): Promise<void> {
